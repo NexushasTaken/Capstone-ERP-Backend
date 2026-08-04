@@ -7,20 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.18" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.18">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="Middleware\" />
-    <Folder Include="Repository\Configuration\" />
-    <Folder Include="Repository\Data\" />
-    <Folder Include="Repository\Interface\" />
-    <Folder Include="Repository\Model\" />
-    <Folder Include="Repository\ViewModel\" />
-    <Folder Include="Repository\Services\" />
   </ItemGroup>
 
 </Project>
