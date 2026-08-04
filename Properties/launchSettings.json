@@ -10,7 +10,6 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-
     "ERP": {
       "commandName": "Project",
       "dotnetRunMessages": true,
@@ -32,4 +31,3 @@
     }
   }
 }
-S
