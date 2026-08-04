@@ -44,7 +44,7 @@ namespace ERP.Repository.Services.TokenManager
 
         public HttpContext SetAccessTokenCookie(string token, HttpContextSetting httpContextSetting, HttpContext context)
         {
-            context.Response.Cookies.Append("RefreshToken", token, new CookieOptions
+            context.Response.Cookies.Append("AccessToken", token, new CookieOptions
             {
                 HttpOnly = httpContextSetting.IsHttpOnly,
                 SameSite = httpContextSetting.SameSite == "None" ? SameSiteMode.None : SameSiteMode.Strict,
