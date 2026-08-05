@@ -12,6 +12,12 @@ namespace ERP.Repository.Services.UserAccounts
     {
         public async Task<UserLoginSuccess> Login(UserAccountViewModel user)
         {
+
+            //var salt = _tokenManagerService.GenerateSalt();
+
+            //var pass = _tokenManagerService.Hashed(user.Password, salt);
+
+
             // Implement your login logic here
 
             LoginValidation.NotNullEmailAndPassword(user);
@@ -46,6 +52,7 @@ namespace ERP.Repository.Services.UserAccounts
                 FirstName = existingUser.UserInformation.FirstName,
                 Type = existingUser.UserType.Type,
                 Position = existingUser.UserPosition.Position,
+                Token = accessToken
             };
         }
     }

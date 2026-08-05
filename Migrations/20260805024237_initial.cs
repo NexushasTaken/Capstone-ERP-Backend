@@ -25,7 +25,7 @@ namespace ERP.Migrations
                     Updated_At = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Deleted_By = table.Column<int>(type: "integer", nullable: true),
                     Deleted_At = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -45,7 +45,7 @@ namespace ERP.Migrations
                     Updated_At = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Deleted_By = table.Column<int>(type: "integer", nullable: true),
                     Deleted_At = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -63,15 +63,13 @@ namespace ERP.Migrations
                     Email = table.Column<string>(type: "text", nullable: true),
                     Password = table.Column<string>(type: "text", nullable: true),
                     Salt = table.Column<string>(type: "text", nullable: true),
-                    UserPositionId1 = table.Column<int>(type: "integer", nullable: true),
-                    UserTypeId1 = table.Column<int>(type: "integer", nullable: true),
                     Created_By = table.Column<int>(type: "integer", nullable: true),
                     Created_At = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Updated_By = table.Column<int>(type: "integer", nullable: true),
                     Updated_At = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Deleted_By = table.Column<int>(type: "integer", nullable: true),
                     Deleted_At = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -83,21 +81,11 @@ namespace ERP.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserAccounts_UserPositions_UserPositionId1",
-                        column: x => x.UserPositionId1,
-                        principalTable: "UserPositions",
-                        principalColumn: "Id");
-                    table.ForeignKey(
                         name: "FK_UserAccounts_UserTypes_UserTypeId",
                         column: x => x.UserTypeId,
                         principalTable: "UserTypes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserAccounts_UserTypes_UserTypeId1",
-                        column: x => x.UserTypeId1,
-                        principalTable: "UserTypes",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -115,7 +103,7 @@ namespace ERP.Migrations
                     Updated_At = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Deleted_By = table.Column<int>(type: "integer", nullable: true),
                     Deleted_At = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -134,19 +122,9 @@ namespace ERP.Migrations
                 column: "UserPositionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserAccounts_UserPositionId1",
-                table: "UserAccounts",
-                column: "UserPositionId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_UserAccounts_UserTypeId",
                 table: "UserAccounts",
                 column: "UserTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserAccounts_UserTypeId1",
-                table: "UserAccounts",
-                column: "UserTypeId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserInformations_UserAccountId",
