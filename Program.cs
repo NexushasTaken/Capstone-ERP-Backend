@@ -24,6 +24,17 @@ namespace ERP
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("FrontEnd", policy =>
+                {
+                    policy.WithOrigins("https://localhost:4200", "http://localhost:4200")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
+            });
+
             // Add services to the container.
 
             #region Scoped Services
@@ -83,7 +94,7 @@ namespace ERP
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-
+            app.UseCors("FrontEnd");
 
             if (app.Environment.IsDevelopment())
             {
