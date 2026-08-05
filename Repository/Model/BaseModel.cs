@@ -9,6 +9,6 @@
         public DateTime? Updated_At { get; set; }
         public int? Deleted_By { get; set; }
         public DateTime? Deleted_At { get; set; }
-        public bool IsActive { get; set; }
+        public bool? IsActive { get; set; }
     }
 }

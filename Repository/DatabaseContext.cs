@@ -29,18 +29,13 @@ namespace ERP.Repository
             #region Setting up Relationships
 
             modelBuilder.Entity<UserAccount>()
-                .HasOne(u => u.UserInformation)
-                .WithOne(i => i.UserAccount)
-                .HasForeignKey<UserInformation>(i => i.UserAccountId);
-
-            modelBuilder.Entity<UserAccount>()
                 .HasOne(u => u.UserType)
-                .WithMany()
+                .WithMany(u => u.UserAccounts)
                 .HasForeignKey(u => u.UserTypeId);  
 
             modelBuilder.Entity<UserAccount>()
                 .HasOne(u => u.UserPosition)
-                .WithMany()
+                .WithMany(u => u.UserAccounts)
                 .HasForeignKey(u => u.UserPositionId);
 
             modelBuilder.Entity<UserInformation>()

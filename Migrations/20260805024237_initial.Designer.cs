@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ERP.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260804224645_initial")]
+    [Migration("20260805024237_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -48,7 +48,7 @@ namespace ERP.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool?>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Password")
@@ -66,24 +66,14 @@ namespace ERP.Migrations
                     b.Property<int>("UserPositionId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("UserPositionId1")
-                        .HasColumnType("integer");
-
                     b.Property<int>("UserTypeId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("UserTypeId1")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserPositionId");
 
-                    b.HasIndex("UserPositionId1");
-
                     b.HasIndex("UserTypeId");
-
-                    b.HasIndex("UserTypeId1");
 
                     b.ToTable("UserAccounts");
                 });
@@ -111,7 +101,7 @@ namespace ERP.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool?>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
@@ -154,7 +144,7 @@ namespace ERP.Migrations
                     b.Property<int?>("Deleted_By")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool?>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Position")
@@ -191,7 +181,7 @@ namespace ERP.Migrations
                     b.Property<int?>("Deleted_By")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool?>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Type")
@@ -211,24 +201,16 @@ namespace ERP.Migrations
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>
                 {
                     b.HasOne("ERP.Repository.Model.UserAccounts.UserPosition", "UserPosition")
-                        .WithMany()
+                        .WithMany("UserAccounts")
                         .HasForeignKey("UserPositionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ERP.Repository.Model.UserAccounts.UserPosition", null)
-                        .WithMany("UserAccounts")
-                        .HasForeignKey("UserPositionId1");
-
                     b.HasOne("ERP.Repository.Model.UserAccounts.UserType", "UserType")
-                        .WithMany()
+                        .WithMany("UserAccounts")
                         .HasForeignKey("UserTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("ERP.Repository.Model.UserAccounts.UserType", null)
-                        .WithMany("UserAccounts")
-                        .HasForeignKey("UserTypeId1");
 
                     b.Navigation("UserPosition");
 
