@@ -139,6 +139,9 @@ namespace ERP.Migrations
                     b.Property<bool?>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Label")
+                        .HasColumnType("text");
+
                     b.Property<int>("QuantityChanged")
                         .HasColumnType("integer");
 
