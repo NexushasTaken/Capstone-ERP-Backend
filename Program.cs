@@ -28,7 +28,7 @@ namespace ERP
             {
                 options.AddPolicy("FrontEnd", policy =>
                 {
-                    policy.WithOrigins("https://localhost:4200", "http://localhost:4200")
+                    policy.WithOrigins("http://localhost:3000", "http://localhost:4200")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials();
@@ -63,8 +63,8 @@ namespace ERP
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = false,
+                    ValidateIssuerSigningKey = false,
                     ValidIssuer = builder.Configuration["Jwt:Issuer"],
                     ValidAudience = builder.Configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
