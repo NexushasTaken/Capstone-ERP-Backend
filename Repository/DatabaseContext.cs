@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Model.UserAccounts;
+﻿using ERP.Repository.Model.Inventories;
+using ERP.Repository.Model.UserAccounts;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Repository
@@ -23,6 +24,18 @@ namespace ERP.Repository
                 .HasKey(k => k.Id);
             modelBuilder.Entity<UserType>()
                 .HasKey(k => k.Id);
+            modelBuilder.Entity<Inventory>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<InventoryStatus>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<InventoryTransaction>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<Warehouse>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
 
             #endregion
 
@@ -42,6 +55,21 @@ namespace ERP.Repository
                 .HasOne(i => i.UserAccount)
                 .WithOne(u => u.UserInformation)
                 .HasForeignKey<UserInformation>(i => i.UserAccountId);
+
+            modelBuilder.Entity<Inventory>()
+                .HasOne(i => i.InventoryStatus)
+                .WithOne(s => s.Inventory)
+                .HasForeignKey<Inventory>(i => i.StatusId);
+
+            modelBuilder.Entity<Inventory>()
+                .HasOne(i => i.Warehouse)
+                .WithMany(w => w.Inventory)
+                .HasForeignKey(i => i.WarehouseId);
+
+            modelBuilder.Entity<InventoryTransaction>()
+                .HasOne(t => t.Inventory)
+                .WithMany(i => i.InventoryTransactions)
+                .HasForeignKey(t => t.InventoryId);
 
             #endregion
 
