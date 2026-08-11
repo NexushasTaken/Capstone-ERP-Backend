@@ -5,6 +5,7 @@
         public int InventoryId  { get; set; }
         public Inventory? Inventory { get; set; }
         public int QuantityChanged { get; set; }
-        public string? Label { get; set; }
+        public int InventoryLabelId { get; set; }
+        public InventoryLabel? InventoryLabel { get; set; }
     }
 }
