@@ -22,6 +22,51 @@ namespace ERP.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ERP.Repository.Model.Inventories.DamagedInventory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("Created_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Created_By")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("Deleted_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Deleted_By")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("InventoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("Updated_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Updated_By")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryId");
+
+                    b.ToTable("DamagedInventory");
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.Inventories.Inventory", b =>
                 {
                     b.Property<int>("Id")
@@ -54,6 +99,9 @@ namespace ERP.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ReorderPoint")
+                        .HasColumnType("integer");
+
                     b.Property<int>("StatusId")
                         .HasColumnType("integer");
 
@@ -74,6 +122,43 @@ namespace ERP.Migrations
                     b.HasIndex("WarehouseId");
 
                     b.ToTable("Inventory");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Inventories.InventoryLabel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("Created_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Created_By")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("Deleted_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Deleted_By")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("Updated_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Updated_By")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InventoryLabel");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.InventoryStatus", b =>
@@ -136,11 +221,11 @@ namespace ERP.Migrations
                     b.Property<int>("InventoryId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("InventoryLabelId")
+                        .HasColumnType("integer");
+
                     b.Property<bool?>("IsActive")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("Label")
-                        .HasColumnType("text");
 
                     b.Property<int>("QuantityChanged")
                         .HasColumnType("integer");
@@ -154,6 +239,8 @@ namespace ERP.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("InventoryId");
+
+                    b.HasIndex("InventoryLabelId");
 
                     b.ToTable("InventoryTransaction");
                 });
@@ -371,6 +458,17 @@ namespace ERP.Migrations
                     b.ToTable("UserTypes");
                 });
 
+            modelBuilder.Entity("ERP.Repository.Model.Inventories.DamagedInventory", b =>
+                {
+                    b.HasOne("ERP.Repository.Model.Inventories.Inventory", "Inventory")
+                        .WithMany("DamagedInventories")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Inventory");
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.Inventories.Inventory", b =>
                 {
                     b.HasOne("ERP.Repository.Model.Inventories.InventoryStatus", "InventoryStatus")
@@ -398,7 +496,15 @@ namespace ERP.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ERP.Repository.Model.Inventories.InventoryLabel", "InventoryLabel")
+                        .WithMany("InventoryTransactions")
+                        .HasForeignKey("InventoryLabelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Inventory");
+
+                    b.Navigation("InventoryLabel");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>
@@ -432,6 +538,13 @@ namespace ERP.Migrations
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.Inventory", b =>
+                {
+                    b.Navigation("DamagedInventories");
+
+                    b.Navigation("InventoryTransactions");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Inventories.InventoryLabel", b =>
                 {
                     b.Navigation("InventoryTransactions");
                 });

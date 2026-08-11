@@ -9,7 +9,9 @@
         public int WarehouseId { get; set; }
         public Warehouse? Warehouse { get; set; }
         public DateTime DateArrived { get; set; }
+        public int ReorderPoint { get; set; }
 
         public ICollection<InventoryTransaction> InventoryTransactions { get; set; } = [];
+        public ICollection<DamagedInventory> DamagedInventories { get; set; } = [];
     }
 }

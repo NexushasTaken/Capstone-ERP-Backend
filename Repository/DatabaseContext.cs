@@ -36,6 +36,12 @@ namespace ERP.Repository
             modelBuilder.Entity<Warehouse>()
                 .Property(p => p.Id)
                 .ValueGeneratedOnAdd();
+            modelBuilder.Entity<DamagedInventory>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<InventoryLabel>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
 
             #endregion
 
@@ -70,6 +76,16 @@ namespace ERP.Repository
                 .HasOne(t => t.Inventory)
                 .WithMany(i => i.InventoryTransactions)
                 .HasForeignKey(t => t.InventoryId);
+
+            modelBuilder.Entity<DamagedInventory>()
+                .HasOne(d => d.Inventory)
+                .WithMany(i => i.DamagedInventories)
+                .HasForeignKey(d => d.InventoryId);
+
+            modelBuilder.Entity<InventoryTransaction>()
+                .HasOne(d => d.InventoryLabel)
+                .WithMany(i => i.InventoryTransactions)
+                .HasForeignKey(d => d.InventoryLabelId);
 
             #endregion
 

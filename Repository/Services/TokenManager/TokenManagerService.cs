@@ -49,7 +49,7 @@ namespace ERP.Repository.Services.TokenManager
                 HttpOnly = httpContextSetting.IsHttpOnly,
                 SameSite = httpContextSetting.SameSite == "None" ? SameSiteMode.None : SameSiteMode.Strict,
                 Secure = true,
-                Expires = DateTime.UtcNow.AddMinutes(httpContextSetting.ExpireInMinutes)
+                Expires = DateTime.UtcNow.AddMinutes(httpContextSetting.ExpireInDays)
             });
             return context;
         }
