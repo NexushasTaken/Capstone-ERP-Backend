@@ -47,8 +47,8 @@ namespace ERP.Repository.Services.TokenManager
             context.Response.Cookies.Append("AccessToken", token, new CookieOptions
             {
                 HttpOnly = httpContextSetting.IsHttpOnly,
-                SameSite = httpContextSetting.SameSite == "None" ? SameSiteMode.None : SameSiteMode.Strict,
-                Secure = true,
+                SameSite = httpContextSetting.SameSite == "Lax" ? SameSiteMode.Lax : SameSiteMode.Strict,
+                Secure = false,
                 Expires = DateTime.UtcNow.AddMinutes(httpContextSetting.ExpireInDays)
             });
             return context;
