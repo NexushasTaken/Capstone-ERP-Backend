@@ -30,6 +30,27 @@ namespace ERP.Repository
             modelBuilder.Entity<InventoryStatus>()
                 .Property(p => p.Id)
                 .ValueGeneratedOnAdd();
+            modelBuilder.Entity<VelocityStatus>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<Category>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<Orders>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<OrderType>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<OrderStatus>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
+            modelBuilder.Entity<DeliveryDriver>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
             modelBuilder.Entity<InventoryTransaction>()
                 .Property(p => p.Id)
                 .ValueGeneratedOnAdd();
@@ -71,6 +92,42 @@ namespace ERP.Repository
                 .HasOne(i => i.Warehouse)
                 .WithMany(w => w.Inventory)
                 .HasForeignKey(i => i.WarehouseId);
+
+            modelBuilder.Entity<Inventory>()
+                .HasOne(i => i.Product)
+                .WithMany(w => w.Inventory)
+                .HasForeignKey(i => i.ProductId);
+
+            modelBuilder.Entity<Inventory>()
+                .HasOne(i => i.VelocityStatus)
+                .WithMany(w => w.Inventory)
+                .HasForeignKey(i => i.VelocityStatusId);
+
+            modelBuilder.Entity<Product>()
+                .HasOne(i => i.Category)
+                .WithMany(w => w.Products)
+                .HasForeignKey(i => i.CategoryId);
+
+            modelBuilder.Entity<Orders>()
+                .HasOne(i => i.Product)
+                .WithMany(w => w.Orders)
+                .HasForeignKey(i => i.ProductId);
+
+            modelBuilder.Entity<Orders>()
+                .HasOne(i => i.OrderType)
+                .WithMany(w => w.Orders)
+                .HasForeignKey(i => i.OrderTypeId);
+
+            modelBuilder.Entity<Orders>()
+                .HasOne(i => i.OrderStatus)
+                .WithMany(w => w.Orders)
+                .HasForeignKey(i => i.OrderStatusId);
+
+            modelBuilder.Entity<Orders>()
+                .HasOne(i => i.DeliveryDriver)
+                .WithMany(w => w.Orders)
+                .HasForeignKey(i => i.DeliveryDriverId)
+                .IsRequired(false);
 
             modelBuilder.Entity<InventoryTransaction>()
                 .HasOne(t => t.Inventory)
