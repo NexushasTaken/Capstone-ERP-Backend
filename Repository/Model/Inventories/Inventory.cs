@@ -2,14 +2,18 @@
 {
     public class Inventory : BaseModel
     {
-        public int Name { get; set; }
+        public string? Name { get; set; }
         public int Quantity { get; set; }
         public int StatusId { get; set; }
         public InventoryStatus? InventoryStatus { get; set; }
+        public int VelocityStatusId { get; set; }
+        public VelocityStatus? VelocityStatus { get; set; }
         public int WarehouseId { get; set; }
         public Warehouse? Warehouse { get; set; }
         public DateTime DateArrived { get; set; }
         public int ReorderPoint { get; set; }
+        public int ProductId { get; set; }
+        public Product? Product { get; set; }
 
         public ICollection<InventoryTransaction> InventoryTransactions { get; set; } = [];
         public ICollection<DamagedInventory> DamagedInventories { get; set; } = [];
