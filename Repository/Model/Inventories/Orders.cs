@@ -1,0 +1,22 @@
+namespace ERP.Repository.Model.Inventories
+{
+    public class Orders : BaseModel
+    {
+        public int ProductId { get; set; }
+        public Product? Product { get; set; }
+        public int OrderTypeId { get; set; }
+        public OrderType? OrderType { get; set; }
+        public int OrderStatusId { get; set; }
+        public OrderStatus? OrderStatus { get; set; }
+        public int? DeliveryDriverId { get; set; }
+        public DeliveryDriver? DeliveryDriver { get; set; }
+
+        public int Quantity { get; set; }
+        public string? CustomerName { get; set; }
+        public string? PibkupAddress { get; set; }
+        public string? DeliveryAddress { get; set; }
+        public string? BundleCode { get; set; }
+
+        // public ICollection<Sales> Sales { get; set; } = []
+    }
+}
