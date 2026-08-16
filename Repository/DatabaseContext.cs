@@ -1,4 +1,7 @@
 ﻿using ERP.Repository.Model.Inventories;
+using ERP.Repository.Model.Orders;
+using ERP.Repository.Model.Products;
+using ERP.Repository.Model.Sales;
 using ERP.Repository.Model.UserAccounts;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,16 +9,46 @@ namespace ERP.Repository
 {
     public class DatabaseContext(DbContextOptions<DatabaseContext> context) : DbContext(context)
     {
+        #region UserAccounts
         public DbSet<UserAccount> UserAccounts { get; set; }
         public DbSet<UserInformation> UserInformations { get; set; }
         public DbSet<UserPosition> UserPositions { get; set; }
         public DbSet<UserType> UserTypes { get; set; }
+        #endregion
+
+        #region Inventory
+        public DbSet<Inventory> Inventories { get; set; }
+        public DbSet<DamagedInventory> DamagedInventories { get; set; }
+        public DbSet<InventoryLabel> InventoryLabels { get; set; }
+        public DbSet<InventoryStatus> InventoryStatuses { get; set; }
+        public DbSet<InventoryTransaction> InventoryTransactions { get; set; }
+        public DbSet<VelocityStatus> VelocityStatuses { get; set; }
+        public DbSet<Warehouse> Warehouses { get; set; }
+        #endregion
+
+
+        #region Product
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        #endregion
+
+        #region Order
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderType> OrderTypes { get; set; }
+        public DbSet<OrderStatus> OrderStatuses { get; set; }
+        public DbSet<DeliveryDriver> DeliveryDrivers { get; set; }
+        #endregion
+
+        #region Sales
+        public DbSet<Sale> Sales { get; set; }
+        #endregion
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             #region Setting up Primary Key
 
+            #region UserAccounts
             modelBuilder.Entity<UserAccount>()
                 .HasKey(k => k.Id);
             modelBuilder.Entity<UserInformation>()
@@ -24,50 +57,54 @@ namespace ERP.Repository
                 .HasKey(k => k.Id);
             modelBuilder.Entity<UserType>()
                 .HasKey(k => k.Id);
+            #endregion
+
+            #region Inventory
             modelBuilder.Entity<Inventory>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
+                .Property(p => p.Id);
             modelBuilder.Entity<InventoryStatus>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
+                .Property(p => p.Id);
             modelBuilder.Entity<VelocityStatus>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
-            modelBuilder.Entity<Product>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
-            modelBuilder.Entity<Category>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
-            modelBuilder.Entity<Orders>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
-            modelBuilder.Entity<OrderType>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
-            modelBuilder.Entity<OrderStatus>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
-            modelBuilder.Entity<DeliveryDriver>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
+                .Property(p => p.Id);
             modelBuilder.Entity<InventoryTransaction>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
+                .Property(p => p.Id);
             modelBuilder.Entity<Warehouse>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
+                .Property(p => p.Id);
             modelBuilder.Entity<DamagedInventory>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
+                .Property(p => p.Id);
             modelBuilder.Entity<InventoryLabel>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
+                .Property(p => p.Id);
+            #endregion
+
+            #region Orders
+            modelBuilder.Entity<Order>()
+                .Property(p => p.Id);
+            modelBuilder.Entity<OrderType>()
+                .Property(p => p.Id);
+            modelBuilder.Entity<OrderStatus>()
+                .Property(p => p.Id);
+            modelBuilder.Entity<DeliveryDriver>()
+                .Property(p => p.Id);
+            #endregion
+
+            #region Products
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Id);
+            modelBuilder.Entity<Category>()
+                .Property(p => p.Id);
+            #endregion
+
+            #region Sales
+            modelBuilder.Entity<Sale>()
+                .Property(p => p.Id);
+            #endregion
 
             #endregion
 
             #region Setting up Relationships
 
+
+            #region UserAccounts    
             modelBuilder.Entity<UserAccount>()
                 .HasOne(u => u.UserType)
                 .WithMany(u => u.UserAccounts)
@@ -83,10 +120,12 @@ namespace ERP.Repository
                 .WithOne(u => u.UserInformation)
                 .HasForeignKey<UserInformation>(i => i.UserAccountId);
 
+            #endregion
+
             modelBuilder.Entity<Inventory>()
                 .HasOne(i => i.InventoryStatus)
-                .WithOne(s => s.Inventory)
-                .HasForeignKey<Inventory>(i => i.StatusId);
+                .WithMany(s => s.Inventories)
+                .HasForeignKey(i => i.StatusId);
 
             modelBuilder.Entity<Inventory>()
                 .HasOne(i => i.Warehouse)
@@ -103,36 +142,10 @@ namespace ERP.Repository
                 .WithMany(w => w.Inventory)
                 .HasForeignKey(i => i.VelocityStatusId);
 
-            modelBuilder.Entity<Product>()
-                .HasOne(i => i.Category)
-                .WithMany(w => w.Products)
-                .HasForeignKey(i => i.CategoryId);
-
-            modelBuilder.Entity<Orders>()
-                .HasOne(i => i.Product)
-                .WithMany(w => w.Orders)
-                .HasForeignKey(i => i.ProductId);
-
-            modelBuilder.Entity<Orders>()
-                .HasOne(i => i.OrderType)
-                .WithMany(w => w.Orders)
-                .HasForeignKey(i => i.OrderTypeId);
-
-            modelBuilder.Entity<Orders>()
-                .HasOne(i => i.OrderStatus)
-                .WithMany(w => w.Orders)
-                .HasForeignKey(i => i.OrderStatusId);
-
-            modelBuilder.Entity<Orders>()
-                .HasOne(i => i.DeliveryDriver)
-                .WithMany(w => w.Orders)
-                .HasForeignKey(i => i.DeliveryDriverId)
-                .IsRequired(false);
-
             modelBuilder.Entity<InventoryTransaction>()
-                .HasOne(t => t.Inventory)
-                .WithMany(i => i.InventoryTransactions)
-                .HasForeignKey(t => t.InventoryId);
+             .HasOne(t => t.Inventory)
+             .WithMany(i => i.InventoryTransactions)
+             .HasForeignKey(t => t.InventoryId);
 
             modelBuilder.Entity<DamagedInventory>()
                 .HasOne(d => d.Inventory)
@@ -143,6 +156,32 @@ namespace ERP.Repository
                 .HasOne(d => d.InventoryLabel)
                 .WithMany(i => i.InventoryTransactions)
                 .HasForeignKey(d => d.InventoryLabelId);
+
+            modelBuilder.Entity<Product>()
+                .HasOne(i => i.Category)
+                .WithMany(w => w.Products)
+                .HasForeignKey(i => i.CategoryId);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(i => i.Product)
+                .WithMany(w => w.Orders)
+                .HasForeignKey(i => i.ProductId);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(i => i.OrderType)
+                .WithMany(w => w.Orders)
+                .HasForeignKey(i => i.OrderTypeId);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(i => i.OrderStatus)
+                .WithMany(w => w.Orders)
+                .HasForeignKey(i => i.OrderStatusId);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(i => i.DeliveryDriver)
+                .WithMany(w => w.Orders)
+                .HasForeignKey(i => i.DeliveryDriverId)
+                .IsRequired(false);
 
             #endregion
 

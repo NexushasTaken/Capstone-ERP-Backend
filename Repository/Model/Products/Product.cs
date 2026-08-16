@@ -1,4 +1,7 @@
-namespace ERP.Repository.Model.Inventories
+using ERP.Repository.Model.Inventories;
+using ERP.Repository.Model.Orders;
+
+namespace ERP.Repository.Model.Products
 {
     public class Product : BaseModel
     {
@@ -8,6 +11,6 @@ namespace ERP.Repository.Model.Inventories
         public int Price { get; set; }
 
         public ICollection<Inventory> Inventory { get; set; } = [];
-        public ICollection<Orders> Orders { get; set; } = [];
+        public ICollection<Order> Orders { get; set; } = [];
     }
 }

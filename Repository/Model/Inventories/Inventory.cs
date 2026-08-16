@@ -1,4 +1,6 @@
-﻿namespace ERP.Repository.Model.Inventories
+﻿using ERP.Repository.Model.Products;
+
+namespace ERP.Repository.Model.Inventories
 {
     public class Inventory : BaseModel
     {
@@ -14,7 +16,6 @@
         public int ReorderPoint { get; set; }
         public int ProductId { get; set; }
         public Product? Product { get; set; }
-
         public ICollection<InventoryTransaction> InventoryTransactions { get; set; } = [];
         public ICollection<DamagedInventory> DamagedInventories { get; set; } = [];
     }
