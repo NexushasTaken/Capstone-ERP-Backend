@@ -1,4 +1,4 @@
-namespace ERP.Repository.Model.Inventories
+namespace ERP.Repository.Model.Products
 {
     public class Category : BaseModel
     {

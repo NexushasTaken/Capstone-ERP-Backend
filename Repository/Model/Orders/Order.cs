@@ -1,6 +1,9 @@
-namespace ERP.Repository.Model.Inventories
+using ERP.Repository.Model.Products;
+using ERP.Repository.Model.Sales;
+
+namespace ERP.Repository.Model.Orders
 {
-    public class Orders : BaseModel
+    public class Order : BaseModel
     {
         public int ProductId { get; set; }
         public Product? Product { get; set; }
@@ -17,6 +20,6 @@ namespace ERP.Repository.Model.Inventories
         public string? DeliveryAddress { get; set; }
         public string? BundleCode { get; set; }
 
-        // public ICollection<Sales> Sales { get; set; } = []
+        public ICollection<Sale> Sales { get; set; } = [];
     }
 }

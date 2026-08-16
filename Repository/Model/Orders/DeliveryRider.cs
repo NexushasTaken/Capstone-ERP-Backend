@@ -1,10 +1,10 @@
-namespace ERP.Repository.Model.Inventories
+namespace ERP.Repository.Model.Orders
 {
     public class DeliveryDriver : BaseModel
     {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
 
-        public ICollection<Orders> Orders { get; set; } = [];
+        public ICollection<Order> Orders { get; set; } = [];
     }
 }
