@@ -7,5 +7,6 @@ namespace ERP.Repository.Interface.Product
         Task<IEnumerable<CategoryViewModel>> GetCategories();
         Task InsertCategory(string categoryName);
         Task<IEnumerable<ProductViewModel>> GetProducts();
+        Task DeleteCategory(int id);
     }
 }
