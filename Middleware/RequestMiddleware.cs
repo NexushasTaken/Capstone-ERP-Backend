@@ -23,6 +23,10 @@ namespace ERP.Middleware
             {
                 await Response(context, 401, "application/json", ex.Message);
             }
+            catch(NotFound ex)
+            {
+                await Response(context, 404, "application/json", ex.Message);
+            }
             catch (Exception ex) { 
                 await Response(context, 500, "application/json", ex.Message);
             }

@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Interface.Data.ProductData;
+﻿using ERP.Repository.Configuration.Exception_Extender;
+using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Product;
 using ERP.Repository.Model.Products;
 using ERP.Repository.ViewModel.Product;
@@ -7,6 +8,8 @@ namespace ERP.Repository.Services.Product
 {
     public class ProductService(ICategoryData _category, IProductData _product) : IProductService
     {
+
+        #region Category
         public async Task<IEnumerable<CategoryViewModel>> GetCategories()
         {
 
@@ -24,12 +27,40 @@ namespace ERP.Repository.Services.Product
             var category = new Category
             {
                 Type = categoryName,
-                Created_At = DateTime.UtcNow
+                Created_At = DateTime.UtcNow,
+                IsActive = true
             };
 
             await _category.Save(category);
         }
 
+        public async Task DeleteCategory(int id)
+        {
+            var category = await _category.GetCategoryByIdWithTracking(id);
+
+            if (category == null)
+            {
+                throw new NotFound($"Category with ID {id} not found.");
+            }
+
+            category.IsActive = false;
+
+            await _category.SaveChanges();
+
+
+            var categoryReferences = await _product.GetAllProductReferenceByCategoryWithTracking(id);
+
+            foreach (var reference in categoryReferences)
+            {
+                reference.IsActive = false;
+            }
+
+            await _product.SaveChanges();
+        }
+
+        #endregion
+
+        #region Product
 
         public async Task<IEnumerable<ProductViewModel>> GetProducts()
         {
@@ -46,5 +77,7 @@ namespace ERP.Repository.Services.Product
 
             return product;
         }
+
+        #endregion
     }
 }

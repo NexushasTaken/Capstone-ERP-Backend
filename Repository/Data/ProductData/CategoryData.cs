@@ -9,16 +9,15 @@ namespace ERP.Repository.Data.ProductData
     {
         public async Task<IEnumerable<Category>> GetAllCategoriesWithoutTracking(CancellationToken cancellation = default)
         {
-            var categories = await BaseQuery<Category>(false).Where(c => c.IsActive == true).ToListAsync(cancellation);
+            var categories = await BaseQuery<Category>(false).Where(c => c.IsActive == true).OrderByDescending(c => c.Id).ToListAsync(cancellation);
 
             return categories;
         }
 
-        public async Task<IEnumerable<Category>> GettAllCategoriesByIdWithTracking(int id, CancellationToken cancellation = default)
+        public async Task<Category> GetCategoryByIdWithTracking(int id, CancellationToken cancellation = default)
         {
-            var categories = await BaseQuery<Category>(true).Where(c => c.Id == id && c.IsActive == true).ToListAsync(cancellation);
-
-            return categories;
+            var category = await BaseQuery<Category>(true).FirstOrDefaultAsync(c => c.Id == id && c.IsActive == true, cancellation);
+            return category;
         }
     }
 }   

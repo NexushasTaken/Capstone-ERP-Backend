@@ -24,5 +24,13 @@ namespace ERP.Controllers.ProductController
 
             return StatusCode(200, _response.Status(200, true, "Insert Successfully", null));
         }
+
+        [HttpPost("deleteCategory")]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            await _productService.DeleteCategory(id);
+
+            return StatusCode(200, _response.Status(200, true, "Deleted Successfully", null));
+        }
     }
 }

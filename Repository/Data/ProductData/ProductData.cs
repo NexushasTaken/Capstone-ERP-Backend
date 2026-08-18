@@ -12,5 +12,11 @@ namespace ERP.Repository.Data.ProductData
 
             return products;
         }
+
+        public async Task<ICollection<Product>> GetAllProductReferenceByCategoryWithTracking(int categoryId)
+        {
+            var products = await BaseQuery<Product>(true).Where(p => p.CategoryId == categoryId && p.IsActive == true).ToListAsync();
+            return products;
+        }
     }
 }
