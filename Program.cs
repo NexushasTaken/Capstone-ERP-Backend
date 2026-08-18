@@ -2,11 +2,19 @@ using ERP.Middleware;
 using ERP.Repository;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Data;
+using ERP.Repository.Data.OrderData;
+using ERP.Repository.Data.ProductData;
 using ERP.Repository.Data.UserAccounts;
 using ERP.Repository.Interface.Data;
+using ERP.Repository.Interface.Data.OrderData;
+using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Data.UserAccountData;
+using ERP.Repository.Interface.Order;
+using ERP.Repository.Interface.Product;
 using ERP.Repository.Interface.TokenManager;
 using ERP.Repository.Interface.UserAccounts;
+using ERP.Repository.Services.Order;
+using ERP.Repository.Services.Product;
 using ERP.Repository.Services.TokenManager;
 using ERP.Repository.Services.UserAccounts;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -39,9 +47,20 @@ namespace ERP
 
             #region Scoped Services
 
+            #region Business Services
+
             builder.Services.AddScoped<IUserAccountService, UserAccountService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            #endregion
+
+            #region Data Services
             builder.Services.AddScoped<IUserAccountData, UserAccountData>();
+            builder.Services.AddScoped<IProductData, ProductData>();
+            builder.Services.AddScoped<ICategoryData, CategoryData>();
+            builder.Services.AddScoped<IOrderData, OrderData>();
             builder.Services.AddScoped<IBaseData, BaseData>();
+            #endregion
 
             #endregion
 

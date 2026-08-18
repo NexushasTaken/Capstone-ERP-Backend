@@ -1,3 +1,5 @@
+using ERP.Repository.Model;
+
 namespace ERP.Repository.Model.Inventories
 {
     public class VelocityStatus : BaseModel

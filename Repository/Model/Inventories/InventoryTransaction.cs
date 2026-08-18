@@ -1,4 +1,6 @@
-﻿namespace ERP.Repository.Model.Inventories
+﻿using ERP.Repository.Model;
+
+namespace ERP.Repository.Model.Inventories
 {
     public class InventoryTransaction : BaseModel
     {
