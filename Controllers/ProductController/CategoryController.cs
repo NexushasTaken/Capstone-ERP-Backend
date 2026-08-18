@@ -1,5 +1,5 @@
 ﻿using ERP.Repository.Configuration.Helper;
-using ERP.Repository.Interface.Product;
+using ERP.Repository.Interface.Products;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.Controllers.ProductController
@@ -17,7 +17,7 @@ namespace ERP.Controllers.ProductController
         }
 
 
-        [HttpPost("newCategory")]
+        [HttpPost("insert")]
         public async Task<IActionResult> InsertNewCategory(string categoryName)
         {
             await _productService.InsertCategory(categoryName);
@@ -25,7 +25,7 @@ namespace ERP.Controllers.ProductController
             return StatusCode(200, _response.Status(200, true, "Insert Successfully", null));
         }
 
-        [HttpPost("deleteCategory")]
+        [HttpDelete("delete")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             await _productService.DeleteCategory(id);

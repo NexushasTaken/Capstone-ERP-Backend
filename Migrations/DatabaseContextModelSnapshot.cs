@@ -379,6 +379,9 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("BundleCode")
                         .HasColumnType("text");
 
@@ -580,8 +583,8 @@ namespace ERP.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime?>("Updated_At")
                         .HasColumnType("timestamp with time zone");

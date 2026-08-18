@@ -1,6 +1,6 @@
 ﻿using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Model.Products;
-using ERP.Repository.ViewModel.Product;
+using ERP.Repository.ViewModel.Products;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Repository.Data.ProductData
@@ -9,7 +9,7 @@ namespace ERP.Repository.Data.ProductData
     {
         public async Task<IEnumerable<Category>> GetAllCategoriesWithoutTracking(CancellationToken cancellation = default)
         {
-            var categories = await BaseQuery<Category>(false).Where(c => c.IsActive == true).OrderByDescending(c => c.Id).ToListAsync(cancellation);
+            var categories = await BaseQuery<Category>(false).Where(c => c.IsActive == true).OrderByDescending(c => c.Created_At).ToListAsync(cancellation);
 
             return categories;
         }

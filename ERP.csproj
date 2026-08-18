@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Repository\ViewModel\Order\" />
+    <Folder Include="Repository\ViewModel\Orders\" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿namespace ERP.Repository.ViewModel.Inventory
+﻿namespace ERP.Repository.ViewModel.Inventories
 {
     public class InventoryViewModel
     {

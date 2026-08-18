@@ -20,6 +20,7 @@ namespace ERP.Repository.Model.Orders
         public string? PibkupAddress { get; set; }
         public string? DeliveryAddress { get; set; }
         public string? BundleCode { get; set; }
+        public decimal Amount { get; set; }
 
         public ICollection<Sale> Sales { get; set; } = [];
     }
