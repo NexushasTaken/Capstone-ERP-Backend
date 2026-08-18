@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Model.Orders;
+﻿using ERP.Repository.Model;
+using ERP.Repository.Model.Orders;
 
 namespace ERP.Repository.Model.Sales
 {

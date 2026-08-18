@@ -1,3 +1,4 @@
+using ERP.Repository.Model;
 using ERP.Repository.Model.Products;
 using ERP.Repository.Model.Sales;
 

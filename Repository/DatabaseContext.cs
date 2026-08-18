@@ -61,42 +61,42 @@ namespace ERP.Repository
 
             #region Inventory
             modelBuilder.Entity<Inventory>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             modelBuilder.Entity<InventoryStatus>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             modelBuilder.Entity<VelocityStatus>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             modelBuilder.Entity<InventoryTransaction>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             modelBuilder.Entity<Warehouse>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             modelBuilder.Entity<DamagedInventory>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             modelBuilder.Entity<InventoryLabel>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             #endregion
 
             #region Orders
             modelBuilder.Entity<Order>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             modelBuilder.Entity<OrderType>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             modelBuilder.Entity<OrderStatus>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             modelBuilder.Entity<DeliveryDriver>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             #endregion
 
             #region Products
             modelBuilder.Entity<Product>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             modelBuilder.Entity<Category>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             #endregion
 
             #region Sales
             modelBuilder.Entity<Sale>()
-                .Property(p => p.Id);
+                .HasKey(p => p.Id);
             #endregion
 
             #endregion
@@ -130,7 +130,8 @@ namespace ERP.Repository
             modelBuilder.Entity<Inventory>()
                 .HasOne(i => i.Warehouse)
                 .WithMany(w => w.Inventory)
-                .HasForeignKey(i => i.WarehouseId);
+                .HasForeignKey(i => i.WarehouseId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Inventory>()
                 .HasOne(i => i.Product)

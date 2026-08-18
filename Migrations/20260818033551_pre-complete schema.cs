@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ERP.Migrations
 {
     /// <inheritdoc />
-    public partial class addprecompleteschema : Migration
+    public partial class precompleteschema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -220,7 +220,7 @@ namespace ERP.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Price = table.Column<int>(type: "integer", nullable: false),
                     Created_By = table.Column<int>(type: "integer", nullable: true),
@@ -238,8 +238,7 @@ namespace ERP.Migrations
                         name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -288,7 +287,7 @@ namespace ERP.Migrations
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     StatusId = table.Column<int>(type: "integer", nullable: false),
                     VelocityStatusId = table.Column<int>(type: "integer", nullable: false),
-                    WarehouseId = table.Column<int>(type: "integer", nullable: false),
+                    WarehouseId = table.Column<int>(type: "integer", nullable: true),
                     DateArrived = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ReorderPoint = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<int>(type: "integer", nullable: false),
@@ -326,7 +325,7 @@ namespace ERP.Migrations
                         column: x => x.WarehouseId,
                         principalTable: "Warehouses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -510,8 +509,7 @@ namespace ERP.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Inventories_StatusId",
                 table: "Inventories",
-                column: "StatusId",
-                unique: true);
+                column: "StatusId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Inventories_VelocityStatusId",

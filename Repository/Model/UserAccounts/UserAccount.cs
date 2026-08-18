@@ -1,4 +1,6 @@
-﻿namespace ERP.Repository.Model.UserAccounts
+﻿using ERP.Repository.Model;
+
+namespace ERP.Repository.Model.UserAccounts
 {
     public class UserAccount : BaseModel
     {

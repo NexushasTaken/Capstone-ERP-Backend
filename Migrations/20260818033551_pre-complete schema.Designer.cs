@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ERP.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260816210327_update status id to one-many")]
-    partial class updatestatusidtoonemany
+    [Migration("20260818033551_pre-complete schema")]
+    partial class precompleteschema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -99,9 +99,6 @@ namespace ERP.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("integer");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
@@ -123,7 +120,7 @@ namespace ERP.Migrations
                     b.Property<int>("VelocityStatusId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("WarehouseId")
+                    b.Property<int?>("WarehouseId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -565,7 +562,7 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
+                    b.Property<int?>("CategoryId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("Created_At")
@@ -851,8 +848,7 @@ namespace ERP.Migrations
                     b.HasOne("ERP.Repository.Model.Inventories.Warehouse", "Warehouse")
                         .WithMany("Inventory")
                         .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("InventoryStatus");
 
@@ -919,9 +915,7 @@ namespace ERP.Migrations
                 {
                     b.HasOne("ERP.Repository.Model.Products.Category", "Category")
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
                 });
