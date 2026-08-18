@@ -1,4 +1,4 @@
-﻿namespace ERP.Repository.Interface.Inventory
+﻿namespace ERP.Repository.Interface.Inventories
 {
     public interface IInventoryService
     {
