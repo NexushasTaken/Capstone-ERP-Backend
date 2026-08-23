@@ -26,7 +26,8 @@ namespace ERP.Repository.Services.Inventories
                 WarehouseId = i.WarehouseId,
                 WarehouseName = i.Warehouse.Name,
                 Status = i.InventoryStatus.Status,
-                DateArrived = i.DateArrived
+                DateArrived = i.DateArrived,
+                Created_At = i.Created_At
             });
 
             var result = new InventoryPageViewModel
