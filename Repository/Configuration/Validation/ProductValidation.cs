@@ -1,4 +1,4 @@
-﻿namespace ERP.Repository.Configuration.Validation.Product
+﻿namespace ERP.Repository.Configuration.Validation
 {
     public class ProductValidation
     {

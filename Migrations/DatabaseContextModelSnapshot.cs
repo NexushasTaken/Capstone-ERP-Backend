@@ -114,10 +114,10 @@ namespace ERP.Migrations
                     b.Property<int?>("Updated_By")
                         .HasColumnType("integer");
 
-                    b.Property<int>("VelocityStatusId")
+                    b.Property<int?>("VelocityStatusId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("WarehouseId")
+                    b.Property<int>("WarehouseId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -841,14 +841,13 @@ namespace ERP.Migrations
 
                     b.HasOne("ERP.Repository.Model.Inventories.VelocityStatus", "VelocityStatus")
                         .WithMany("Inventory")
-                        .HasForeignKey("VelocityStatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("VelocityStatusId");
 
                     b.HasOne("ERP.Repository.Model.Inventories.Warehouse", "Warehouse")
                         .WithMany("Inventory")
                         .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.Navigation("InventoryStatus");
 

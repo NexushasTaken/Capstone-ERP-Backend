@@ -1,4 +1,4 @@
-﻿namespace ERP.Repository.Configuration.Validation.Global
+﻿namespace ERP.Repository.Configuration.Validation
 {
     public class GlobalValidation
     {

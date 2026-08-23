@@ -1,10 +1,11 @@
 ﻿using ERP.Repository.Configuration.Exception_Extender;
-using ERP.Repository.Configuration.Validation.Global;
-using ERP.Repository.Configuration.Validation.Product;
+using ERP.Repository.Configuration.Helper;
+using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Products;
 using ERP.Repository.Model.Products;
 using ERP.Repository.ViewModel.Products;
+using System.ComponentModel;
 
 namespace ERP.Repository.Services.Products
 {
@@ -85,13 +86,14 @@ namespace ERP.Repository.Services.Products
                     Name = p.Name,
                     Price = p.Price,
                     CategoryName = p.Category?.Type,
-                    Created_At = p.Created_At
+                    Created_At = DateConverter.ConvertToPH(p.Created_At)
                 });
 
             var final = new ProductPageViewModel
             {
                 Products = product,
                 PageCount = (int)Math.Ceiling(count / (double)pageSize),
+                Rows = count
             };
 
             return final;
