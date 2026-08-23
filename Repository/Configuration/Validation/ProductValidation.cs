@@ -1,4 +1,7 @@
-﻿namespace ERP.Repository.Configuration.Validation
+﻿using ERP.Repository.Configuration.Exception_Extender;
+using ERP.Repository.ViewModel.Products;
+
+namespace ERP.Repository.Configuration.Validation
 {
     public class ProductValidation
     {
@@ -18,6 +21,51 @@
             }
         }
 
+        public static void CategoryUpdateValidation(CategoryUpdateViewModel category)
+        {
+            if(category.Id <= 0)
+            {
+                throw new BadRequest("Category is required");
+            }
+            if (string.IsNullOrWhiteSpace(category.Type))
+            {
+                throw new BadRequest("Category Type is required");
+            }
+        }
+
+        public static void ProductInsertValidation(ProductPostViewModel product)
+        {
+           
+            if (string.IsNullOrWhiteSpace(product.Name))
+            {
+                throw new BadRequest("Product Name is required");
+            }
+            if (product.Price <= 0)
+            {
+                throw new BadRequest("Product price must be greater than 0");
+            }
+            if(product.CategoryId <= 0)
+            {
+                throw new BadRequest("Category is required");
+            }
+        }
+        public static void ProductUpdateValidation(ProductUpdateViewModel product)
+        {
+
+            var pr = new ProductPostViewModel
+            {
+                CategoryId = product.CategoryId,
+                Price = product.Price,
+                Name = product.Name,
+            };
+
+            ProductInsertValidation(pr);
+
+            if (product.Id <= 0)
+            {
+                throw new BadRequest("Product is required");
+            }
+        }
 
     }
 }

@@ -67,6 +67,24 @@ namespace ERP.Repository.Services.Products
             await _product.SaveChanges();
         }
 
+        public async Task UpdateCategory(CategoryUpdateViewModel category)
+        {
+            ProductValidation.CategoryUpdateValidation(category);
+
+            var ct = await _category.GetCategoryByIdWithTracking(category.Id);
+
+            if(ct == null)
+            {
+                throw new NotFound("Category not found");
+            }
+
+            ct.Type = category.Type;
+            ct.Updated_At = DateTime.UtcNow;
+            await _category.SaveChanges();
+
+            return;
+        }
+
         #endregion
 
         #region Product
@@ -101,6 +119,8 @@ namespace ERP.Repository.Services.Products
 
         public async Task InsertProduct(ProductPostViewModel product)
         {
+            ProductValidation.ProductInsertValidation(product);
+
             var pr = new Product
             {
                 CategoryId = product.CategoryId,
@@ -119,13 +139,36 @@ namespace ERP.Repository.Services.Products
 
             if(product == null)
             {
-                throw new NotFound($"Product with ID {id} not found");
+                throw new NotFound($"Product not found");
             }
 
             product.IsActive = false;
             product.Deleted_At = DateTime.UtcNow;
 
             await _product.SaveChanges();
+
+            return;
+        }
+
+        public async Task UpdateProduct(ProductUpdateViewModel product)
+        {
+            ProductValidation.ProductUpdateValidation(product);
+
+            var pr = await _product.GetProductByIdWithTracking(product.Id);
+
+            if (pr == null)
+            {
+                throw new NotFound("Product not found");
+            }
+
+            pr.Name = product.Name.ToLower();
+            pr.Price = product.Price;
+            pr.CategoryId = product.CategoryId;
+            pr.Updated_At = DateTime.UtcNow;
+
+            await _product.SaveChanges();
+
+            return;
         }
 
         #endregion

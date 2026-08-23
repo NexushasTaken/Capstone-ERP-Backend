@@ -23,4 +23,8 @@
         public string? Name { get; set; }
         public decimal Price { get; set; }
     }
+    public class ProductUpdateViewModel : ProductPostViewModel
+    {
+        public int Id { get; set; }
+    }
 }

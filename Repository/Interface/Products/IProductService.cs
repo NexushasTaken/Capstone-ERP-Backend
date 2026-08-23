@@ -10,5 +10,7 @@ namespace ERP.Repository.Interface.Products
         Task DeleteCategory(int id);
         Task InsertProduct(ProductPostViewModel product);
         Task DeleteProduct(int id);
+        Task UpdateProduct(ProductUpdateViewModel product);
+        Task UpdateCategory(CategoryUpdateViewModel category);
     }
 }

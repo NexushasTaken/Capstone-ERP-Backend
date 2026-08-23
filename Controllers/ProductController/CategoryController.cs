@@ -1,5 +1,6 @@
 ﻿using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Products;
+using ERP.Repository.ViewModel.Products;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.Controllers.ProductController
@@ -25,12 +26,26 @@ namespace ERP.Controllers.ProductController
             return StatusCode(200, _response.Status(200, true, "Insert Successfully", null));
         }
 
+
+        /// <summary>
+        /// Delete category, Important Reminder!! Deleting a category will also delete products associated with it  
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             await _productService.DeleteCategory(id);
 
             return StatusCode(200, _response.Status(200, true, "Deleted Successfully", null));
+        }
+
+        [HttpPatch("patch")]
+        public async Task<IActionResult> UpdateCategory([FromBody] CategoryUpdateViewModel category)
+        {
+            await _productService.UpdateCategory(category);
+
+            return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
         }
     }
 }
