@@ -50,7 +50,7 @@ namespace ERP.Repository.Services.Inventories
                 existing.Quantity = inventory.Quantity;
                 existing.Updated_At = DateTime.UtcNow;
 
-                existing = ReorderRatio(existing);
+                existing.StatusId = ReorderRatio(existing.Quantity,existing.ReorderPoint);
 
                 await _inventory.SaveChanges();
 
@@ -69,10 +69,9 @@ namespace ERP.Repository.Services.Inventories
                 ProductId = inventory.ProductId,
                 ReorderPoint = inventory.ReorderPoint,
                 DateArrived = parsedDate,
+                StatusId = ReorderRatio(inventory.Quantity, inventory.ReorderPoint),
                 IsActive = true
             };
-
-            
 
             await _inventory.Save(inv);
 
@@ -121,31 +120,26 @@ namespace ERP.Repository.Services.Inventories
             existing.WarehouseId = inventory.WarehouseId;
             existing.ReorderPoint = inventory.ReorderPoint;
 
-            existing = ReorderRatio(existing);
+            existing.StatusId = ReorderRatio(existing.Quantity, existing.ReorderPoint);
 
             await _inventory.SaveChanges();
 
             return;
         }
 
-        private Inventory ReorderRatio(Inventory inv)
+        private int ReorderRatio(int quantity, int reorderPoint)
         {
-            double ratio = (double)inv.Quantity / inv.ReorderPoint;
+            double ratio = (double)quantity / reorderPoint;
 
             if (ratio >= 2.0)
             {
-                inv.StatusId = 2;
+                return 2;
             }
             else if (ratio >= 1.0)
             {
-                inv.StatusId = 3;
+                return 3;
             }
-            else
-            {
-                inv.StatusId = 1;
-            }
-
-            return inv;
+            return 1;
         }
     }
 }
