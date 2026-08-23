@@ -14,6 +14,7 @@
     {
         public IEnumerable<ProductViewModel> Products { get; set; } = [];
         public int PageCount { get; set; }
+        public int Rows { get; set; }
     }
 
     public class ProductPostViewModel

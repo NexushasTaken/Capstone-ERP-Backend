@@ -2,6 +2,7 @@
 using ERP.Repository.Interface.TokenManager;
 using ERP.Repository.Interface.UserAccounts;
 using ERP.Repository.ViewModel.UserAccount;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.Controllers.UserController
@@ -22,18 +23,16 @@ namespace ERP.Controllers.UserController
             return StatusCode(200, _response.Status(200, true, "Successfully Login", result));
         }
 
-
+        [Authorize]
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout()
         {
             if (HttpContext.Request.Cookies["AccessToken"] != null)
             {
                 HttpContext.Response.Cookies.Delete("AccessToken");
-
-                return StatusCode(200, _response.Status(200, true, "Successfully Logout", null));
             }
 
-            throw new UnauthorizedAccessException("Invalid Operations");
+            return StatusCode(200, _response.Status(200, true, "Successfully Logout"));
         }
     }
 }

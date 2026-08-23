@@ -2,17 +2,21 @@ using ERP.Middleware;
 using ERP.Repository;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Data;
+using ERP.Repository.Data.InventoryData;
 using ERP.Repository.Data.OrderData;
 using ERP.Repository.Data.ProductData;
 using ERP.Repository.Data.UserAccounts;
 using ERP.Repository.Interface.Data;
+using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Data.UserAccountData;
+using ERP.Repository.Interface.Inventories;
 using ERP.Repository.Interface.Orders;
 using ERP.Repository.Interface.Products;
 using ERP.Repository.Interface.TokenManager;
 using ERP.Repository.Interface.UserAccounts;
+using ERP.Repository.Services.Inventories;
 using ERP.Repository.Services.Orders;
 using ERP.Repository.Services.Products;
 using ERP.Repository.Services.TokenManager;
@@ -21,6 +25,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
@@ -52,6 +57,7 @@ namespace ERP
             builder.Services.AddScoped<IUserAccountService, UserAccountService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IInventoryService, InventoryService>();
             #endregion
 
             #region Data Services
@@ -60,6 +66,7 @@ namespace ERP
             builder.Services.AddScoped<ICategoryData, CategoryData>();
             builder.Services.AddScoped<IOrderData, OrderData>();
             builder.Services.AddScoped<IBaseData, BaseData>();
+            builder.Services.AddScoped<IInventoryData, InventoryData>();
             #endregion
 
             #endregion
@@ -82,8 +89,8 @@ namespace ERP
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidateLifetime = false,
-                    ValidateIssuerSigningKey = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
                     ValidIssuer = builder.Configuration["Jwt:Issuer"],
                     ValidAudience = builder.Configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
@@ -106,9 +113,14 @@ namespace ERP
             });
 
 
-                    builder.Services.AddDbContext<DatabaseContext>(context => context.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddDbContext<DatabaseContext>(context => context.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddControllers();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
 
             var app = builder.Build();
 
