@@ -170,11 +170,14 @@ namespace ERP.Repository.Services.Products
             return;
         }
 
-        public async Task<IEnumerable<ProductViewModel>> ProductWithNoCategory()
+        public async Task<ProductWithNoCategoryPageViewModel> ProductWithNoCategory(int page, int pageSize, string name)
         {
-            var products = await _product.GetProductsWithNoCategoryWithoutTracking();
+            GlobalValidation.PageValidation(page, pageSize);
+            var products = await _product.GetProductsWithNoCategoryWithoutTracking(page, pageSize, name.ToLower());
 
-            var result = products.Select(p => new ProductViewModel
+            var count = await _product.ProductWithNoCategoryTotalCountWithoutTracking(name);
+
+            var product = products.Select(p => new ProductViewModel
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -183,6 +186,13 @@ namespace ERP.Repository.Services.Products
                 CategoryName = "No Category",
                 Created_At = p.Created_At,
             });
+
+            var result = new ProductWithNoCategoryPageViewModel
+            {
+                Products = product,
+                PageCount = (int)Math.Ceiling(count / (double)pageSize),
+                Rows = count
+            };
 
             return result;
         }

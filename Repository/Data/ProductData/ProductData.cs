@@ -19,9 +19,9 @@ namespace ERP.Repository.Data.ProductData
             return products;
         }
 
-        public async Task<IEnumerable<Product>> GetProductsWithNoCategoryWithoutTracking()
+        public async Task<IEnumerable<Product>> GetProductsWithNoCategoryWithoutTracking(int page, int pageSize, string? name)
         {
-            var products = await BaseQuery<Product>(false).Where(i => i.CategoryId == null).ToListAsync();
+            var products = await BaseQuery<Product>(false).Where(p => p.CategoryId == null && p.Name.Contains(name)).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return products;
         }
@@ -39,5 +39,12 @@ namespace ERP.Repository.Data.ProductData
 
             return count;
         }
+
+        public async Task<int> ProductWithNoCategoryTotalCountWithoutTracking(string? name)
+        {
+            var count = await BaseQuery<Product>(false).Where(p => p.CategoryId == null && p.Name.Contains(name)).CountAsync();
+
+            return count;
+        } 
     }
 }

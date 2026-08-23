@@ -45,11 +45,11 @@ namespace ERP.Controllers.ProductController
         }
 
         [HttpGet("productWithNoCategory")]
-        public async Task<IActionResult> ProductWithNoCategory()
+        public async Task<IActionResult> ProductWithNoCategory([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "")
         {
-            var products = await _productService.ProductWithNoCategory();
+            var products = await _productService.ProductWithNoCategory(page, pageSize, name);
 
-            return StatusCode(200, _response.Status(200, true, "Successfully Retroeved Product", products));
+            return StatusCode(200, _response.Status(200, true, "Successfully Retrieved Product", products));
         }
     }
 }
