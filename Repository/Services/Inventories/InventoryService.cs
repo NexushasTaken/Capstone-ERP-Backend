@@ -70,7 +70,8 @@ namespace ERP.Repository.Services.Inventories
                 ReorderPoint = inventory.ReorderPoint,
                 DateArrived = parsedDate,
                 StatusId = ReorderRatio(inventory.Quantity, inventory.ReorderPoint),
-                IsActive = true
+                IsActive = true,
+                Created_At = DateTime.UtcNow,
             };
 
             await _inventory.Save(inv);
