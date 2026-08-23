@@ -22,6 +22,7 @@
         public string? WarehouseName { get; set; }
         public string? Status { get; set; }
         public DateTime DateArrived { get; set; }
+        public DateTime? Created_At { get; set; }
     }
 
     public class InventoryPageViewModel
