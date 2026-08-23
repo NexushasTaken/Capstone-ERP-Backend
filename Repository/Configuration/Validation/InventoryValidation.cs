@@ -32,5 +32,25 @@ namespace ERP.Repository.Configuration.Validation
                 throw new BadRequest("Invalid Date");
             }
         }
+
+        public static void ValidateUpdate(InventoryUpdateViewModel inventory)
+        {
+            if (string.IsNullOrWhiteSpace(inventory.Name))
+            {
+                throw new BadRequest("Inventory Item name is required");
+            }
+            if (inventory.ProductId <= 0)
+            {
+                throw new BadRequest("Product is required");
+            }
+            if (inventory.WarehouseId <= 0)
+            {
+                throw new BadRequest("Warehouse is required");
+            }
+            if(inventory.Id <= 0)
+            {
+                throw new BadRequest("Inventory Item is required");
+            }
+        }
     }
 }

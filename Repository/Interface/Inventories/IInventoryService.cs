@@ -21,6 +21,6 @@ namespace ERP.Repository.Interface.Inventories
         Task InsertItem(InventoryPostViewModel inventory, int id);
         Task DeleteItem(int id);
         Task<int> StatusInventoryCount(int id);
-        //Task UpdateInventory();
+        Task UpdateInventory(InventoryUpdateViewModel inventory);
     }
 }
