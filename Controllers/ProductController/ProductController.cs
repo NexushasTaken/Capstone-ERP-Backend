@@ -43,5 +43,13 @@ namespace ERP.Controllers.ProductController
 
             return StatusCode(200, _response.Status(200, true, "Successfully Update Product", null));
         }
+
+        [HttpGet("productWithNoCategory")]
+        public async Task<IActionResult> ProductWithNoCategory()
+        {
+            var products = await _productService.ProductWithNoCategory();
+
+            return StatusCode(200, _response.Status(200, true, "Successfully Retroeved Product", products));
+        }
     }
 }

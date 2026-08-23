@@ -19,6 +19,13 @@ namespace ERP.Repository.Data.ProductData
             return products;
         }
 
+        public async Task<IEnumerable<Product>> GetProductsWithNoCategoryWithoutTracking()
+        {
+            var products = await BaseQuery<Product>(false).Where(i => i.CategoryId == null).ToListAsync();
+
+            return products;
+        }
+
         public async Task<Product> GetProductByIdWithTracking(int id)
         {
             var product = await BaseQuery<Product>(true).FirstOrDefaultAsync(p => p.Id == id && p.IsActive == true);

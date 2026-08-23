@@ -27,11 +27,6 @@ namespace ERP.Controllers.ProductController
         }
 
 
-        /// <summary>
-        /// Delete category, Important Reminder!! Deleting a category will also delete products associated with it  
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteCategory(int id)
         {

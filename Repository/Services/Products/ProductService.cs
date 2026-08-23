@@ -56,12 +56,11 @@ namespace ERP.Repository.Services.Products
 
             await _category.SaveChanges();
 
-
             var categoryReferences = await _product.GetAllProductReferenceByCategoryWithTracking(id);
 
             foreach (var reference in categoryReferences)
             {
-                reference.IsActive = false;
+                reference.CategoryId = null;
             }
 
             await _product.SaveChanges();
@@ -169,6 +168,23 @@ namespace ERP.Repository.Services.Products
             await _product.SaveChanges();
 
             return;
+        }
+
+        public async Task<IEnumerable<ProductViewModel>> ProductWithNoCategory()
+        {
+            var products = await _product.GetProductsWithNoCategoryWithoutTracking();
+
+            var result = products.Select(p => new ProductViewModel
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                CategoryId = null,
+                CategoryName = "No Category",
+                Created_At = p.Created_At,
+            });
+
+            return result;
         }
 
         #endregion
