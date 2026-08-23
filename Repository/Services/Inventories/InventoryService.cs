@@ -43,12 +43,14 @@ namespace ERP.Repository.Services.Inventories
         {
             InventoryValidation.ValidateItem(inventory);
 
-            if(id >= 0)
+            if(id > 0)
             {
                 var existing = await _inventory.GetInventoryWithTracking(id);
 
                 existing.Quantity = inventory.Quantity;
                 existing.Updated_At = DateTime.UtcNow;
+
+                existing = ReorderRatio(existing);
 
                 await _inventory.SaveChanges();
 
@@ -70,18 +72,7 @@ namespace ERP.Repository.Services.Inventories
                 IsActive = true
             };
 
-            double ratio = (double)inv.Quantity / inv.ReorderPoint;
-
-            if(ratio >= 2.0)
-            {
-                inv.StatusId = 2;
-            }else if (ratio >= 1.0)
-            {
-                inv.StatusId = 3;
-            }else
-            {
-                inv.StatusId = 1;
-            }
+            
 
             await _inventory.Save(inv);
 
@@ -102,7 +93,6 @@ namespace ERP.Repository.Services.Inventories
             await _inventory.SaveChanges();
         }
 
-        
         public async Task<int> StatusInventoryCount(int id)
         {
             if(id <= 0)
@@ -113,6 +103,49 @@ namespace ERP.Repository.Services.Inventories
             var count = await _inventory.GetStatusCountInventory(id);
 
             return count;
+        }
+
+        public async Task UpdateInventory(InventoryUpdateViewModel inventory)
+        {
+            InventoryValidation.ValidateUpdate(inventory);
+
+            var existing = await _inventory.GetInventoryWithTracking(inventory.Id);
+
+            if (existing == null)
+            {
+                throw new NotFound("Inventory Item Not Found");
+            }
+
+            existing.Name = inventory.Name;
+            existing.ProductId = inventory.ProductId;
+            existing.WarehouseId = inventory.WarehouseId;
+            existing.ReorderPoint = inventory.ReorderPoint;
+
+            existing = ReorderRatio(existing);
+
+            await _inventory.SaveChanges();
+
+            return;
+        }
+
+        private Inventory ReorderRatio(Inventory inv)
+        {
+            double ratio = (double)inv.Quantity / inv.ReorderPoint;
+
+            if (ratio >= 2.0)
+            {
+                inv.StatusId = 2;
+            }
+            else if (ratio >= 1.0)
+            {
+                inv.StatusId = 3;
+            }
+            else
+            {
+                inv.StatusId = 1;
+            }
+
+            return inv;
         }
     }
 }

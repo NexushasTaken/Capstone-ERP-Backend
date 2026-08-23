@@ -60,5 +60,13 @@ namespace ERP.Controllers.InventoryController
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", count));
         }
+
+        [HttpPatch("patch")]
+        public async Task<IActionResult> UpdateInventory([FromBody] InventoryUpdateViewModel inventory)
+        {
+            await _inventory.UpdateInventory(inventory);
+
+            return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
+        }
     }
 }
