@@ -45,6 +45,8 @@
     public class InventoryUpdateViewModel
     {
         public string? Name { get; set; }
+        public int ProductId { get; set; }
+        public int WarehouseId { get; set; }
         public int ReorderPoint { get; set; }
     }
 }

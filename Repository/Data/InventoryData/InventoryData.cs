@@ -51,7 +51,7 @@ namespace ERP.Repository.Data.InventoryData
             }
             else
             {
-                query = query.OrderBy(i => i.Id);
+                query = query.OrderByDescending(i => i.Created_At);
             }
 
             return query;
