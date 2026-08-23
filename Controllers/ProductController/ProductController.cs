@@ -35,5 +35,13 @@ namespace ERP.Controllers.ProductController
 
             return StatusCode(200, _response.Status(200, true, "Successfully Deleted Product", null));
         }
+
+        [HttpPatch("patch")]
+        public async Task<IActionResult> UpdateProduct([FromBody] ProductUpdateViewModel product)
+        {
+            await _productService.UpdateProduct(product);
+
+            return StatusCode(200, _response.Status(200, true, "Successfully Update Product", null));
+        }
     }
 }
