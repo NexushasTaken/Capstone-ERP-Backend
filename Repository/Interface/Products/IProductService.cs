@@ -12,5 +12,6 @@ namespace ERP.Repository.Interface.Products
         Task DeleteProduct(int id);
         Task UpdateProduct(ProductUpdateViewModel product);
         Task UpdateCategory(CategoryUpdateViewModel category);
+        Task<IEnumerable<ProductViewModel>> ProductWithNoCategory();
     }
 }
