@@ -51,4 +51,18 @@
         public int WarehouseId { get; set; }
         public int ReorderPoint { get; set; }
     }
+
+    public class InventoryDamageViewModel
+    {
+        public int Id { get; set; }
+        public int Quantity { get; set; }
+        public string? Reason { get; set; }
+    }
+
+    public class InventoryTransactionViewModle
+    {
+        public int Id { get; set; }
+        public int Quantity { get; set; }
+        public int Label { get; set; }
+    }
 }

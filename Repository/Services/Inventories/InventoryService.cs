@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Configuration.Exception_Extender;
+﻿using ERP.Controllers.InventoryController;
+using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Interface.Inventories;
@@ -42,21 +43,30 @@ namespace ERP.Repository.Services.Inventories
 
         public async Task InsertItem(InventoryPostViewModel inventory, int id)
         {
-            InventoryValidation.ValidateItem(inventory);
-
-            if(id > 0)
+            if (id > 0)
             {
                 var existing = await _inventory.GetInventoryWithTracking(id);
 
-                existing.Quantity = inventory.Quantity;
+                existing.Quantity += inventory.Quantity;
                 existing.Updated_At = DateTime.UtcNow;
 
-                existing.StatusId = ReorderRatio(existing.Quantity,existing.ReorderPoint);
+                existing.StatusId = ReorderRatio(existing.Quantity, existing.ReorderPoint);
 
                 await _inventory.SaveChanges();
 
+                var transaction = new InventoryTransactionViewModle
+                {
+                    Id = existing.Id,
+                    Quantity =+ inventory.Quantity,
+                    Label = 3
+                };
+
+                await InventoryTransaction(transaction);
+
                 return;
             }
+
+            InventoryValidation.ValidateItem(inventory);
 
             DateTime.TryParse(inventory.DateArrived, out DateTime parsedDate);
 
@@ -142,6 +152,72 @@ namespace ERP.Repository.Services.Inventories
                 return 3;
             }
             return 1;
+        }
+
+        public async Task MarkAsDamaged(InventoryDamageViewModel damaged)
+        {
+            InventoryValidation.MarkAsDamagedValidation(damaged);
+
+            var inventory = await _inventory.GetInventoryWithTracking(damaged.Id);
+
+            if (inventory == null)
+            {
+                throw new NotFound("Inventory item not found");
+            }
+
+            if(inventory.Quantity < damaged.Quantity)
+            {
+                throw new BadRequest("Quantity is greater than what you have in stocks");
+            }
+
+            var sub = inventory.Quantity - damaged.Quantity;
+
+            inventory.Quantity -= sub;
+            inventory.Updated_At = DateTime.UtcNow;
+            inventory.StatusId = ReorderRatio(sub, inventory.ReorderPoint);
+
+
+            await _inventory.SaveChanges();
+
+            var damn = new DamagedInventory
+            {
+                InventoryId = inventory.Id,
+                Reason = damaged.Reason,
+                Quantity = damaged.Quantity,
+                Created_At = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            await _inventory.Save(damn);
+
+            var transaction = new InventoryTransactionViewModle
+            {
+                Id = inventory.Id,
+                Quantity = -damaged.Quantity,
+                Label = 2
+            };
+
+            await InventoryTransaction(transaction);
+
+            return;
+        }
+
+        public async Task InventoryTransaction(InventoryTransactionViewModle transaction)
+        {
+            InventoryValidation.InventoryTransactionValidation(transaction);
+
+            var transac = new InventoryTransaction
+            {
+                InventoryId = transaction.Id,
+                QuantityChanged = transaction.Quantity,
+                InventoryLabelId = transaction.Label,
+                Created_At = DateTime.UtcNow,
+                IsActive = true 
+            };
+
+            await _inventory.Save(transac);
+
+            return;
         }
     }
 }

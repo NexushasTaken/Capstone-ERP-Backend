@@ -22,5 +22,7 @@ namespace ERP.Repository.Interface.Inventories
         Task DeleteItem(int id);
         Task<int> StatusInventoryCount(int id);
         Task UpdateInventory(InventoryUpdateViewModel inventory);
+        Task MarkAsDamaged(InventoryDamageViewModel damaged);
+        Task InventoryTransaction(InventoryTransactionViewModle transaction);
     }
 }

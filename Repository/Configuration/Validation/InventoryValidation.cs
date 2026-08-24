@@ -52,5 +52,37 @@ namespace ERP.Repository.Configuration.Validation
                 throw new BadRequest("Inventory Item is required");
             }
         }
+
+        public static void MarkAsDamagedValidation(InventoryDamageViewModel damaged)
+        {
+            if (damaged.Id <= 0)
+            {
+                throw new BadRequest("Inventory item is required");
+            }
+            if (damaged.Quantity <= 0)
+            {
+                throw new BadRequest("Please add quantity to mark as damage");
+            }
+            if (string.IsNullOrWhiteSpace(damaged.Reason))
+            {
+                throw new BadRequest("Please add a reason why you want to mark it as damage");
+            }
+        }
+
+        public static void InventoryTransactionValidation(InventoryTransactionViewModle transaction)
+        {
+            if (transaction.Id <= 0)
+            {
+                throw new BadRequest("Inventory item is required");
+            }
+            if (transaction.Quantity == 0)
+            {
+                throw new BadRequest("Please add quantity to begin a transaction");
+            }
+            if (transaction.Label <= 0)
+            {
+                throw new BadRequest("Transaction label is required");
+            }
+        }
     }
 }

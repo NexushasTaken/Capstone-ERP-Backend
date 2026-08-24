@@ -30,7 +30,7 @@ namespace ERP.Controllers.InventoryController
         /// Insert new inventory item
         /// </summary>
         /// <param name="inventory"></param>
-        /// <param name="id">Inventory Id, if you pass any, means we will just add the quantity to the existing item</param>
+        /// <param name="id">Inventory Id, if you pass any, means we will just add the quantity to the existing item. This required only the quantity to be filled in payload :)</param>
         /// <returns></returns>
         [HttpPost("insert")]
         public async Task<IActionResult> Insert([FromBody] InventoryPostViewModel inventory, [FromQuery] int id = 0)
@@ -65,6 +65,14 @@ namespace ERP.Controllers.InventoryController
         public async Task<IActionResult> UpdateInventory([FromBody] InventoryUpdateViewModel inventory)
         {
             await _inventory.UpdateInventory(inventory);
+
+            return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
+        }
+
+        [HttpPatch("damage")]
+        public async Task<IActionResult> MarkAsDamaged(InventoryDamageViewModel damaged)
+        {
+            await _inventory.MarkAsDamaged(damaged);
 
             return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
         }
