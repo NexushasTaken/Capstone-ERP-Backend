@@ -117,7 +117,7 @@ namespace ERP.Migrations
                     b.Property<int?>("VelocityStatusId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("WarehouseId")
+                    b.Property<int?>("WarehouseId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -301,6 +301,9 @@ namespace ERP.Migrations
 
                     b.Property<string>("Address")
                         .HasColumnType("text");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Created_At")
                         .HasColumnType("timestamp with time zone");
@@ -846,8 +849,7 @@ namespace ERP.Migrations
                     b.HasOne("ERP.Repository.Model.Inventories.Warehouse", "Warehouse")
                         .WithMany("Inventory")
                         .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("InventoryStatus");
 

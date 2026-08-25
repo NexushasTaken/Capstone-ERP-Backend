@@ -12,12 +12,28 @@ namespace ERP.Controllers.ProductController
     public class ProductController(IProductService _productService, ResponseHelper _response) : ControllerBase
     {
         
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="name"></param>
+        /// <param name="categoryPresent">0 to include only the products that has category otherwise 1</param>
+        /// <returns></returns>
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllProduct([FromQuery]int page = 1, [FromQuery]int pageSize = 10, [FromQuery]string? name = "")
+        public async Task<IActionResult> GetAllProduct([FromQuery]int page = 1, [FromQuery]int pageSize = 10, [FromQuery]string? name = "", [FromQuery] int categoryPresent = 0)
         {
-            var products = await _productService.GetProducts(page, pageSize, name);
+            var products = await _productService.GetProducts(page, pageSize, name, categoryPresent);
 
-            return StatusCode(200, _response.Status(200, true, "Successfully Retrieved Product", products));
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", products));
+        }
+
+        [HttpGet("product/nocategoryCount")]
+        public async Task<IActionResult> GetProductWithNoCategoryCount()
+        {
+            var count = await _productService.ProductWithNoCategoryCount();
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", count));
         }
 
         [HttpPost("insert")]
@@ -25,15 +41,7 @@ namespace ERP.Controllers.ProductController
         {
             await _productService.InsertProduct(product);
 
-            return StatusCode(200, _response.Status(200, true, "Successfully Insert Product", null));
-        }
-
-        [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteProduct([FromQuery]int id)
-        {
-            await _productService.DeleteProduct(id);
-
-            return StatusCode(200, _response.Status(200, true, "Successfully Deleted Product", null));
+            return StatusCode(200, _response.Status(200, true, "Added Successfully", null));
         }
 
         [HttpPatch("patch")]
@@ -41,15 +49,16 @@ namespace ERP.Controllers.ProductController
         {
             await _productService.UpdateProduct(product);
 
-            return StatusCode(200, _response.Status(200, true, "Successfully Update Product", null));
+            return StatusCode(200, _response.Status(200, true, "Updated ", null));
         }
 
-        [HttpGet("productWithNoCategory")]
-        public async Task<IActionResult> ProductWithNoCategory([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "")
-        {
-            var products = await _productService.ProductWithNoCategory(page, pageSize, name);
 
-            return StatusCode(200, _response.Status(200, true, "Successfully Retrieved Product", products));
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteProduct([FromQuery] int id)
+        {
+            await _productService.DeleteProduct(id);
+
+            return StatusCode(200, _response.Status(200, true, "Deleted Successfully", null));
         }
     }
 }

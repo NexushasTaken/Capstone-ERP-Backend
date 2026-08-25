@@ -88,13 +88,13 @@ namespace ERP.Repository.Services.Products
 
         #region Product
 
-        public async Task<ProductPageViewModel> GetProducts(int page, int pageSize, string? name)
+        public async Task<ProductPageViewModel> GetProducts(int page, int pageSize, string? name, int categoryPresent)
         {
             GlobalValidation.PageValidation(page, pageSize);
 
-            var products = await _product.GetAllProductWithoutTracking(page, pageSize, name.ToLower());
+            var products = await _product.GetAllProductWithoutTracking(page, pageSize, name.ToLower(), categoryPresent);
 
-            var count = await _product.ProductTotalCountWithoutTracking(name.ToLower());
+            var count = await _product.ProductTotalCountWithoutTracking(name.ToLower(), categoryPresent);
 
             var product = products.Select(p => new ProductViewModel
                 {
@@ -170,31 +170,11 @@ namespace ERP.Repository.Services.Products
             return;
         }
 
-        public async Task<ProductWithNoCategoryPageViewModel> ProductWithNoCategory(int page, int pageSize, string name)
+        public async Task<int> ProductWithNoCategoryCount()
         {
-            GlobalValidation.PageValidation(page, pageSize);
-            var products = await _product.GetProductsWithNoCategoryWithoutTracking(page, pageSize, name.ToLower());
+            var count = await _product.ProductWithNoCategoryTotalCountWithoutTracking();
 
-            var count = await _product.ProductWithNoCategoryTotalCountWithoutTracking(name);
-
-            var product = products.Select(p => new ProductViewModel
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
-                CategoryId = null,
-                CategoryName = "No Category",
-                Created_At = p.Created_At,
-            });
-
-            var result = new ProductWithNoCategoryPageViewModel
-            {
-                Products = product,
-                PageCount = (int)Math.Ceiling(count / (double)pageSize),
-                Rows = count
-            };
-
-            return result;
+            return count;
         }
 
         #endregion

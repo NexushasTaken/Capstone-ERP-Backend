@@ -11,16 +11,21 @@ namespace ERP.Repository.Data.InventoryData
 
         #region Inventory
 
-        public IQueryable<Inventory> FilteringQuery(IQueryable<Inventory> query, string searchString, int filter, int statusId)
+        public IQueryable<Inventory> FilteringQuery(IQueryable<Inventory> query, string name, int filter, int statusId, int wareHousePresent)
         {
-            if (!string.IsNullOrWhiteSpace(searchString))
+            if (!string.IsNullOrWhiteSpace(name))
             {
-                query = query.Where(i => i.Name.Contains(searchString));
+                query = query.Where(i => i.Name.Contains(name));
             }
 
             if(statusId > 0)
             {
                 query = query.Where(i => i.StatusId == statusId);
+            }
+
+            if(wareHousePresent == 1)
+            {
+                query = query.Where(i => i.WarehouseId == null);
             }
 
             if (Enum.IsDefined(typeof(InventoryFilter), filter))
@@ -58,22 +63,22 @@ namespace ERP.Repository.Data.InventoryData
         }
 
 
-        public async Task<IEnumerable<Inventory>> GetInventoriesWithoutTracking(int page, int pageSize, string? searchString, int filter, int statusId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<Inventory>> GetInventoriesWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int wareHousePresent, CancellationToken cancellationToken)
         {
             var inventories = BaseQuery<Inventory>(false).Where(i => i.IsActive == true);
 
-            inventories = FilteringQuery(inventories,searchString,filter,statusId);
+            inventories = FilteringQuery(inventories,name,filter,statusId,wareHousePresent);
 
             var result = await inventories.Include(i => i.Warehouse).Include(i => i.InventoryStatus).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
             return result;
         }
 
-        public async Task<int> InventoryCount(string searchString, int filter, int statusId)
+        public async Task<int> InventoryCount(string name, int filter, int statusId, int wareHousePresent)
         {
             var count = BaseQuery<Inventory>(false).Where(i => i.IsActive == true);
 
-            count = FilteringQuery(count,searchString,filter, statusId);
+            count = FilteringQuery(count,name,filter, statusId, wareHousePresent);
 
             var result = await count.CountAsync();
 
@@ -87,6 +92,20 @@ namespace ERP.Repository.Data.InventoryData
             return inventory;
         }
 
+        public async Task<ICollection<Inventory>> GetInventoryWithWareHouseId(int id)
+        {
+            var inventory = await BaseQuery<Inventory>(true).Where(i => i.IsActive == true && i.WarehouseId == id).ToListAsync();
+
+            return inventory;
+        }
+
+        public async Task<int> GetInventoryWithNoWareHouseCountWithoutTracking()
+        {
+            var count = await BaseQuery<Inventory>(false).Where(i => i.WarehouseId == null && i.IsActive == true).CountAsync();
+
+            return count;
+        }
+
         public async Task<int> GetStatusCountInventory(int statudId)
         {
             var count = await BaseQuery<Inventory>(false).Where(i => i.StatusId == statudId).CountAsync();
@@ -98,6 +117,36 @@ namespace ERP.Repository.Data.InventoryData
 
         #region Damaged Inventory
 
+        #endregion
+
+        #region Warehouse
+        public async Task<int> GetIndividualWarehouseCurrentCapacityWithoutTracking(int id)
+        {
+            var capacity = await BaseQuery<Inventory>(false).Where(w => w.WarehouseId == id && w.IsActive == true).CountAsync();
+
+            return capacity;
+        }
+
+        public async Task<List<Warehouse>> GetWarehousesWithoutTracking()
+        {
+            var wareHouse = await BaseQuery<Warehouse>(false).Where(w => w.IsActive == true).ToListAsync();
+
+            return wareHouse;
+        }
+
+        public async Task<int> GetIndividualWarehousesMaxCapacityWithoutTracking(int id)
+        {
+            var wareHouse = await BaseQuery<Warehouse>(false).FirstOrDefaultAsync(w => w.Id == id && w.IsActive == true);
+
+            return wareHouse.Capacity;
+        }
+
+        public async Task<Warehouse> GetIndividualWareHouseWithTracking(int id)
+        {
+            var wareHouse = await BaseQuery<Warehouse>(true).FirstOrDefaultAsync(w => w.Id == id && w.IsActive == true);
+
+            return wareHouse;
+        }
         #endregion
     }
 }

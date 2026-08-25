@@ -18,7 +18,7 @@
         public string? Name { get; set; }
         public int Quantity { get; set; }
         public int ReorderPoint { get; set; }
-        public int WarehouseId { get; set; }
+        public int? WarehouseId { get; set; }
         public string? WarehouseName { get; set; }
         public string? Status { get; set; }
         public DateTime DateArrived { get; set; }
@@ -64,5 +64,22 @@
         public int Id { get; set; }
         public int Quantity { get; set; }
         public int Label { get; set; }
+    }
+
+    public class InventoryWareHousePostViewModel
+    {
+        public string? Name { get; set; }
+        public string? Address { get; set; }
+        public int Capicity { get; set; }
+    }
+
+    public class InventoryWareHouseUpdateViewModel : InventoryWareHousePostViewModel
+    {
+        public int Id { get; set; }
+    }
+
+    public class InventoryWareHouseViewModel : InventoryWareHouseUpdateViewModel
+    {
+        public int Stocks { get; set; }
     }
 }
