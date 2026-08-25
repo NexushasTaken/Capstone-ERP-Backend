@@ -9,10 +9,11 @@ namespace ERP.Repository.Interface.Inventories
         /// </summary>
         /// <param name="page">Page you will look into</param>
         /// <param name="pageSize">Size of the result</param>
-        /// <param name="searchString">Search for Name in the inventory</param>
+        /// <param name="name">Search for Name in the inventory</param>
         /// <param name="filter">filtering method, 1 - 7 value</param>
         /// <returns></returns>
-        Task<InventoryPageViewModel> GetInventories(int page, int pageSize, string searchString, int filter,int statusId, CancellationToken cancellation);
+        Task<InventoryPageViewModel> GetInventories(int page, int pageSize, string name, int filter,int statusId, int wareHousePresent, CancellationToken cancellation);
+        Task<int> InventoriesWithoutWareHouseCount();
         /// <summary>
         /// Insert new item in inventory
         /// </summary>
@@ -24,5 +25,9 @@ namespace ERP.Repository.Interface.Inventories
         Task UpdateInventory(InventoryUpdateViewModel inventory);
         Task MarkAsDamaged(InventoryDamageViewModel damaged);
         Task InventoryTransaction(InventoryTransactionViewModle transaction);
+        Task<IEnumerable<InventoryWareHouseViewModel>> GetWarehouses();
+        Task NewWareHouse(InventoryWareHousePostViewModel wareHouse);
+        Task UpdateWareHouse(InventoryWareHouseUpdateViewModel wareHouse);
+        Task DeleteWareHouse(int id);
     }
 }

@@ -84,5 +84,38 @@ namespace ERP.Repository.Configuration.Validation
                 throw new BadRequest("Transaction label is required");
             }
         }
+
+        public static void InventoryWareHouseValidation(InventoryWareHousePostViewModel wareHouse)
+        {
+            if (string.IsNullOrWhiteSpace(wareHouse.Name))
+            {
+                throw new BadRequest("Warehouse Name is required");
+            }
+            if (string.IsNullOrWhiteSpace(wareHouse.Address))
+            {
+                throw new BadRequest("Warehouse Address is required");
+            }
+            if (wareHouse.Capicity <= 0)
+            {
+                throw new BadRequest("Warehouse Capacity is required");
+            }
+        }
+
+        public static void InventoryWareHouseUpdateValidation(InventoryWareHouseUpdateViewModel wareHouse)
+        {
+            var post = new InventoryWareHousePostViewModel
+            {
+                Name = wareHouse.Name,
+                Address = wareHouse.Address,
+                Capicity = wareHouse.Capicity
+            };
+
+            InventoryWareHouseValidation(post);
+
+            if (wareHouse.Id <= 0)
+            {
+                throw new BadRequest("Warehouse is required");
+            }
+        }
     }
 }

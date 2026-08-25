@@ -4,12 +4,11 @@ namespace ERP.Repository.Interface.Data.ProductData
 {
     public interface IProductData : IBaseData
     {
-        Task<IEnumerable<Product>> GetAllProductWithoutTracking(int page, int pageSize, string name);
+        Task<IEnumerable<Product>> GetAllProductWithoutTracking(int page, int pageSize, string name, int categoryPresent);
         Task<ICollection<Product>> GetAllProductReferenceByCategoryWithTracking(int categoryId);
         Task<Product> GetProductByIdWithTracking(int id);
-        Task<int> ProductTotalCountWithoutTracking(string name);
-        Task<IEnumerable<Product>> GetProductsWithNoCategoryWithoutTracking(int page, int pageSize, string? name);
-        Task<int> ProductWithNoCategoryTotalCountWithoutTracking(string? name);
+        Task<int> ProductTotalCountWithoutTracking(string name, int categoryPresent);
+        Task<int> ProductWithNoCategoryTotalCountWithoutTracking();
     }
 }
  

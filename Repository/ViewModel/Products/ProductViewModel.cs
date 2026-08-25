@@ -27,11 +27,4 @@
     {
         public int Id { get; set; }
     }
-
-    public class ProductWithNoCategoryPageViewModel
-    {
-        public IEnumerable<ProductViewModel> Products { get; set; } = [];
-        public int PageCount { get; set; }
-        public int Rows { get; set; }
-    }
 }

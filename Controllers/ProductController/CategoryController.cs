@@ -26,6 +26,14 @@ namespace ERP.Controllers.ProductController
             return StatusCode(200, _response.Status(200, true, "Insert Successfully", null));
         }
 
+        [HttpPatch("patch")]
+        public async Task<IActionResult> UpdateCategory([FromBody] CategoryUpdateViewModel category)
+        {
+            await _productService.UpdateCategory(category);
+
+            return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
+        }
+
 
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteCategory(int id)
@@ -33,14 +41,6 @@ namespace ERP.Controllers.ProductController
             await _productService.DeleteCategory(id);
 
             return StatusCode(200, _response.Status(200, true, "Deleted Successfully", null));
-        }
-
-        [HttpPatch("patch")]
-        public async Task<IActionResult> UpdateCategory([FromBody] CategoryUpdateViewModel category)
-        {
-            await _productService.UpdateCategory(category);
-
-            return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
         }
     }
 }

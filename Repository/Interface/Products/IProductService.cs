@@ -6,12 +6,12 @@ namespace ERP.Repository.Interface.Products
     {
         Task<IEnumerable<CategoryViewModel>> GetCategories();
         Task InsertCategory(string categoryName);
-        Task<ProductPageViewModel> GetProducts(int page, int pageSize, string? name);
+        Task<ProductPageViewModel> GetProducts(int page, int pageSize, string? name, int categoryPresent);
         Task DeleteCategory(int id);
         Task InsertProduct(ProductPostViewModel product);
         Task DeleteProduct(int id);
         Task UpdateProduct(ProductUpdateViewModel product);
         Task UpdateCategory(CategoryUpdateViewModel category);
-        Task<ProductWithNoCategoryPageViewModel> ProductWithNoCategory(int page, int pageSize, string? name);
+        Task<int> ProductWithNoCategoryCount();
     }
 }

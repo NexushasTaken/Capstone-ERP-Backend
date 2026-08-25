@@ -6,22 +6,31 @@ namespace ERP.Repository.Data.ProductData
 {
     public class ProductData(DatabaseContext _context) : BaseData(_context), IProductData
     {
-        public async Task<IEnumerable<Product>> GetAllProductWithoutTracking(int page, int pageSize, string? name)
-        {
-            var products = await BaseQuery<Product>(false).Include(p => p.Category).Where(p => p.IsActive == true && p.Name.Contains(name)).Skip((page - 1) * pageSize).Take(pageSize).OrderByDescending(p => p.Created_At).ToListAsync();
 
-            return products;
+        public IQueryable<Product> FilteringQuery(IQueryable<Product> query, int categoryPresent)
+        {
+            if(categoryPresent == 1)
+            {
+                query = query.Where(p => p.CategoryId == null);
+            }
+
+            return query;
+        }
+
+        public async Task<IEnumerable<Product>> GetAllProductWithoutTracking(int page, int pageSize, string? name, int categoryPresent)
+        {
+            var products = BaseQuery<Product>(false).Include(p => p.Category).Where(p => p.IsActive == true && p.Name.Contains(name));
+
+            products = FilteringQuery(products,categoryPresent);
+
+            var results = await products.Skip((page - 1) * pageSize).Take(pageSize).OrderByDescending(p => p.Created_At).ToListAsync();
+
+            return results;
         }
 
         public async Task<ICollection<Product>> GetAllProductReferenceByCategoryWithTracking(int categoryId)
         {
             var products = await BaseQuery<Product>(true).Where(p => p.CategoryId == categoryId && p.IsActive == true).OrderByDescending(p => p.Id).ToListAsync();
-            return products;
-        }
-
-        public async Task<IEnumerable<Product>> GetProductsWithNoCategoryWithoutTracking(int page, int pageSize, string? name)
-        {
-            var products = await BaseQuery<Product>(false).Where(p => p.CategoryId == null && p.Name.Contains(name)).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return products;
         }
@@ -33,16 +42,20 @@ namespace ERP.Repository.Data.ProductData
             return product;
         }
 
-        public async Task<int> ProductTotalCountWithoutTracking(string? name)
+        public async Task<int> ProductTotalCountWithoutTracking(string? name, int categoryPresent)
         {
-            var count = await BaseQuery<Product>(false).Where(p => p.IsActive == true && p.Name.Contains(name)).OrderBy(p => p.Id).CountAsync();
+            var count =  BaseQuery<Product>(false).Where(p => p.IsActive == true && p.Name.Contains(name));
 
-            return count;
+             count = FilteringQuery(count, categoryPresent);
+
+            var result = await count.CountAsync();
+
+            return result;
         }
 
-        public async Task<int> ProductWithNoCategoryTotalCountWithoutTracking(string? name)
+        public async Task<int> ProductWithNoCategoryTotalCountWithoutTracking()
         {
-            var count = await BaseQuery<Product>(false).Where(p => p.CategoryId == null && p.Name.Contains(name)).CountAsync();
+            var count = await BaseQuery<Product>(false).Where(p => p.CategoryId == null && p.IsActive == true).CountAsync();
 
             return count;
         } 
