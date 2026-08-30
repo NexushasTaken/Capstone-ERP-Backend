@@ -394,7 +394,7 @@ namespace ERP.Repository.Services.Inventories
         public async Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocity(int cutOffDate)
         {
 
-            var inventory = await _inventory.GetMovementVelocityWithoutTracking(parsedDate);
+            var inventory = await _inventory.GetMovementVelocityWithoutTracking(cutOffDate);
 
             return inventory;
         }
