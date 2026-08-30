@@ -65,11 +65,11 @@ namespace ERP.Repository.Services.Inventories
 
                 await _inventory.SaveChanges();
 
-                var transaction = new InventoryTransactionViewModle
+                var transaction = new InventoryTransactionPostViewModel
                 {
                     Id = existing.Id,
                     Quantity =+ inventory.Quantity,
-                    Label = 3
+                    Label = inventory.InventoryLabelId
                 };
 
                 await InventoryTransaction(transaction);
@@ -139,7 +139,7 @@ namespace ERP.Repository.Services.Inventories
                 throw new NotFound("Inventory Item Not Found");
             }
 
-            existing.Name = inventory.Name.ToLower();
+            existing.Name = inventory.Name.ToLower()    ;
             existing.ProductId = inventory.ProductId;
             existing.WarehouseId = inventory.WarehouseId;
             existing.ReorderPoint = inventory.ReorderPoint;
@@ -166,7 +166,7 @@ namespace ERP.Repository.Services.Inventories
             return 1;
         }
 
-        public async Task MarkAsDamaged(InventoryDamageViewModel damaged)
+        public async Task MarkAsDamaged(InventoryDamagePostViewModel damaged)
         {
             InventoryValidation.MarkAsDamagedValidation(damaged);
 
@@ -202,7 +202,7 @@ namespace ERP.Repository.Services.Inventories
 
             await _inventory.Save(damn);
 
-            var transaction = new InventoryTransactionViewModle
+            var transaction = new InventoryTransactionPostViewModel
             {
                 Id = inventory.Id,
                 Quantity = -damaged.Quantity,
@@ -214,7 +214,7 @@ namespace ERP.Repository.Services.Inventories
             return;
         }
 
-        public async Task InventoryTransaction(InventoryTransactionViewModle transaction)
+        public async Task InventoryTransaction(InventoryTransactionPostViewModel transaction)
         {
             InventoryValidation.InventoryTransactionValidation(transaction);
 
@@ -233,6 +233,7 @@ namespace ERP.Repository.Services.Inventories
         }
 
         #endregion
+
         #region Warehouse
         public async Task<IEnumerable<InventoryWareHouseViewModel>> GetWarehouses()
         {
@@ -351,6 +352,60 @@ namespace ERP.Repository.Services.Inventories
             var count = await _inventory.GetInventoryWithNoWareHouseCountWithoutTracking();
 
             return count;
+        }
+        #endregion
+
+        #region InventoryLabel
+        public async Task<IEnumerable<InventoryLabelViewModel>> GetInventoryLabels()
+        {
+            var label = await _inventory.GetLabelForInsert();
+
+            var final = label.Select(i => new InventoryLabelViewModel
+            {
+                Id = i.Id,
+                Type = i.Type
+            });
+
+            return final;
+        }
+        #endregion
+
+        #region Damage Inventory
+        public async Task<IEnumerable<InventoryDamageViewModel>> GetDamageInventory(int id)
+        {
+            if(id <= 0)
+            {
+                throw new BadRequest("Inventory item is required");
+            }
+
+            var damaged = await _inventory.GetDamageInventoryWithoutTracking(id);
+
+            var final = damaged.Select(i => new InventoryDamageViewModel
+            {
+                Reason = i.Reason,
+                Quantity = i.Quantity,
+                Created_At = i.Created_At,
+            });
+
+            return final;
+        }
+        #endregion
+
+        #region Trasactions
+
+        public async Task<IEnumerable<InventoryTransactionViewModle>> GetInventoryItemTransaction(int id)
+        {
+            var transac = await _inventory.GetItemTransactionWithoutTracking(id);
+
+            var final = transac.Select(t => new InventoryTransactionViewModle
+            {
+                Quantity = t.QuantityChanged,
+                Label = t.InventoryLabel.Type,
+                Created_At = t.Created_At
+
+            });
+
+            return final;
         }
         #endregion
     }

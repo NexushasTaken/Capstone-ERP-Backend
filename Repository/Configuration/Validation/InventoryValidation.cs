@@ -53,7 +53,7 @@ namespace ERP.Repository.Configuration.Validation
             }
         }
 
-        public static void MarkAsDamagedValidation(InventoryDamageViewModel damaged)
+        public static void MarkAsDamagedValidation(InventoryDamagePostViewModel damaged)
         {
             if (damaged.Id <= 0)
             {
@@ -69,7 +69,7 @@ namespace ERP.Repository.Configuration.Validation
             }
         }
 
-        public static void InventoryTransactionValidation(InventoryTransactionViewModle transaction)
+        public static void InventoryTransactionValidation(InventoryTransactionPostViewModel transaction)
         {
             if (transaction.Id <= 0)
             {

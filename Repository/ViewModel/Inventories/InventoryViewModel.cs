@@ -41,6 +41,7 @@
         public int WarehouseId { get; set; }
         public string? DateArrived { get; set; }
         public int ReorderPoint { get; set; }
+        public int InventoryLabelId { get; set; }
     }
 
     public class InventoryUpdateViewModel
@@ -54,12 +55,24 @@
 
     public class InventoryDamageViewModel
     {
-        public int Id { get; set; }
         public int Quantity { get; set; }
         public string? Reason { get; set; }
+        public DateTime? Created_At { get; set; }
+    }
+
+    public class InventoryDamagePostViewModel : InventoryDamageViewModel
+    {
+        public int Id { get; set; }
     }
 
     public class InventoryTransactionViewModle
+    {
+        public int Quantity { get; set; }
+        public string? Label { get; set; }
+        public DateTime? Created_At { get; set; }
+    }
+
+    public class InventoryTransactionPostViewModel
     {
         public int Id { get; set; }
         public int Quantity { get; set; }
@@ -81,5 +94,11 @@
     public class InventoryWareHouseViewModel : InventoryWareHouseUpdateViewModel
     {
         public int Stocks { get; set; }
+    }
+
+    public class InventoryLabelViewModel
+    {
+        public int Id { get; set; }
+        public string? Type { get; set; }
     }
 }

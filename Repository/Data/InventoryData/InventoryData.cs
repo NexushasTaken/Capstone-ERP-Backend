@@ -148,6 +148,33 @@ namespace ERP.Repository.Data.InventoryData
             return wareHouse;
         }
         #endregion
+
+        #region Inventory Label
+        public async Task<IEnumerable<InventoryLabel>> GetLabelForInsert()
+        {
+            var label = await BaseQuery<InventoryLabel>(false).Where(i => i.Type == "restock" || i.Type == "return" && i.IsActive == true).ToListAsync();
+
+            return label;
+        }
+        #endregion
+
+        #region Damage Inventory
+        public async Task<IEnumerable<DamagedInventory>> GetDamageInventoryWithoutTracking(int id)
+        {
+            var inventory = await BaseQuery<DamagedInventory>(false).Where(d => d.InventoryId == id && d.IsActive == true).OrderByDescending(d => d.Created_At).ToListAsync();
+
+            return inventory;
+        }
+        #endregion
+
+        #region Transaction
+        public async Task<IEnumerable<InventoryTransaction>> GetItemTransactionWithoutTracking(int id)
+        {
+            var transac = await BaseQuery<InventoryTransaction>(false).Include(t => t.InventoryLabel).Where(t => t.InventoryId == id && t.IsActive == true).ToListAsync();
+
+            return transac;
+        }
+        #endregion
     }
 }
  
