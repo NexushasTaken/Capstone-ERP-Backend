@@ -99,20 +99,6 @@ namespace ERP.Repository.Data.InventoryData
             return inventory;
         }
 
-        public async Task<int> GetInventoryWithNoWareHouseCountWithoutTracking()
-        {
-            var count = await BaseQuery<Inventory>(false).Where(i => i.WarehouseId == null && i.IsActive == true).CountAsync();
-
-            return count;
-        }
-
-        public async Task<int> GetStatusCountInventory(int statudId)
-        {
-            var count = await BaseQuery<Inventory>(false).Where(i => i.StatusId == statudId).CountAsync();
-
-            return count;
-        }
-
         #endregion
 
         #region Damaged Inventory
@@ -173,6 +159,57 @@ namespace ERP.Repository.Data.InventoryData
             var transac = await BaseQuery<InventoryTransaction>(false).Include(t => t.InventoryLabel).Where(t => t.InventoryId == id && t.IsActive == true).ToListAsync();
 
             return transac;
+        }
+        #endregion
+
+        #region Movement Velocity
+        public async Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocityWithoutTracking(int cutOffDate)
+        {
+            var inventory = BaseQuery<InventoryTransaction>(false).Include(i => i.Inventory)
+                .Where(t => (DateTime.UtcNow - t.Inventory.Created_At.Value).TotalDays >= cutOffDate)
+                .GroupBy(t => t.InventoryId)
+                .Select(t => new
+                {
+                    ItemId = t.Key,
+                    FirstDate = t.Min(t => t.Created_At),
+                    LastDate = t.Max(t => t.Created_At),
+                    Name = t.First().Inventory.Name,
+                    NetMovement = t.Sum(g =>
+                    g.InventoryLabelId == 1 || g.InventoryLabelId == 2 ? -g.QuantityChanged :
+                    g.InventoryLabelId == 3 || g.InventoryLabelId == 4 ? +g.QuantityChanged : 0)
+                })
+                .AsEnumerable()
+                .Select(x =>
+                {
+                    var duration = ((x.LastDate.Value - x.FirstDate.Value).Days) + 1;
+                    var velocity = duration > 0 ? (double)x.NetMovement / duration : 0;
+                    var classification = "";
+
+                    if (velocity > 10)
+                    {
+                        classification = "Fast";
+                    }
+                    else if (velocity >= 3)
+                    {
+                        classification = "Stable";
+                    }
+                    else
+                    {
+                        classification = "Slow";
+                    }
+
+                    return new InventoryMovementVelocityViewModel
+                    {
+                        Id = x.ItemId,
+                        Name = x.Name,
+                        Classification = classification,
+                        VelocityMetric = velocity,
+                        duration = duration,
+                    };
+                })
+                .ToList();
+
+            return inventory;
         }
         #endregion
     }

@@ -13,7 +13,6 @@ namespace ERP.Repository.Interface.Inventories
         /// <param name="filter">filtering method, 1 - 7 value</param>
         /// <returns></returns>
         Task<InventoryPageViewModel> GetInventories(int page, int pageSize, string name, int filter,int statusId, int wareHousePresent, CancellationToken cancellation);
-        Task<int> InventoriesWithoutWareHouseCount();
         /// <summary>
         /// Insert new item in inventory
         /// </summary>
@@ -21,7 +20,6 @@ namespace ERP.Repository.Interface.Inventories
         /// <returns></returns>
         Task InsertItem(InventoryPostViewModel inventory, int id);
         Task DeleteItem(int id);
-        Task<int> StatusInventoryCount(int id);
         Task UpdateInventory(InventoryUpdateViewModel inventory);
         Task MarkAsDamaged(InventoryDamagePostViewModel damaged);
         Task InventoryTransaction(InventoryTransactionPostViewModel transaction);
@@ -32,5 +30,6 @@ namespace ERP.Repository.Interface.Inventories
         Task<IEnumerable<InventoryLabelViewModel>> GetInventoryLabels();
         Task<IEnumerable<InventoryDamageViewModel>> GetDamageInventory(int id);
         Task<IEnumerable<InventoryTransactionViewModle>> GetInventoryItemTransaction(int id);
+        Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocity(int cutOffDate);
     }
 }

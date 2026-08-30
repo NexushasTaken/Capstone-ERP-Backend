@@ -30,28 +30,6 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", inventories));
         }
 
-        [HttpGet("inventory/nowarehouseCount")]
-        public async Task<IActionResult> GetInventoriesWithNoWareHouseCount()
-        {
-            var count = await _inventory.InventoriesWithoutWareHouseCount();
-
-            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", count));
-        }
-
-        /// <summary>
-        /// This is for getting how many inventory specific status have
-        /// </summary>
-        /// <param name="id">Need to insert status id here</param>
-        /// <returns></returns>
-        [HttpGet("statusCount")]
-        public async Task<IActionResult> StatusCount([FromQuery] int id)
-        {
-            var count = await _inventory.StatusInventoryCount(id);
-
-            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", count));
-        }
-
-
         [HttpGet("warehouse/all")]
         public async Task<IActionResult> GetWareHouses()
         {
@@ -82,6 +60,14 @@ namespace ERP.Controllers.InventoryController
             var transac = await _inventory.GetInventoryItemTransaction(id);
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", transac));
+        }
+
+        [HttpGet("inventory/movement/velocity")]
+        public async Task<IActionResult> GetMovementVelocity([FromQuery] int cutOffDate)
+        {
+            var inventory = await _inventory.GetMovementVelocity(cutOffDate);
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", inventory));
         }
 
         /// <summary>

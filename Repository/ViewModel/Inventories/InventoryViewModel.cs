@@ -101,4 +101,13 @@
         public int Id { get; set; }
         public string? Type { get; set; }
     }
+
+    public class InventoryMovementVelocityViewModel
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public string? Classification { get; set; }
+        public double VelocityMetric { get; set; }
+        public int duration { get; set; }
+    }
 }

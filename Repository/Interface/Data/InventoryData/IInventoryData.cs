@@ -1,4 +1,5 @@
 ﻿using ERP.Repository.Model.Inventories;
+using ERP.Repository.ViewModel.Inventories;
 
 namespace ERP.Repository.Interface.Data.InventoryData
 {
@@ -9,8 +10,6 @@ namespace ERP.Repository.Interface.Data.InventoryData
         IQueryable<Inventory> FilteringQuery(IQueryable<Inventory> query, string name, int filter, int statusId, int wareHousePresent);
         Task<int> InventoryCount(string name, int filter, int statusId, int wareHousePresent);
         Task<Inventory> GetInventoryWithTracking(int id);
-        Task<int> GetStatusCountInventory(int statudId);
-        Task<int> GetInventoryWithNoWareHouseCountWithoutTracking();
         Task<ICollection<Inventory>> GetInventoryWithWareHouseId(int id);
         #endregion
 
@@ -32,6 +31,11 @@ namespace ERP.Repository.Interface.Data.InventoryData
 
         #region Transaction
         Task<IEnumerable<InventoryTransaction>> GetItemTransactionWithoutTracking(int id);
+        #endregion
+
+        #region Movement Velocity
+        Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocityWithoutTracking(int cutOffDate);
+
         #endregion
     }
 }

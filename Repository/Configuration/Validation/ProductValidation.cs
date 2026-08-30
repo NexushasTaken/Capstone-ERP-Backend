@@ -44,10 +44,6 @@ namespace ERP.Repository.Configuration.Validation
             {
                 throw new BadRequest("Product price must be greater than 0");
             }
-            if(product.CategoryId <= 0)
-            {
-                throw new BadRequest("Category is required");
-            }
         }
         public static void ProductUpdateValidation(ProductUpdateViewModel product)
         {

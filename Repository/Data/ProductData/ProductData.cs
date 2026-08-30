@@ -52,12 +52,5 @@ namespace ERP.Repository.Data.ProductData
 
             return result;
         }
-
-        public async Task<int> ProductWithNoCategoryTotalCountWithoutTracking()
-        {
-            var count = await BaseQuery<Product>(false).Where(p => p.CategoryId == null && p.IsActive == true).CountAsync();
-
-            return count;
-        } 
     }
 }

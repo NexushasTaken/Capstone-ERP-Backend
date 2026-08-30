@@ -116,18 +116,6 @@ namespace ERP.Repository.Services.Inventories
             await _inventory.SaveChanges();
         }
 
-        public async Task<int> StatusInventoryCount(int id)
-        {
-            if(id <= 0)
-            {
-                throw new BadRequest("Id must be greater than 0");
-            }
-
-            var count = await _inventory.GetStatusCountInventory(id);
-
-            return count;
-        }
-
         public async Task UpdateInventory(InventoryUpdateViewModel inventory)
         {
             InventoryValidation.ValidateUpdate(inventory);
@@ -346,13 +334,6 @@ namespace ERP.Repository.Services.Inventories
 
             return;
         }
-
-        public async Task<int> InventoriesWithoutWareHouseCount()
-        {
-            var count = await _inventory.GetInventoryWithNoWareHouseCountWithoutTracking();
-
-            return count;
-        }
         #endregion
 
         #region InventoryLabel
@@ -392,7 +373,6 @@ namespace ERP.Repository.Services.Inventories
         #endregion
 
         #region Trasactions
-
         public async Task<IEnumerable<InventoryTransactionViewModle>> GetInventoryItemTransaction(int id)
         {
             var transac = await _inventory.GetItemTransactionWithoutTracking(id);
@@ -407,6 +387,18 @@ namespace ERP.Repository.Services.Inventories
 
             return final;
         }
+        #endregion
+
+        #region Movements Velocity
+
+        public async Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocity(int cutOffDate)
+        {
+
+            var inventory = await _inventory.GetMovementVelocityWithoutTracking(parsedDate);
+
+            return inventory;
+        }
+
         #endregion
     }
 }
