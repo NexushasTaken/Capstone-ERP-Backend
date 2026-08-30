@@ -28,14 +28,6 @@ namespace ERP.Controllers.ProductController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", products));
         }
 
-        [HttpGet("product/nocategoryCount")]
-        public async Task<IActionResult> GetProductWithNoCategoryCount()
-        {
-            var count = await _productService.ProductWithNoCategoryCount();
-
-            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", count));
-        }
-
         [HttpPost("insert")]
         public async Task<IActionResult> InsertProduct([FromBody] ProductPostViewModel product)
         {

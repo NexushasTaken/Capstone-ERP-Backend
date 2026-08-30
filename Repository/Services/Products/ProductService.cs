@@ -122,7 +122,7 @@ namespace ERP.Repository.Services.Products
 
             var pr = new Product
             {
-                CategoryId = product.CategoryId,
+                CategoryId = product.CategoryId == 0 ? null : product.CategoryId,
                 Name = product.Name.ToLower(),
                 Price = product.Price,
                 IsActive = true,
@@ -162,19 +162,12 @@ namespace ERP.Repository.Services.Products
 
             pr.Name = product.Name.ToLower();
             pr.Price = product.Price;
-            pr.CategoryId = product.CategoryId;
+            pr.CategoryId = product.CategoryId == 0 ? null : product.CategoryId ;
             pr.Updated_At = DateTime.UtcNow;
 
             await _product.SaveChanges();
 
             return;
-        }
-
-        public async Task<int> ProductWithNoCategoryCount()
-        {
-            var count = await _product.ProductWithNoCategoryTotalCountWithoutTracking();
-
-            return count;
         }
 
         #endregion
