@@ -1,7 +1,9 @@
 ﻿using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Inventories;
+using ERP.Repository.Model.Inventories;
 using ERP.Repository.ViewModel.Inventories;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Emit;
 
 namespace ERP.Controllers.InventoryController
 {
@@ -58,6 +60,30 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", wareHouse));
         }
 
+        [HttpGet("inventoryLabel/forInsert")]
+        public async Task<IActionResult> GetInventoryLabel()
+        {
+            var label = await _inventory.GetInventoryLabels();
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", label));
+        }
+
+        [HttpGet("inventory/damage/item")]
+        public async Task<IActionResult> GetDamagedItem([FromQuery] int id)
+        {
+            var damaged = await _inventory.GetDamageInventory(id);
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", damaged));
+        }
+
+        [HttpGet("inventory/movement/item")]
+        public async Task<IActionResult> GetItemTransaction([FromQuery] int id)
+        {
+            var transac = await _inventory.GetInventoryItemTransaction(id);
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", transac));
+        }
+
         /// <summary>
         /// Insert new inventory item
         /// </summary>
@@ -89,7 +115,7 @@ namespace ERP.Controllers.InventoryController
         }
 
         [HttpPatch("markasdamage")]
-        public async Task<IActionResult> MarkAsDamaged(InventoryDamageViewModel damaged)
+        public async Task<IActionResult> MarkAsDamaged(InventoryDamagePostViewModel damaged)
         {
             await _inventory.MarkAsDamaged(damaged);
 

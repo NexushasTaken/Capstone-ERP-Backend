@@ -20,5 +20,18 @@ namespace ERP.Repository.Interface.Data.InventoryData
         Task<int> GetIndividualWarehousesMaxCapacityWithoutTracking(int id);
         Task<Warehouse> GetIndividualWareHouseWithTracking(int id);
         #endregion
+
+
+        #region Inventory Label
+        Task<IEnumerable<InventoryLabel>> GetLabelForInsert();
+        #endregion
+
+        #region Inventory Damage
+        Task<IEnumerable<DamagedInventory>> GetDamageInventoryWithoutTracking(int id);
+        #endregion
+
+        #region Transaction
+        Task<IEnumerable<InventoryTransaction>> GetItemTransactionWithoutTracking(int id);
+        #endregion
     }
 }

@@ -23,11 +23,14 @@ namespace ERP.Repository.Interface.Inventories
         Task DeleteItem(int id);
         Task<int> StatusInventoryCount(int id);
         Task UpdateInventory(InventoryUpdateViewModel inventory);
-        Task MarkAsDamaged(InventoryDamageViewModel damaged);
-        Task InventoryTransaction(InventoryTransactionViewModle transaction);
+        Task MarkAsDamaged(InventoryDamagePostViewModel damaged);
+        Task InventoryTransaction(InventoryTransactionPostViewModel transaction);
         Task<IEnumerable<InventoryWareHouseViewModel>> GetWarehouses();
         Task NewWareHouse(InventoryWareHousePostViewModel wareHouse);
         Task UpdateWareHouse(InventoryWareHouseUpdateViewModel wareHouse);
         Task DeleteWareHouse(int id);
+        Task<IEnumerable<InventoryLabelViewModel>> GetInventoryLabels();
+        Task<IEnumerable<InventoryDamageViewModel>> GetDamageInventory(int id);
+        Task<IEnumerable<InventoryTransactionViewModle>> GetInventoryItemTransaction(int id);
     }
 }
