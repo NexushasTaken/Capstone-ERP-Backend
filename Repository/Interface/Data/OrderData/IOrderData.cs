@@ -1,6 +1,10 @@
-﻿namespace ERP.Repository.Interface.Data.OrderData
+﻿using ERP.Repository.Model.Orders;
+
+namespace ERP.Repository.Interface.Data.OrderData
 {
-    public interface IOrderData
+    public interface IOrderData : IBaseData
     {
+        IQueryable<Order> FilteringQuery(IQueryable<Order> query, string name, int filter, int statusId, int orderTypeId);
+        Task<IEnumerable<Order>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellationToken = default);
     }
 }

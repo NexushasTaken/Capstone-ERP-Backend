@@ -46,7 +46,7 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", label));
         }
 
-        [HttpGet("inventory/damage/item")]
+        [HttpGet("damage/item")]
         public async Task<IActionResult> GetDamagedItem([FromQuery] int id)
         {
             var damaged = await _inventory.GetDamageInventory(id);
@@ -54,7 +54,7 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", damaged));
         }
 
-        [HttpGet("inventory/movement/item")]
+        [HttpGet("movement/item")]
         public async Task<IActionResult> GetItemTransaction([FromQuery] int id)
         {
             var transac = await _inventory.GetInventoryItemTransaction(id);
@@ -62,7 +62,7 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", transac));
         }
 
-        [HttpGet("inventory/movement/velocity")]
+        [HttpGet("movement/velocity")]
         public async Task<IActionResult> GetMovementVelocity([FromQuery] int cutOffDate)
         {
             var inventory = await _inventory.GetMovementVelocity(cutOffDate);
