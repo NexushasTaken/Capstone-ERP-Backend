@@ -25,7 +25,6 @@ namespace ERP.Repository
         public DbSet<Warehouse> Warehouses { get; set; }
         #endregion
 
-
         #region Product
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
@@ -41,7 +40,6 @@ namespace ERP.Repository
         #region Sales
         public DbSet<Sale> Sales { get; set; }
         #endregion
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -173,8 +171,7 @@ namespace ERP.Repository
             modelBuilder.Entity<Order>()
                 .HasOne(i => i.DeliveryDriver)
                 .WithMany(w => w.Orders)
-                .HasForeignKey(i => i.DeliveryDriverId)
-                .IsRequired(false);
+                .HasForeignKey(i => i.DeliveryDriverId);
 
             #endregion
 
