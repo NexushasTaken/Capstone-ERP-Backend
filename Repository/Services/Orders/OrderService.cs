@@ -66,9 +66,9 @@ namespace ERP.Repository.Services.Orders
                     OrderStatusId = 3,
                     DeliveryDriverId = o.DeliveryRiderId ?? null,
                     Quantity = o.Quantity,
-                    CustomerName = o.CustomerName,
-                    PibkupAddress = o.PickUpAddress,
-                    DeliveryAddress = o.DeliveryAddress,
+                    CustomerName = o.CustomerName.ToLower(),
+                    PibkupAddress = o.PickUpAddress.ToLower(),
+                    DeliveryAddress = o.DeliveryAddress.ToLower(),
                     BundleCode = code,
                     Created_At = DateTime.UtcNow,
                     IsActive = true
@@ -86,9 +86,9 @@ namespace ERP.Repository.Services.Orders
                 OrderStatusId = 3,
                 DeliveryDriverId = order[0].DeliveryRiderId ?? null,
                 Quantity = order[0].Quantity,
-                CustomerName = order[0].CustomerName,
-                PibkupAddress = order[0].PickUpAddress,
-                DeliveryAddress = order[0].DeliveryAddress,
+                CustomerName = order[0].CustomerName.ToLower(),
+                PibkupAddress = order[0].PickUpAddress.ToLower(),
+                DeliveryAddress = order[0].DeliveryAddress.ToLower(),
                 BundleCode = null,
                 Created_At = DateTime.UtcNow,
                 IsActive = true
@@ -97,6 +97,11 @@ namespace ERP.Repository.Services.Orders
             await _orders.Save(data);
 
             return;
-        }   
+        }
+        
+        public async Task UpdateOrder()
+        {
+
+        }
     }
 }
