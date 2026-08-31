@@ -9,6 +9,7 @@ namespace ERP.Repository.Services.Orders
         public async Task<OrderPageViewModel> GetOrders(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellationToken = default)
         {
             var result = await _orders.GetOrdersWithoutTracking(page,pageSize,name,filter,statusId,orderTypeId,cancellationToken);
+            var totalCount = await _orders.OrdersCount(name,filter,statusId,orderTypeId);
 
             var orders = result.Select(o => new OrderViewModel
             {
@@ -36,12 +37,11 @@ namespace ERP.Repository.Services.Orders
                     : o.First().Amount
                 }).ToList();
 
-
             var final = new OrderPageViewModel
             {
                 Orders = group,
-                PageCount = (int)Math.Ceiling((double)result.Count() / pageSize),
-                Rows = result.Count()
+                PageCount = (int)Math.Ceiling((double)totalCount / pageSize),
+                Rows = totalCount
             };
             return final;
         }
