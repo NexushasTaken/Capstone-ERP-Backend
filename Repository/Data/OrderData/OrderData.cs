@@ -54,11 +54,22 @@ namespace ERP.Repository.Data.OrderData
         }
         public async Task<IEnumerable<Order>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellation = default)
         {
-            var orders = BaseQuery<Order>(false);
+            var orders = BaseQuery<Order>(false).Where(o => o.OrderStatusId != 1);
 
             orders = FilteringQuery(orders,name,filter,statusId,orderTypeId);
 
             var result = await orders.Include(o => o.Product).Include(o => o.OrderType).Include(o => o.OrderStatus).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellation);
+
+            return result;
+        }
+
+        public async Task<int> OrdersCount(string? name, int filter, int statusId, int orderTypeId)
+        {
+            var orders = BaseQuery<Order>(false).Where(o => o.OrderStatusId != 1);
+
+            orders = FilteringQuery(orders,name,filter,statusId,orderTypeId);
+
+            var result = await orders.CountAsync();
 
             return result;
         }
