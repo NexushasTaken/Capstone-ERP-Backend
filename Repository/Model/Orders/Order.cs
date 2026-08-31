@@ -14,7 +14,6 @@ namespace ERP.Repository.Model.Orders
         public OrderStatus? OrderStatus { get; set; }
         public int? DeliveryDriverId { get; set; }
         public DeliveryDriver? DeliveryDriver { get; set; }
-
         public int Quantity { get; set; }
         public string? CustomerName { get; set; }
         public string? PibkupAddress { get; set; }

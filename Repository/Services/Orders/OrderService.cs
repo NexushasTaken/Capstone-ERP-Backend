@@ -1,5 +1,8 @@
-﻿using ERP.Repository.Interface.Data.OrderData;
+﻿using ERP.Repository.Configuration.Helper;
+using ERP.Repository.Configuration.Validation;
+using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Interface.Orders;
+using ERP.Repository.Model.Orders;
 using ERP.Repository.ViewModel.Orders;
 
 namespace ERP.Repository.Services.Orders
@@ -8,6 +11,8 @@ namespace ERP.Repository.Services.Orders
     {
         public async Task<OrderPageViewModel> GetOrders(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellationToken = default)
         {
+            GlobalValidation.PageValidation(page,pageSize);
+
             var result = await _orders.GetOrdersWithoutTracking(page,pageSize,name,filter,statusId,orderTypeId,cancellationToken);
             var totalCount = await _orders.OrdersCount(name,filter,statusId,orderTypeId);
 
@@ -17,7 +22,7 @@ namespace ERP.Repository.Services.Orders
                 ProductName = o.Product.Name,
                 OrderStatus = o.OrderStatus.Status,
                 OrderType = o.OrderType.Type,
-                DriverName = "",
+                DriverName = o.DeliveryDriver == null ? "" : string.Concat(o.DeliveryDriver.FirstName, " ", o.DeliveryDriver.LastName),
                 Quantity = o.Quantity,
                 CustomerName = o.CustomerName,
                 PickUpAddress = o.PibkupAddress,
@@ -45,5 +50,53 @@ namespace ERP.Repository.Services.Orders
             };
             return final;
         }
+
+        public async Task InsertOrder(List<OrderPostViewModel> order)
+        {
+            OrderValidation.AddNewOrderValidation(order);
+
+            if(order.Count > 1)
+            {
+                var code = string.Concat("ordr","-",BundleCodeGenerator.GenerateBundleCode());
+
+                var datas = order.Select(o => new Order
+                {
+                    ProductId = o.ProductId,
+                    OrderTypeId = o.OrderTypeId,
+                    OrderStatusId = 3,
+                    DeliveryDriverId = o.DeliveryRiderId ?? null,
+                    Quantity = o.Quantity,
+                    CustomerName = o.CustomerName,
+                    PibkupAddress = o.PickUpAddress,
+                    DeliveryAddress = o.DeliveryAddress,
+                    BundleCode = code,
+                    Created_At = DateTime.UtcNow,
+                    IsActive = true
+                });
+
+                await _orders.SaveMany(datas);
+
+                return;
+            }
+
+            var data = new Order
+            {
+                ProductId = order[0].ProductId,
+                OrderTypeId = order[0].OrderTypeId,
+                OrderStatusId = 3,
+                DeliveryDriverId = order[0].DeliveryRiderId ?? null,
+                Quantity = order[0].Quantity,
+                CustomerName = order[0].CustomerName,
+                PibkupAddress = order[0].PickUpAddress,
+                DeliveryAddress = order[0].DeliveryAddress,
+                BundleCode = null,
+                Created_At = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            await _orders.Save(data);
+
+            return;
+        }   
     }
 }

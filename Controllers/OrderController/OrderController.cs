@@ -1,5 +1,7 @@
 ﻿using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Orders;
+using ERP.Repository.Model.Orders;
+using ERP.Repository.ViewModel.Orders;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.Controllers.OrderController
@@ -14,6 +16,19 @@ namespace ERP.Controllers.OrderController
             var orders = await _orderService.GetOrders(page,pageSize,name,filter,statusId,orderTypeId,cancellationToken);
 
             return StatusCode(200, _response.Status(200,true,"Retrieved Successfully", orders));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="order">Make sure to put List of orders even tho you only have a single order</param>
+        /// <returns></returns>
+        [HttpPost("insert")]
+        public async Task<IActionResult> AddNewOrder([FromBody] List<OrderPostViewModel> order)
+        {
+            await _orderService.InsertOrder(order);
+
+            return StatusCode(200, _response.Status(200, true, "Orders Added Successfully", null));
         }
     }
 }

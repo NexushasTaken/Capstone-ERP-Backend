@@ -10,7 +10,11 @@ namespace ERP.Repository.Data
             _context.Add(data);
             await _context.SaveChangesAsync(cancellation);
         }
-
+        public async Task SaveMany<T>(IEnumerable<T> data, CancellationToken cancellation = default) where T : class
+        {
+            _context.AddRange(data);
+            await _context.SaveChangesAsync(cancellation);
+        }
         public async Task SaveChanges(CancellationToken cancellation = default)
         {
             await _context.SaveChangesAsync(cancellation);
