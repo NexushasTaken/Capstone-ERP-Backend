@@ -3,10 +3,10 @@ using ERP.Repository.Configuration.Helper;
 
 namespace ERP.Middleware
 {
-    public class RequestMiddleware(RequestDelegate next, ResponseHelper responseHelper)
+    public class RequestMiddleware(RequestDelegate _next, ResponseHelper _response)
     {
-        private readonly RequestDelegate _next = next;
-        private readonly ResponseHelper _response = responseHelper;
+        //private readonly RequestDelegate _next = next;
+        //private readonly ResponseHelper _response = responseHelper;
 
 
         public async Task InvokeAsync(HttpContext context)
