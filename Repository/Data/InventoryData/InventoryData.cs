@@ -204,7 +204,6 @@ namespace ERP.Repository.Data.InventoryData
                         Name = x.Name,
                         Classification = classification,
                         VelocityMetric = velocity,
-                        duration = duration,
                     };
                 })
                 .ToList();

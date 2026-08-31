@@ -114,9 +114,6 @@ namespace ERP.Migrations
                     b.Property<int?>("Updated_By")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("VelocityStatusId")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("WarehouseId")
                         .HasColumnType("integer");
 
@@ -125,8 +122,6 @@ namespace ERP.Migrations
                     b.HasIndex("ProductId");
 
                     b.HasIndex("StatusId");
-
-                    b.HasIndex("VelocityStatusId");
 
                     b.HasIndex("WarehouseId");
 
@@ -252,43 +247,6 @@ namespace ERP.Migrations
                     b.HasIndex("InventoryLabelId");
 
                     b.ToTable("InventoryTransactions");
-                });
-
-            modelBuilder.Entity("ERP.Repository.Model.Inventories.VelocityStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("Created_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VelocityStatuses");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.Warehouse", b =>
@@ -842,10 +800,6 @@ namespace ERP.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ERP.Repository.Model.Inventories.VelocityStatus", "VelocityStatus")
-                        .WithMany("Inventory")
-                        .HasForeignKey("VelocityStatusId");
-
                     b.HasOne("ERP.Repository.Model.Inventories.Warehouse", "Warehouse")
                         .WithMany("Inventory")
                         .HasForeignKey("WarehouseId")
@@ -854,8 +808,6 @@ namespace ERP.Migrations
                     b.Navigation("InventoryStatus");
 
                     b.Navigation("Product");
-
-                    b.Navigation("VelocityStatus");
 
                     b.Navigation("Warehouse");
                 });
@@ -977,11 +929,6 @@ namespace ERP.Migrations
             modelBuilder.Entity("ERP.Repository.Model.Inventories.InventoryStatus", b =>
                 {
                     b.Navigation("Inventories");
-                });
-
-            modelBuilder.Entity("ERP.Repository.Model.Inventories.VelocityStatus", b =>
-                {
-                    b.Navigation("Inventory");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.Warehouse", b =>
