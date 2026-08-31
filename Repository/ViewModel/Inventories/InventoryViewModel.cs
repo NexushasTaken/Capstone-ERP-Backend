@@ -108,6 +108,5 @@
         public string? Name { get; set; }
         public string? Classification { get; set; }
         public double VelocityMetric { get; set; }
-        public int duration { get; set; }
     }
 }

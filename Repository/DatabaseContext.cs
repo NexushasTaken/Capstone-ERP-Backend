@@ -22,7 +22,6 @@ namespace ERP.Repository
         public DbSet<InventoryLabel> InventoryLabels { get; set; }
         public DbSet<InventoryStatus> InventoryStatuses { get; set; }
         public DbSet<InventoryTransaction> InventoryTransactions { get; set; }
-        public DbSet<VelocityStatus> VelocityStatuses { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
         #endregion
 
@@ -63,8 +62,6 @@ namespace ERP.Repository
             modelBuilder.Entity<Inventory>()
                 .HasKey(p => p.Id);
             modelBuilder.Entity<InventoryStatus>()
-                .HasKey(p => p.Id);
-            modelBuilder.Entity<VelocityStatus>()
                 .HasKey(p => p.Id);
             modelBuilder.Entity<InventoryTransaction>()
                 .HasKey(p => p.Id);
@@ -137,11 +134,6 @@ namespace ERP.Repository
                 .HasOne(i => i.Product)
                 .WithMany(w => w.Inventory)
                 .HasForeignKey(i => i.ProductId);
-
-            modelBuilder.Entity<Inventory>()
-                .HasOne(i => i.VelocityStatus)
-                .WithMany(w => w.Inventory)
-                .HasForeignKey(i => i.VelocityStatusId);
 
             modelBuilder.Entity<InventoryTransaction>()
              .HasOne(t => t.Inventory)

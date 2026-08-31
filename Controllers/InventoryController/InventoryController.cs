@@ -85,7 +85,7 @@ namespace ERP.Controllers.InventoryController
         }
 
         [HttpPost("warehouse/insert")]
-        public async Task<IActionResult> InsertWareHouse(InventoryWareHousePostViewModel wareHouse)
+        public async Task<IActionResult> InsertWareHouse([FromBody] InventoryWareHousePostViewModel wareHouse)
         {
             await _inventory.NewWareHouse(wareHouse);
 
@@ -101,7 +101,7 @@ namespace ERP.Controllers.InventoryController
         }
 
         [HttpPatch("markasdamage")]
-        public async Task<IActionResult> MarkAsDamaged(InventoryDamagePostViewModel damaged)
+        public async Task<IActionResult> MarkAsDamaged([FromBody]InventoryDamagePostViewModel damaged)
         {
             await _inventory.MarkAsDamaged(damaged);
 
@@ -109,7 +109,7 @@ namespace ERP.Controllers.InventoryController
         }
 
         [HttpPatch("warehouse/patch")]
-        public async Task<IActionResult> UpdateWareHouse(InventoryWareHouseUpdateViewModel wareHouse)
+        public async Task<IActionResult> UpdateWareHouse([FromBody]InventoryWareHouseUpdateViewModel wareHouse)
         {
             await _inventory.UpdateWareHouse(wareHouse);
 

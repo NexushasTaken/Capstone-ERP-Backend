@@ -9,8 +9,6 @@ namespace ERP.Repository.Model.Inventories
         public int Quantity { get; set; }
         public int StatusId { get; set; }
         public InventoryStatus? InventoryStatus { get; set; }
-        public int? VelocityStatusId { get; set; }
-        public VelocityStatus? VelocityStatus { get; set; }
         public int? WarehouseId { get; set; }
         public Warehouse? Warehouse { get; set; }
         public DateTime DateArrived { get; set; }
