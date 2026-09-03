@@ -47,4 +47,29 @@
         public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
     }
+
+    public class OrderTypeViewModel
+    {
+        public int Id { get; set; }
+        public string? Type { get; set; }
+    }
+
+    public class OrderStatusViewModel
+    {
+        public int Id { get; set; }
+        public string? Status { get; set; }
+    }
+
+    public class OrderStatusPostViewModel
+    {
+        public int OrderId { get; set; }
+        public int OrderStatusId { get; set; }
+    }
+
+    public class OrderDeliveryRiderViewModel
+    {
+        public int Id { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+    }
 }

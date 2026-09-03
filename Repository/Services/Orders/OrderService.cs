@@ -51,6 +51,42 @@ namespace ERP.Repository.Services.Orders
             return final;
         }
 
+        public async Task<IEnumerable<OrderTypeViewModel>> GetOrderTypes()
+        {
+            var result = await _orders.GetOrderTypesWithoutTracking();
+            var orderTypes = result.Select(o => new OrderTypeViewModel
+            {
+                Id = o.Id,
+                Type = o.Type
+            });
+
+            return orderTypes;
+        } 
+
+        public async Task<IEnumerable<OrderStatusViewModel>> GetOrderStatuses()
+        {
+            var result = await _orders.GetOrderStatusesWithoutTracking();
+            var orderStatuses = result.Select(o => new OrderStatusViewModel
+            {
+                Id = o.Id,
+                Status = o.Status
+            });
+
+            return orderStatuses;
+        }
+
+        public async Task<IEnumerable<OrderDeliveryRiderViewModel>> GetDeliveryRiders()
+        {
+            var result = await _orders.GetDeliveryRidersWithoutTracking();
+            var deliveryRiders = result.Select(o => new OrderDeliveryRiderViewModel
+            {
+                Id = o.Id,
+                FirstName = o.FirstName,
+                LastName = o.LastName
+            });
+            return deliveryRiders;
+        }
+
         public async Task InsertOrder(List<OrderPostViewModel> order)
         {
             OrderValidation.AddNewOrderValidation(order);
@@ -99,9 +135,15 @@ namespace ERP.Repository.Services.Orders
             return;
         }
         
-        public async Task UpdateOrder()
+        public async Task UpdateOrderStatus(OrderStatusPostViewModel status)
         {
+            OrderValidation.UpdateOrderStatusValidation(status);
 
+            var order = await _orders.GetSingleOrderWithTracking(status.OrderId);
+
+            order.OrderStatusId = status.OrderStatusId;
+
+            await _orders.SaveChanges();
         }
     }
 }

@@ -23,5 +23,18 @@ namespace ERP.Repository.Configuration.Validation
                 }
             }
         }
+
+
+        public static void UpdateOrderStatusValidation(OrderStatusPostViewModel status)
+        {
+            if (status.OrderId <= 0)
+            {
+                throw new BadRequest("Order is required");
+            }
+            if(status.OrderStatusId <= 0)
+            {
+                throw new BadRequest("Order Status is required");
+            }
+        }
     }
 }

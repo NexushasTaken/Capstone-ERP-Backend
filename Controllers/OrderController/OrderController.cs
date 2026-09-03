@@ -18,6 +18,28 @@ namespace ERP.Controllers.OrderController
             return StatusCode(200, _response.Status(200,true,"Retrieved Successfully", orders));
         }
 
+        [HttpGet("types")]
+        public async Task<IActionResult> GetOrderTypes()
+        {
+            var types = await _orderService.GetOrderTypes();
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", types));
+        }
+
+        [HttpGet("status")]
+        public async Task<IActionResult> GetOrderStatuses()
+        {
+            var statuses = await _orderService.GetOrderStatuses();
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", statuses));
+        }
+
+        [HttpGet("riders")]
+        public async Task<IActionResult> GetDeliveryRiders()
+        {
+            var riders = await _orderService.GetDeliveryRiders();
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", riders));
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -29,6 +51,14 @@ namespace ERP.Controllers.OrderController
             await _orderService.InsertOrder(order);
 
             return StatusCode(200, _response.Status(200, true, "Orders Added Successfully", null));
+        }
+
+        [HttpPatch("status/patch")]
+        public async Task<IActionResult> PatchOrderStatus(OrderStatusPostViewModel status)
+        {
+            await _orderService.UpdateOrderStatus(status);
+
+            return StatusCode(200, _response.Status(200, true, "Order Status Updated Successfully", null));
         }
     }
 }

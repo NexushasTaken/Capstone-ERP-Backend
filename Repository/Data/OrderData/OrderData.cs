@@ -73,5 +73,29 @@ namespace ERP.Repository.Data.OrderData
 
             return result;
         }
+
+        public async Task<IEnumerable<OrderType>> GetOrderTypesWithoutTracking()
+        {
+            var type = await BaseQuery<OrderType>(false).Where(t => t.IsActive == true).ToListAsync();
+            return type;
+        }
+
+        public async Task<IEnumerable<OrderStatus>> GetOrderStatusesWithoutTracking()
+        {
+            var status = await BaseQuery<OrderStatus>(false).Where(s => s.IsActive == true).ToListAsync();
+            return status;
+        }
+
+        public async Task<Order> GetSingleOrderWithTracking(int id)
+        {
+            var order = await BaseQuery<Order>(true).FirstOrDefaultAsync(o => o.IsActive == true && o.Id == id);
+            return order;
+        }
+
+        public async Task<IEnumerable<DeliveryDriver>> GetDeliveryRidersWithoutTracking()
+        {
+            var riders = await BaseQuery<DeliveryDriver>(false).Where(r => r.IsActive == true).ToListAsync();
+            return riders;
+        }
     }
 }
