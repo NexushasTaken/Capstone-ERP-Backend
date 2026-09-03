@@ -172,7 +172,7 @@ namespace ERP.Repository.Services.Inventories
 
             var sub = inventory.Quantity - damaged.Quantity;
 
-            inventory.Quantity -= sub;
+            inventory.Quantity = sub;
             inventory.Updated_At = DateTime.UtcNow;
             inventory.StatusId = ReorderRatio(sub, inventory.ReorderPoint);
 
