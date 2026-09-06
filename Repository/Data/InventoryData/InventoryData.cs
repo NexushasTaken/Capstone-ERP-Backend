@@ -167,7 +167,7 @@ namespace ERP.Repository.Data.InventoryData
         {
             var cutOff = DateTime.UtcNow.AddDays(-cutOffDate);
 
-            var inventory = BaseQuery<InventoryTransaction>(false).Include(i => i.Inventory)
+            var inventory = BaseQuery<InventoryTransaction>(false).Include(i => i.Inventory).ThenInclude(i => i.Warehouse)
                 .Where(t => t.Inventory.Created_At <= cutOff)
                 .GroupBy(t => t.InventoryId)
                 .Select(t => new
@@ -179,6 +179,7 @@ namespace ERP.Repository.Data.InventoryData
                     NetMovement = t.Sum(g =>
                     g.InventoryLabelId == 1 || g.InventoryLabelId == 2 ? -g.QuantityChanged :
                     g.InventoryLabelId == 3 || g.InventoryLabelId == 4 ? +g.QuantityChanged : 0),
+                    WarehouseName = t.First().Inventory.Warehouse.Name != null ? t.First().Inventory.Warehouse.Name : "No Warehouse"
                 })
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -204,10 +205,11 @@ namespace ERP.Repository.Data.InventoryData
 
                     return new InventoryMovementVelocityViewModel
                     {
-                        Id = x.ItemId,
+                        InventoryId = x.ItemId,
                         Name = x.Name,
                         Classification = classification,
                         VelocityMetric = velocity,
+                        Warehouse = x.WarehouseName
                     };
                 })
                 .ToList();
@@ -219,8 +221,8 @@ namespace ERP.Repository.Data.InventoryData
         {
             var cutoff = DateTime.UtcNow.AddDays(-cutoffDate);
 
-            var inventory = await BaseQuery<InventoryTransaction>(false).Include(i => i.Inventory)
-               .Where(t => t.Inventory.Created_At <= cutoff).GroupBy(t => t.InventoryId).CountAsync();
+            var inventory = await BaseQuery<InventoryTransaction>(false).Include(i => i.Inventory).ThenInclude(i => i.Warehouse)
+               .Where(t => t.Inventory.Created_At <= cutoff).GroupBy(t => t.Inventory.WarehouseId).CountAsync();
 
             return inventory;
         }

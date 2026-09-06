@@ -104,8 +104,9 @@
 
     public class InventoryMovementVelocityViewModel
     {
-        public int Id { get; set; }
+        public int InventoryId { get; set; }
         public string? Name { get; set; }
+        public string? Warehouse { get; set; }
         public string? Classification { get; set; }
         public double VelocityMetric { get; set; }
     }

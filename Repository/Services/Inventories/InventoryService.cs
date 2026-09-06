@@ -402,10 +402,11 @@ namespace ERP.Repository.Services.Inventories
             {
                 inventories = inventory.Select(i => new InventoryMovementVelocityViewModel
                 {
-                    Id = i.Id,
+                    InventoryId = i.InventoryId,
                     Name = i.Name,
                     Classification = i.Classification,
-                    VelocityMetric = i.VelocityMetric
+                    VelocityMetric = i.VelocityMetric,
+                    Warehouse = i.Warehouse
                 }),
                 PageCount = (int)Math.Ceiling(total / (double)pageSize),
                 Rows = total
