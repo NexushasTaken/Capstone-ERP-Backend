@@ -11,6 +11,7 @@ namespace ERP.Repository.Interface.Data.InventoryData
         Task<int> InventoryCount(string name, int filter, int statusId, int wareHousePresent);
         Task<Inventory> GetInventoryWithTracking(int id);
         Task<ICollection<Inventory>> GetInventoryWithWareHouseId(int id);
+        Task<IEnumerable<Inventory>> GetProductInventoryWithTracking(int productId);
         #endregion
 
         #region Warehouse
@@ -36,7 +37,6 @@ namespace ERP.Repository.Interface.Data.InventoryData
         #region Movement Velocity
         Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocityWithoutTracking(int cutOffDate, int page, int pageSize);
         Task<int> GetMovementVelocityCount(int cutoffDate);
-
         #endregion
     }
 }

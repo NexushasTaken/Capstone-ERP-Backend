@@ -3,6 +3,7 @@ using ERP.Repository.Model.Inventories;
 using ERP.Repository.ViewModel.Inventories;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace ERP.Repository.Data.InventoryData
 {
@@ -95,6 +96,13 @@ namespace ERP.Repository.Data.InventoryData
         public async Task<ICollection<Inventory>> GetInventoryWithWareHouseId(int id)
         {
             var inventory = await BaseQuery<Inventory>(true).Where(i => i.IsActive == true && i.WarehouseId == id).ToListAsync();
+
+            return inventory;
+        }
+
+        public async Task<IEnumerable<Inventory>> GetProductInventoryWithTracking(int productId)
+        {
+            var inventory = await BaseQuery<Inventory>(true).Where(i => i.ProductId == productId && i.IsActive == true).ToListAsync();
 
             return inventory;
         }
@@ -222,7 +230,7 @@ namespace ERP.Repository.Data.InventoryData
             var cutoff = DateTime.UtcNow.AddDays(-cutoffDate);
 
             var inventory = await BaseQuery<InventoryTransaction>(false).Include(i => i.Inventory).ThenInclude(i => i.Warehouse)
-               .Where(t => t.Inventory.Created_At <= cutoff).GroupBy(t => t.Inventory.WarehouseId).CountAsync();
+               .Where(t => t.Inventory.Created_At <= cutoff).GroupBy(t => t.InventoryId).CountAsync();
 
             return inventory;
         }

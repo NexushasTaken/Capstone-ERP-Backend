@@ -77,9 +77,9 @@ namespace ERP.Controllers.InventoryController
         /// <param name="id">Inventory Id, if you pass any, means we will just add the quantity to the existing item. This required only the quantity to be filled in payload :)</param>
         /// <returns></returns>
         [HttpPost("insert")]
-        public async Task<IActionResult> Insert([FromBody] InventoryPostViewModel inventory, [FromQuery] int id = 0)
+        public async Task<IActionResult> Insert([FromBody] InventoryPostViewModel inventory)
         {
-            await _inventory.InsertItem(inventory, id);
+            await _inventory.InsertItem(inventory);
 
             return StatusCode(200, _response.Status(200, true, "Added Successfully", null));
         }
@@ -114,6 +114,14 @@ namespace ERP.Controllers.InventoryController
             await _inventory.UpdateWareHouse(wareHouse);
 
             return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
+        }
+
+        [HttpPatch("restock")]
+        public async Task<IActionResult> RestockInventory(InventoryRestockViewModel inventory)
+        {
+            await _inventory.Restock(inventory);
+
+            return StatusCode(200, _response.Status(200, true, "Restocked Successfully", null));
         }
 
         [HttpDelete("delete")]
