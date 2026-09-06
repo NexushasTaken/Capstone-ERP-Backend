@@ -163,10 +163,12 @@ namespace ERP.Repository.Data.InventoryData
         #endregion
 
         #region Movement Velocity
-        public async Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocityWithoutTracking(int cutOffDate)
+        public async Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocityWithoutTracking(int cutOffDate, int page, int pageSize)
         {
+            var cutOff = DateTime.UtcNow.AddDays(-cutOffDate);
+
             var inventory = BaseQuery<InventoryTransaction>(false).Include(i => i.Inventory)
-                .Where(t => (DateTime.UtcNow - t.Inventory.Created_At.Value).TotalDays >= cutOffDate)
+                .Where(t => t.Inventory.Created_At <= cutOff)
                 .GroupBy(t => t.InventoryId)
                 .Select(t => new
                 {
@@ -176,8 +178,10 @@ namespace ERP.Repository.Data.InventoryData
                     Name = t.First().Inventory.Name,
                     NetMovement = t.Sum(g =>
                     g.InventoryLabelId == 1 || g.InventoryLabelId == 2 ? -g.QuantityChanged :
-                    g.InventoryLabelId == 3 || g.InventoryLabelId == 4 ? +g.QuantityChanged : 0)
+                    g.InventoryLabelId == 3 || g.InventoryLabelId == 4 ? +g.QuantityChanged : 0),
                 })
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .AsEnumerable()
                 .Select(x =>
                 {
@@ -207,6 +211,16 @@ namespace ERP.Repository.Data.InventoryData
                     };
                 })
                 .ToList();
+
+            return inventory;
+        }
+
+        public async Task<int> GetMovementVelocityCount(int cutoffDate)
+        {
+            var cutoff = DateTime.UtcNow.AddDays(-cutoffDate);
+
+            var inventory = await BaseQuery<InventoryTransaction>(false).Include(i => i.Inventory)
+               .Where(t => t.Inventory.Created_At <= cutoff).GroupBy(t => t.InventoryId).CountAsync();
 
             return inventory;
         }

@@ -34,7 +34,8 @@ namespace ERP.Repository.Interface.Data.InventoryData
         #endregion
 
         #region Movement Velocity
-        Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocityWithoutTracking(int cutOffDate);
+        Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocityWithoutTracking(int cutOffDate, int page, int pageSize);
+        Task<int> GetMovementVelocityCount(int cutoffDate);
 
         #endregion
     }
