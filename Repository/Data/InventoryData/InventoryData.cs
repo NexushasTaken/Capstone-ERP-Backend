@@ -107,6 +107,12 @@ namespace ERP.Repository.Data.InventoryData
             return inventory;
         }
 
+        public async Task<bool> CheckExistingInventory(string name, int warehouseId)
+        {
+            var inventory = await BaseQuery<Inventory>(false).FirstOrDefaultAsync(i => i.Name == name && i.WarehouseId == warehouseId && i.IsActive == true);
+            return inventory != null;
+        }
+
         #endregion
 
         #region Damaged Inventory

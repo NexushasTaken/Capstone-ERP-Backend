@@ -48,14 +48,22 @@ namespace ERP.Repository.Services.Inventories
 
         public async Task InsertItem(InventoryPostViewModel inventory)
         {
+
+            InventoryValidation.ValidateItem(inventory);
+
             var wareHouseCapacity = await _inventory.GetIndividualWarehousesMaxCapacityWithoutTracking(inventory.WarehouseId);
 
-            if(inventory.Quantity > wareHouseCapacity)
+            if (inventory.Quantity > wareHouseCapacity)
             {
                 throw new BadRequest("The item quantity exceeds the warehouse capacity.");
             }
 
-            InventoryValidation.ValidateItem(inventory);
+            var duplicate = await _inventory.CheckExistingInventory(inventory.Name.ToLower(), inventory.WarehouseId);
+
+            if (duplicate)
+            {
+                throw new BadRequest("Inventory item already exists in the warehouse.");
+            }
 
             DateTime.TryParse(inventory.DateArrived, out DateTime parsedDate);
 

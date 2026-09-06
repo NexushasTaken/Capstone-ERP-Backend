@@ -41,7 +41,6 @@
         public int WarehouseId { get; set; }
         public string? DateArrived { get; set; }
         public int ReorderPoint { get; set; }
-        public int InventoryLabelId { get; set; }
     }
 
     public class InventoryRestockViewModel
