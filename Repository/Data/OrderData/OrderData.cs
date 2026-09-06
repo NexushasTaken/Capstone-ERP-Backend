@@ -58,7 +58,7 @@ namespace ERP.Repository.Data.OrderData
 
             orders = FilteringQuery(orders,name,filter,statusId,orderTypeId);
 
-            var result = await orders.Include(o => o.Product).Include(o => o.OrderType).Include(o => o.OrderStatus).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellation);
+            var result = await orders.Include(o => o.Product).Include(o => o.OrderType).Include(o => o.OrderStatus).Include(o => o.DeliveryDriver).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellation);
 
             return result;
         }

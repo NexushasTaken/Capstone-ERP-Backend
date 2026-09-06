@@ -1,5 +1,6 @@
 ﻿using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
+using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Interface.Orders;
 using ERP.Repository.Model.Orders;
@@ -7,7 +8,7 @@ using ERP.Repository.ViewModel.Orders;
 
 namespace ERP.Repository.Services.Orders
 {
-    public class OrderService(IOrderData _orders) : IOrderService
+    public class OrderService(IOrderData _orders, IInventoryData _inventory) : IOrderService
     {
         public async Task<OrderPageViewModel> GetOrders(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellationToken = default)
         {
@@ -93,6 +94,11 @@ namespace ERP.Repository.Services.Orders
 
             if(order.Count > 1)
             {
+                foreach (var ordr in order)
+                {
+                    await UpdateInventoryBaseOnOrders(ordr.ProductId, ordr.Quantity);
+                }
+
                 var code = string.Concat("ordr","-",BundleCodeGenerator.GenerateBundleCode());
 
                 var datas = order.Select(o => new Order
@@ -115,6 +121,8 @@ namespace ERP.Repository.Services.Orders
                 return;
             }
 
+            await UpdateInventoryBaseOnOrders(order[0].ProductId, order[0].Quantity);
+
             var data = new Order
             {
                 ProductId = order[0].ProductId,
@@ -133,6 +141,34 @@ namespace ERP.Repository.Services.Orders
             await _orders.Save(data);
 
             return;
+        }
+
+        public async Task UpdateInventoryBaseOnOrders(int productId, int quantity)
+        {
+            var inventory = await _inventory.GetProductInventoryWithTracking(productId);
+
+            foreach (var inv in inventory)
+            {
+                if(quantity <= 0)
+                {
+                   break;
+                }
+
+                if (quantity >= inv.Quantity)
+                {
+                    quantity -= inv.Quantity;
+                    inv.Quantity = 0;
+                    inv.StatusId = ReorderRatio.Ratio(inv.Quantity, inv.ReorderPoint);
+                }
+                else
+                {
+                    inv.Quantity -= quantity;
+                    quantity = 0;
+                    inv.StatusId = ReorderRatio.Ratio(inv.Quantity, inv.ReorderPoint);
+                }
+            }
+
+            await _inventory.SaveChanges();
         }
         
         public async Task UpdateOrderStatus(OrderStatusPostViewModel status)

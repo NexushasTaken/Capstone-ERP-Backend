@@ -18,7 +18,7 @@ namespace ERP.Repository.Interface.Inventories
         /// </summary>
         /// <param name="inventory">Required field for inventory</param>  
         /// <returns></returns>
-        Task InsertItem(InventoryPostViewModel inventory, int id);
+        Task InsertItem(InventoryPostViewModel inventory);
         Task DeleteItem(int id);
         Task UpdateInventory(InventoryUpdateViewModel inventory);
         Task MarkAsDamaged(InventoryDamagePostViewModel damaged);
@@ -31,5 +31,6 @@ namespace ERP.Repository.Interface.Inventories
         Task<IEnumerable<InventoryDamageViewModel>> GetDamageInventory(int id);
         Task<IEnumerable<InventoryTransactionViewModle>> GetInventoryItemTransaction(int id);
         Task<InventoryMovementVelocityPageViewModel> GetMovementVelocity(int cutOffDate, int page, int pageSize);
+        Task Restock(InventoryRestockViewModel inventory);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using ERP.Controllers.InventoryController;
 using ERP.Repository.Configuration.Exception_Extender;
+using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Interface.Inventories;
@@ -45,36 +46,13 @@ namespace ERP.Repository.Services.Inventories
             return result;
         }
 
-        public async Task InsertItem(InventoryPostViewModel inventory, int id)
+        public async Task InsertItem(InventoryPostViewModel inventory)
         {
             var wareHouseCapacity = await _inventory.GetIndividualWarehousesMaxCapacityWithoutTracking(inventory.WarehouseId);
 
             if(inventory.Quantity > wareHouseCapacity)
             {
                 throw new BadRequest("The item quantity exceeds the warehouse capacity.");
-            }
-
-            if (id > 0)
-            {
-                var existing = await _inventory.GetInventoryWithTracking(id);
-
-                existing.Quantity += inventory.Quantity;
-                existing.Updated_At = DateTime.UtcNow;
-
-                existing.StatusId = ReorderRatio(existing.Quantity, existing.ReorderPoint);
-
-                await _inventory.SaveChanges();
-
-                var transaction = new InventoryTransactionPostViewModel
-                {
-                    Id = existing.Id,
-                    Quantity =+ inventory.Quantity,
-                    Label = inventory.InventoryLabelId
-                };
-
-                await InventoryTransaction(transaction);
-
-                return;
             }
 
             InventoryValidation.ValidateItem(inventory);
@@ -91,12 +69,50 @@ namespace ERP.Repository.Services.Inventories
                 ProductId = inventory.ProductId,
                 ReorderPoint = inventory.ReorderPoint,
                 DateArrived = parsedDate,
-                StatusId = ReorderRatio(inventory.Quantity, inventory.ReorderPoint),
+                StatusId = ReorderRatio.Ratio(inventory.Quantity, inventory.ReorderPoint),
                 IsActive = true,
                 Created_At = DateTime.UtcNow,
             };
 
             await _inventory.Save(inv);
+
+            return;
+        }
+
+        public async Task Restock(InventoryRestockViewModel inventory)
+        {
+
+            var existing = await _inventory.GetInventoryWithTracking(inventory.Id);
+
+            existing.Quantity += inventory.Quantity;
+            existing.Updated_At = DateTime.UtcNow;
+
+            existing.StatusId = ReorderRatio.Ratio(existing.Quantity, existing.ReorderPoint);
+
+            await _inventory.SaveChanges();
+
+            var transaction = new InventoryTransactionPostViewModel { };
+
+            if (inventory.RestockType == 1)
+            {
+                transaction = new InventoryTransactionPostViewModel
+                {
+                    Id = existing.Id,
+                    Quantity = +inventory.Quantity,
+                    Label = 3
+                };
+            }
+            else
+            {
+                transaction = new InventoryTransactionPostViewModel
+                {
+                    Id = existing.Id,
+                    Quantity = +inventory.Quantity,
+                    Label = 4
+                };
+            }
+
+            await InventoryTransaction(transaction);
 
             return;
         }
@@ -132,26 +148,11 @@ namespace ERP.Repository.Services.Inventories
             existing.WarehouseId = inventory.WarehouseId;
             existing.ReorderPoint = inventory.ReorderPoint;
 
-            existing.StatusId = ReorderRatio(existing.Quantity, existing.ReorderPoint);
+            existing.StatusId = ReorderRatio.Ratio(existing.Quantity, existing.ReorderPoint);
 
             await _inventory.SaveChanges();
 
             return;
-        }
-
-        private int ReorderRatio(int quantity, int reorderPoint)
-        {
-            double ratio = (double)quantity / reorderPoint;
-
-            if (ratio >= 2.0)
-            {
-                return 2;
-            }
-            else if (ratio >= 1.0)
-            {
-                return 3;
-            }
-            return 1;
         }
 
         public async Task MarkAsDamaged(InventoryDamagePostViewModel damaged)
@@ -165,24 +166,25 @@ namespace ERP.Repository.Services.Inventories
                 throw new NotFound("Inventory item not found");
             }
 
-            if(inventory.Quantity < damaged.Quantity)
+            if (damaged.DamagedType == 1)
             {
-                throw new BadRequest("Quantity is greater than what you have in stocks");
+                if (inventory.Quantity < damaged.Quantity)
+                {
+                    throw new BadRequest("Quantity is greater than what you have in stocks");
+                }
+
+                var sub = inventory.Quantity - damaged.Quantity;
+
+                inventory.Quantity = sub;
+                inventory.Updated_At = DateTime.UtcNow;
+                inventory.StatusId = ReorderRatio.Ratio(sub, inventory.ReorderPoint);
+                await _inventory.SaveChanges();
             }
-
-            var sub = inventory.Quantity - damaged.Quantity;
-
-            inventory.Quantity = sub;
-            inventory.Updated_At = DateTime.UtcNow;
-            inventory.StatusId = ReorderRatio(sub, inventory.ReorderPoint);
-
-
-            await _inventory.SaveChanges();
 
             var damn = new DamagedInventory
             {
                 InventoryId = inventory.Id,
-                Reason = damaged.Reason,
+                Reason = damaged.Reason.ToLower(),
                 Quantity = damaged.Quantity,
                 Created_At = DateTime.UtcNow,
                 IsActive = true

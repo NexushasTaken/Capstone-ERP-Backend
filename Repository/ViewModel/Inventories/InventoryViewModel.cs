@@ -44,6 +44,13 @@
         public int InventoryLabelId { get; set; }
     }
 
+    public class InventoryRestockViewModel
+    {
+        public int Id { get; set; }
+        public int Quantity { get; set; }
+        public int RestockType { get; set; }
+    }
+
     public class InventoryUpdateViewModel
     {
         public int Id { get; set; }
@@ -63,6 +70,7 @@
     public class InventoryDamagePostViewModel : InventoryDamageViewModel
     {
         public int Id { get; set; }
+        public int DamagedType { get; set; }
     }
 
     public class InventoryTransactionViewModle
