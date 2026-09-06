@@ -391,14 +391,28 @@ namespace ERP.Repository.Services.Inventories
 
         #region Movements Velocity
 
-        public async Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocity(int cutOffDate)
+        public async Task<InventoryMovementVelocityPageViewModel> GetMovementVelocity(int cutOffDate, int page, int pageSize)
         {
+            var inventory = await _inventory.GetMovementVelocityWithoutTracking(cutOffDate, page, pageSize);
 
-            var inventory = await _inventory.GetMovementVelocityWithoutTracking(cutOffDate);
+            var total = await _inventory.GetMovementVelocityCount(cutOffDate);
 
-            return inventory;
+
+            var result = new InventoryMovementVelocityPageViewModel
+            {
+                inventories = inventory.Select(i => new InventoryMovementVelocityViewModel
+                {
+                    Id = i.Id,
+                    Name = i.Name,
+                    Classification = i.Classification,
+                    VelocityMetric = i.VelocityMetric
+                }),
+                PageCount = (int)Math.Ceiling(total / (double)pageSize),
+                Rows = total
+            };
+
+            return result;
         }
-
         #endregion
     }
 }

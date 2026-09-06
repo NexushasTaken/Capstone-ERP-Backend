@@ -109,4 +109,11 @@
         public string? Classification { get; set; }
         public double VelocityMetric { get; set; }
     }
+
+    public class InventoryMovementVelocityPageViewModel
+    {
+        public IEnumerable<InventoryMovementVelocityViewModel> inventories { get; set; } = [];
+        public int PageCount { get; set; }
+        public int Rows { get; set; }
+    }
 }
