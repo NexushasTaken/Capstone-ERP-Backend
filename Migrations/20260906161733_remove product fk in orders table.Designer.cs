@@ -3,6 +3,7 @@ using System;
 using ERP.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ERP.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20260906161733_remove product fk in orders table")]
+    partial class removeproductfkinorderstable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -340,6 +343,12 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("BundleCode")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("Created_At")
                         .HasColumnType("timestamp with time zone");
 
@@ -376,9 +385,6 @@ namespace ERP.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("numeric");
-
                     b.Property<DateTime?>("Updated_At")
                         .HasColumnType("timestamp with time zone");
 
@@ -404,9 +410,6 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
                     b.Property<DateTime?>("Created_At")
                         .HasColumnType("timestamp with time zone");
 
@@ -429,9 +432,6 @@ namespace ERP.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated_At")

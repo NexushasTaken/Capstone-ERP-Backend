@@ -7,21 +7,21 @@ namespace ERP.Repository.Data.OrderData
 {
     public class OrderData(DatabaseContext _context) : BaseData(_context), IOrderData
     {
-        public IQueryable<Order> FilteringQuery(IQueryable<Order> query, string name, int filter, int statusId, int orderTypeId)
+        public IQueryable<OrderLine> FilteringQuery(IQueryable<OrderLine> query, string name, int filter, int statusId, int orderTypeId)
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
-                query = query.Where(o => o.Product.Name.Contains(name) || o.CustomerName.Contains(name));
+                query = query.Where(o => o.Product.Name.Contains(name) || o.Order.CustomerName.Contains(name));
             }
 
             if(statusId > 0)
             {
-                query = query.Where(o => o.OrderStatusId == statusId);
+                query = query.Where(o => o.Order.OrderStatusId == statusId);
             }
 
             if(orderTypeId > 0)
             {
-                query = query.Where(o => o.OrderTypeId == orderTypeId);
+                query = query.Where(o => o.Order.OrderTypeId == orderTypeId);
             }
 
             if(Enum.IsDefined(typeof(OrdersFilter), filter))
@@ -37,39 +37,45 @@ namespace ERP.Repository.Data.OrderData
                         query = query.OrderByDescending(o => o.Product.Name);
                         break;
                     case OrdersFilter.QHIGH:
-                        query = query.OrderByDescending(o => o.Quantity);
+                        query = query.OrderByDescending(o => o.Order.Quantity);
                         break;
                     case OrdersFilter.QLOW:
-                        query = query.OrderBy(o => o.Quantity);
+                        query = query.OrderBy(o => o.Order.Quantity);
                         break;
                 }
             }
             else
             {
-                query = query.OrderByDescending(o => o.Created_At);
+                query = query.OrderByDescending(o => o.Order.Created_At);
             }
 
             return query;
 
         }
-        public async Task<IEnumerable<Order>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellation = default)
+        public async Task<IEnumerable<OrderLine>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellation = default)
         {
-            var orders = BaseQuery<Order>(false).Where(o => o.OrderStatusId != 1);
+            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId != 1);
 
             orders = FilteringQuery(orders,name,filter,statusId,orderTypeId);
 
-            var result = await orders.Include(o => o.Product).Include(o => o.OrderType).Include(o => o.OrderStatus).Include(o => o.DeliveryDriver).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellation);
+            var result = await orders.Include(o => o.Product)
+                .Include(o => o.Order.OrderType)
+                .Include(o => o.Order.OrderStatus)
+                .Include(o => o.Order.DeliveryDriver)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellation);
 
             return result;
         }
 
         public async Task<int> OrdersCount(string? name, int filter, int statusId, int orderTypeId)
         {
-            var orders = BaseQuery<Order>(false).Where(o => o.OrderStatusId != 1);
+            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId != 1);
 
             orders = FilteringQuery(orders,name,filter,statusId,orderTypeId);
 
-            var result = await orders.CountAsync();
+            var result = await orders.Distinct().CountAsync();
 
             return result;
         }
@@ -96,6 +102,11 @@ namespace ERP.Repository.Data.OrderData
         {
             var riders = await BaseQuery<DeliveryDriver>(false).Where(r => r.IsActive == true).ToListAsync();
             return riders;
+        }
+        public async Task<DeliveryDriver> ValidateDriverWithoutTracking(int? driverId)
+        {
+            var driver = await BaseQuery<DeliveryDriver>(false).FirstOrDefaultAsync(d => d.IsActive == true && d.Id == driverId);
+            return driver;
         }
     }
 }

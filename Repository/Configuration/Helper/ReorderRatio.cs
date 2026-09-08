@@ -8,13 +8,13 @@
 
             if (ratio >= 2.0)
             {
-                return 2;
+                return 1;
             }
             else if (ratio >= 1.0)
             {
-                return 3;
+                return 2;
             }
-            return 1;
+            return 3;
         }
     }
 }

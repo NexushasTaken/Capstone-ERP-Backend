@@ -1,4 +1,5 @@
 ﻿using ERP.Repository.Model;
+using ERP.Repository.Model.Orders;
 using ERP.Repository.Model.Products;
 
 namespace ERP.Repository.Model.Inventories
@@ -17,5 +18,6 @@ namespace ERP.Repository.Model.Inventories
         public Product? Product { get; set; }
         public ICollection<InventoryTransaction> InventoryTransactions { get; set; } = [];
         public ICollection<DamagedInventory> DamagedInventories { get; set; } = [];
+        public ICollection<OrderLine> OrderLines { get; set; } = [];
     }
 }

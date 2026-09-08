@@ -10,24 +10,24 @@
     }
     public class OrderViewModel
     {
-        public int Id { get; set; }
         public string? ProductName { get; set; }
-        public string? OrderType { get; set; }
-        public string? OrderStatus { get; set; }
-        public string? DriverName { get; set; }
         public int Quantity { get; set; }
-        public string? CustomerName { get; set; }
-        public string? PickUpAddress { get; set; }
-        public string? DeliveryAddress { get; set; }
-        public decimal Amount { get; set; }
-        public string? BundleCode { get; set; }
-        public DateTime? Created_At { get; set; }
+        public decimal Price { get; set; }
+        public decimal TotalAmount { get; set; }
     }
 
     public class OrderTotalViewModel
     {
+        public int OrderId { get; set; }
+        public string? OrderType { get; set; }
+        public string? OrderStatus { get; set; }
+        public string? DriverName { get; set; }
+        public string? CustomerName { get; set; }
+        public string? PickUpAddress { get; set; }
+        public string? DeliveryAddress { get; set; }
         public IEnumerable<OrderViewModel> Orders { get; set; } = [];
         public decimal Total { get; set; }
+        public DateTime? Created_At { get; set; }
     }
 
     public class OrderPageViewModel
@@ -37,15 +37,21 @@
         public int Rows { get; set; }
     }
 
+    public class  OrderLineViewModel
+    {
+
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+    }
+
     public class OrderPostViewModel
     {
-        public int ProductId { get; set; }
         public int OrderTypeId { get; set; }
         public int? DeliveryRiderId { get; set; }
-        public int Quantity { get; set; }
         public string? CustomerName { get; set; }
         public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
+        public ICollection<OrderLineViewModel> OrderLines { get; set; } = [];
     }
 
     public class OrderTypeViewModel

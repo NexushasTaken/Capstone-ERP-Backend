@@ -8,6 +8,7 @@ namespace ERP.Repository.Interface.Data.ProductData
         Task<ICollection<Product>> GetAllProductReferenceByCategoryWithTracking(int categoryId);
         Task<Product> GetProductByIdWithTracking(int id);
         Task<int> ProductTotalCountWithoutTracking(string name, int categoryPresent);
+        Task<Product> GetProductByIdWithoutTracking(int id);
     }
 }
  

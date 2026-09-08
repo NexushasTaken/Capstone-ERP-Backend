@@ -3,6 +3,7 @@ using System;
 using ERP.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ERP.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20260906153132_added order lines table")]
+    partial class addedorderlinestable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -340,6 +343,12 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("BundleCode")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("Created_At")
                         .HasColumnType("timestamp with time zone");
 
@@ -373,11 +382,11 @@ namespace ERP.Migrations
                     b.Property<string>("PibkupAddress")
                         .HasColumnType("text");
 
-                    b.Property<int>("Quantity")
+                    b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("numeric");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated_At")
                         .HasColumnType("timestamp with time zone");
@@ -393,6 +402,8 @@ namespace ERP.Migrations
 
                     b.HasIndex("OrderTypeId");
 
+                    b.HasIndex("ProductId");
+
                     b.ToTable("Orders");
                 });
 
@@ -403,9 +414,6 @@ namespace ERP.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
 
                     b.Property<DateTime?>("Created_At")
                         .HasColumnType("timestamp with time zone");
@@ -429,9 +437,6 @@ namespace ERP.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated_At")
@@ -896,11 +901,19 @@ namespace ERP.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ERP.Repository.Model.Products.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("DeliveryDriver");
 
                     b.Navigation("OrderStatus");
 
                     b.Navigation("OrderType");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Orders.OrderLine", b =>

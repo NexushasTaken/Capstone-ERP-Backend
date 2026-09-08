@@ -46,11 +46,11 @@ namespace ERP.Controllers.OrderController
         /// <param name="order">Make sure to put List of orders even tho you only have a single order</param>
         /// <returns></returns>
         [HttpPost("insert")]
-        public async Task<IActionResult> AddNewOrder([FromBody] List<OrderPostViewModel> order)
+        public async Task<IActionResult> AddNewOrder([FromBody] OrderPostViewModel order)
         {
-            await _orderService.InsertOrder(order);
+            var message = await _orderService.InsertOrder(order);
 
-            return StatusCode(200, _response.Status(200, true, "Orders Added Successfully", null));
+            return StatusCode(200, _response.Status(200, true, "Orders Added Successfully", message));
         }
 
         [HttpPatch("status/patch")]
