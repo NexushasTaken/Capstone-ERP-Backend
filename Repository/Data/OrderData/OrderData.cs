@@ -37,10 +37,10 @@ namespace ERP.Repository.Data.OrderData
                         query = query.OrderByDescending(o => o.Product.Name);
                         break;
                     case OrdersFilter.QHIGH:
-                        query = query.OrderByDescending(o => o.Order.Quantity);
+                        query = query.OrderByDescending(o => o.Quantity);
                         break;
                     case OrdersFilter.QLOW:
-                        query = query.OrderBy(o => o.Order.Quantity);
+                        query = query.OrderBy(o => o.Quantity);
                         break;
                 }
             }

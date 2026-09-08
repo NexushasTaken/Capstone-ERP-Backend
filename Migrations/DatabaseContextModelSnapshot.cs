@@ -373,9 +373,6 @@ namespace ERP.Migrations
                     b.Property<string>("PibkupAddress")
                         .HasColumnType("text");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("numeric");
 
@@ -631,9 +628,6 @@ namespace ERP.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<int>("OrderId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TotalAmount")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated_At")
