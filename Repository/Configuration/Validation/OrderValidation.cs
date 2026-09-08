@@ -5,21 +5,28 @@ namespace ERP.Repository.Configuration.Validation
 {
     public class OrderValidation
     {
-        public static void AddNewOrderValidation(List<OrderPostViewModel> orders)
+        public static void AddNewOrderValidation(OrderPostViewModel order)
         {
-            foreach (var ord in orders)
+            if (order.OrderTypeId <= 0)
+            {
+                throw new BadRequest("Order Type is required");
+            }
+
+            if (order.DeliveryRiderId < 0)
+            {
+                throw new BadRequest("Driver is Invalid");
+            }
+
+            foreach (var ord in order.OrderLines)
             {
                 if (ord.ProductId <= 0)
                 {
                     throw new BadRequest("Product is required");
                 }
-                if (ord.OrderTypeId <= 0)
-                {
-                    throw new BadRequest("Order Type is required");
-                }
+
                 if (ord.Quantity <= 0)
                 {
-                    throw new BadRequest("Order Quantity is required");
+                    throw new BadRequest("Quantity is required");
                 }
             }
         }

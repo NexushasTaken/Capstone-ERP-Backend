@@ -35,6 +35,7 @@ namespace ERP.Repository
         public DbSet<OrderType> OrderTypes { get; set; }
         public DbSet<OrderStatus> OrderStatuses { get; set; }
         public DbSet<DeliveryDriver> DeliveryDrivers { get; set; }
+        public DbSet<OrderLine> OrderLines { get; set; }
         #endregion
 
         #region Sales
@@ -79,6 +80,8 @@ namespace ERP.Repository
             modelBuilder.Entity<OrderStatus>()
                 .HasKey(p => p.Id);
             modelBuilder.Entity<DeliveryDriver>()
+                .HasKey(p => p.Id);
+            modelBuilder.Entity<OrderLine>()
                 .HasKey(p => p.Id);
             #endregion
 
@@ -154,11 +157,6 @@ namespace ERP.Repository
                 .HasForeignKey(i => i.CategoryId);
 
             modelBuilder.Entity<Order>()
-                .HasOne(i => i.Product)
-                .WithMany(w => w.Orders)
-                .HasForeignKey(i => i.ProductId);
-
-            modelBuilder.Entity<Order>()
                 .HasOne(i => i.OrderType)
                 .WithMany(w => w.Orders)
                 .HasForeignKey(i => i.OrderTypeId);
@@ -172,6 +170,21 @@ namespace ERP.Repository
                 .HasOne(i => i.DeliveryDriver)
                 .WithMany(w => w.Orders)
                 .HasForeignKey(i => i.DeliveryDriverId);
+
+            modelBuilder.Entity<OrderLine>()
+                .HasOne(i => i.Order)
+                .WithMany(w => w.OrderLines)
+                .HasForeignKey(i => i.OrderId);
+
+            modelBuilder.Entity<OrderLine>()
+                .HasOne(i => i.Product)
+                .WithMany(w => w.OrderLines)
+                .HasForeignKey(i => i.ProductId);
+
+            modelBuilder.Entity<OrderLine>()
+                .HasOne(i => i.Inventory)
+                .WithMany(w => w.OrderLines)
+                .HasForeignKey(i => i.InventoryId);
 
             #endregion
 

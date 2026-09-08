@@ -102,7 +102,7 @@ namespace ERP.Repository.Data.InventoryData
 
         public async Task<IEnumerable<Inventory>> GetProductInventoryWithTracking(int productId)
         {
-            var inventory = await BaseQuery<Inventory>(true).Where(i => i.ProductId == productId && i.IsActive == true).ToListAsync();
+            var inventory = await BaseQuery<Inventory>(true).Include(i => i.Warehouse).Where(i => i.ProductId == productId && i.IsActive == true).ToListAsync();
 
             return inventory;
         }

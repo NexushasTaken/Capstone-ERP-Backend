@@ -340,12 +340,6 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("BundleCode")
-                        .HasColumnType("text");
-
                     b.Property<DateTime?>("Created_At")
                         .HasColumnType("timestamp with time zone");
 
@@ -379,11 +373,11 @@ namespace ERP.Migrations
                     b.Property<string>("PibkupAddress")
                         .HasColumnType("text");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime?>("Updated_At")
                         .HasColumnType("timestamp with time zone");
@@ -399,9 +393,62 @@ namespace ERP.Migrations
 
                     b.HasIndex("OrderTypeId");
 
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Orders.OrderLine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("Created_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Created_By")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("Deleted_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Deleted_By")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("InventoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("Updated_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Updated_By")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryId");
+
+                    b.HasIndex("OrderId");
+
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("OrderLines");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Orders.OrderStatus", b =>
@@ -849,17 +896,36 @@ namespace ERP.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ERP.Repository.Model.Products.Product", "Product")
-                        .WithMany("Orders")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("DeliveryDriver");
 
                     b.Navigation("OrderStatus");
 
                     b.Navigation("OrderType");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Orders.OrderLine", b =>
+                {
+                    b.HasOne("ERP.Repository.Model.Inventories.Inventory", "Inventory")
+                        .WithMany("OrderLines")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Repository.Model.Orders.Order", "Order")
+                        .WithMany("OrderLines")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Repository.Model.Products.Product", "Product")
+                        .WithMany("OrderLines")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Inventory");
+
+                    b.Navigation("Order");
 
                     b.Navigation("Product");
                 });
@@ -919,6 +985,8 @@ namespace ERP.Migrations
                     b.Navigation("DamagedInventories");
 
                     b.Navigation("InventoryTransactions");
+
+                    b.Navigation("OrderLines");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.InventoryLabel", b =>
@@ -943,6 +1011,8 @@ namespace ERP.Migrations
 
             modelBuilder.Entity("ERP.Repository.Model.Orders.Order", b =>
                 {
+                    b.Navigation("OrderLines");
+
                     b.Navigation("Sales");
                 });
 
@@ -965,7 +1035,7 @@ namespace ERP.Migrations
                 {
                     b.Navigation("Inventory");
 
-                    b.Navigation("Orders");
+                    b.Navigation("OrderLines");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>

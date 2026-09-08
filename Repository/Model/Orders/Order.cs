@@ -6,8 +6,6 @@ namespace ERP.Repository.Model.Orders
 {
     public class Order : BaseModel
     {
-        public int ProductId { get; set; }
-        public Product? Product { get; set; }
         public int OrderTypeId { get; set; }
         public OrderType? OrderType { get; set; }
         public int OrderStatusId { get; set; }
@@ -18,9 +16,9 @@ namespace ERP.Repository.Model.Orders
         public string? CustomerName { get; set; }
         public string? PibkupAddress { get; set; }
         public string? DeliveryAddress { get; set; }
-        public string? BundleCode { get; set; }
-        public decimal Amount { get; set; }
+        public decimal TotalAmount { get; set; }
 
         public ICollection<Sale> Sales { get; set; } = [];
+        public ICollection<OrderLine> OrderLines { get; set; } = [];
     }
 }

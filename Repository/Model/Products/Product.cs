@@ -11,6 +11,6 @@ namespace ERP.Repository.Model.Products
         public decimal Price { get; set; }
 
         public ICollection<Inventory> Inventory { get; set; } = [];
-        public ICollection<Order> Orders { get; set; } = [];
+        public ICollection<OrderLine> OrderLines { get; set; } = [];
     }
 }
