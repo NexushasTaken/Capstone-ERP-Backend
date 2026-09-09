@@ -7,7 +7,7 @@ namespace ERP.Repository.Interface.Data.InventoryData
     {
         #region Inventory
         Task<IEnumerable<Inventory>> GetInventoriesWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int wareHousePresent, CancellationToken cancellation);
-        IQueryable<Inventory> FilteringQuery(IQueryable<Inventory> query, string name, int filter, int statusId, int wareHousePresent);
+        IQueryable<Inventory> FilteringQuery(IQueryable<Inventory> query, string? name, int filter, int statusId, int wareHousePresent);
         Task<int> InventoryCount(string name, int filter, int statusId, int wareHousePresent);
         Task<Inventory> GetInventoryWithTracking(int id);
         Task<ICollection<Inventory>> GetInventoryWithWareHouseId(int id);

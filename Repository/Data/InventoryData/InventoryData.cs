@@ -12,11 +12,11 @@ namespace ERP.Repository.Data.InventoryData
 
         #region Inventory
 
-        public IQueryable<Inventory> FilteringQuery(IQueryable<Inventory> query, string name, int filter, int statusId, int wareHousePresent)
+        public IQueryable<Inventory> FilteringQuery(IQueryable<Inventory> query, string? name, int filter, int statusId, int wareHousePresent)
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
-                query = query.Where(i => i.Name.Contains(name));
+                query = query.Where(i => i.Name.Contains(name.ToLower()));
             }
 
             if(statusId > 0)

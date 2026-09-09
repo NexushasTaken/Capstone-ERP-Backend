@@ -10,5 +10,7 @@ namespace ERP.Repository.Interface.Orders
         Task<IEnumerable<OrderStatusViewModel>> GetOrderStatuses();
         Task UpdateOrderStatus(OrderStatusPostViewModel status);
         Task<IEnumerable<OrderDeliveryRiderViewModel>> GetDeliveryRiders();
+        Task<DeliveryDriverPageViewModel> GetDrivers(int page, int pageSize, string? name, int filter, CancellationToken cancellation);
+        Task AddDriver(DeliveryDriverPostViewModel driver);
     }
 }

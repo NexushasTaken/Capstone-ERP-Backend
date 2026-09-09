@@ -61,6 +61,7 @@ namespace ERP
             #endregion
 
             #region Data Services
+            builder.Services.AddScoped<IDriverData, DriverData>();
             builder.Services.AddScoped<IUserAccountData, UserAccountData>();
             builder.Services.AddScoped<IProductData, ProductData>();
             builder.Services.AddScoped<ICategoryData, CategoryData>();
