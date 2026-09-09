@@ -108,5 +108,12 @@ namespace ERP.Repository.Data.OrderData
             var driver = await BaseQuery<DeliveryDriver>(false).FirstOrDefaultAsync(d => d.IsActive == true && d.Id == driverId);
             return driver;
         }
+
+        public async Task<IEnumerable<OrderLine>> GetOrderLinesWithTracking(int id)
+        {
+            var order = await BaseQuery<OrderLine>(true).Where(o => o.OrderId == id).Include(o => o.Product).Include(o => o.Inventory).Include(o => o.Order).ToListAsync();
+
+            return order;
+        }
     }
 }

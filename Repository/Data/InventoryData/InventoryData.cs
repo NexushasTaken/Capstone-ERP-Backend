@@ -93,6 +93,13 @@ namespace ERP.Repository.Data.InventoryData
             return inventory;
         }
 
+        public async Task<IEnumerable<Inventory>> GetInventoriesWithTracking(List<int> Id)
+        {
+            var inventory = await BaseQuery<Inventory>(true).Where(i => Id.Contains(i.Id) && i.IsActive == true).ToListAsync();
+
+            return inventory;
+        }
+
         public async Task<ICollection<Inventory>> GetInventoryWithWareHouseId(int id)
         {
             var inventory = await BaseQuery<Inventory>(true).Where(i => i.IsActive == true && i.WarehouseId == id).ToListAsync();
