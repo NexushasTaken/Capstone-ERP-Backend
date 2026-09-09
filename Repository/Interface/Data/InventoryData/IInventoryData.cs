@@ -13,6 +13,7 @@ namespace ERP.Repository.Interface.Data.InventoryData
         Task<ICollection<Inventory>> GetInventoryWithWareHouseId(int id);
         Task<IEnumerable<Inventory>> GetProductInventoryWithTracking(int productId);
         Task<bool> CheckExistingInventory(string name, int warehouseId);
+        Task<IEnumerable<Inventory>> GetInventoriesWithTracking(List<int> Id);
         #endregion
 
         #region Warehouse

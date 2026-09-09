@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Configuration.Exception_Extender;
+﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Interface.Data.InventoryData;
@@ -193,7 +194,7 @@ namespace ERP.Repository.Services.Orders
                 }
                 else
                 {
-                    result.Add((quantity, inv.Id, quantity = 0, inv.Warehouse.Name == null ? "No Warehouse" : inv.Warehouse.Name, true));
+                    result.Add((quantity, inv.Id, 0, inv.Warehouse.Name == null ? "No Warehouse" : inv.Warehouse.Name, true));
                     inv.Quantity -= quantity;
                     quantity = 0;
                     inv.StatusId = ReorderRatio.Ratio(inv.Quantity, inv.ReorderPoint);
@@ -209,11 +210,68 @@ namespace ERP.Repository.Services.Orders
         {
             OrderValidation.UpdateOrderStatusValidation(status);
 
-            var order = await _orders.GetSingleOrderWithTracking(status.OrderId);
+            var order = await _orders.GetOrderLinesWithTracking(status.OrderId);
 
-            order.OrderStatusId = status.OrderStatusId;
+            if (order == null)
+            {
+                throw new BadRequest("Order Not Found");
+            }
+
+            order.First().Order.OrderStatusId = status.OrderStatusId;
+
+            if(Enum.IsDefined(typeof(OrderStatusEnum), status.OrderStatusId))
+            {
+                var stat = (OrderStatusEnum)status.OrderStatusId;
+
+                var inventory = order.Select(o => (o.InventoryId, o.Quantity)).ToList();    
+
+                switch (stat)
+                {
+                    case OrderStatusEnum.Completed:
+                        await CommitInventoryTransaction(inventory);
+                        break;
+                    case OrderStatusEnum.Cancelled:
+                        await RevertInventoryTransaction(inventory);
+                        break;
+                    default:
+                        return;
+                }
+            }
+            else
+            {
+                throw new BadRequest("Invalid Order Status");
+            }
 
             await _orders.SaveChanges();
+        }
+
+        private async Task CommitInventoryTransaction(List<(int inventoryId, int quantity)> inventory)
+        {
+            var transaction = inventory.Select(i => new InventoryTransaction
+            {
+                InventoryId = i.inventoryId,
+                QuantityChanged = -i.quantity,
+                InventoryLabelId = 1,
+                Created_At = DateTime.UtcNow,
+                IsActive = true
+            });
+
+            await _inventory.SaveMany(transaction);
+        }
+
+        private async Task RevertInventoryTransaction(List<(int inventoryId, int quantity)> inventory)
+        {
+            var inv = await _inventory.GetInventoriesWithTracking(inventory.Select(i => i.inventoryId).ToList());
+
+            foreach (var i in inv)
+            {
+                var qty = inventory.FirstOrDefault(x => x.inventoryId == i.Id).quantity;
+                i.Quantity += qty;
+                i.StatusId = ReorderRatio.Ratio(i.Quantity, i.ReorderPoint);
+                i.Updated_At = DateTime.UtcNow;
+            }   
+
+            await _inventory.SaveChanges();
         }
     }
 }

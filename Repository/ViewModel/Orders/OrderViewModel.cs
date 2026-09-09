@@ -68,10 +68,8 @@
 
     public class OrderStatusPostViewModel
     {
-        public int ProductId { get; set; }
         public int OrderId { get; set; }
         public int OrderStatusId { get; set; }
-        public int Quantity { get; set; }
     }
 
     public class OrderDeliveryRiderViewModel
