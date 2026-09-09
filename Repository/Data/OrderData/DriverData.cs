@@ -55,5 +55,12 @@ namespace ERP.Repository.Data.OrderData
 
             return result;
         }
+
+        public async Task<DeliveryDriver> GetSingleDriverWithTracking(int id)
+        {
+            var driver = await BaseQuery<DeliveryDriver>(true).Where(d => d.Id == id && d.IsActive == true).FirstOrDefaultAsync();
+
+            return driver;
+        }
     }
 }

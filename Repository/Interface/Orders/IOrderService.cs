@@ -12,5 +12,7 @@ namespace ERP.Repository.Interface.Orders
         Task<IEnumerable<OrderDeliveryRiderViewModel>> GetDeliveryRiders();
         Task<DeliveryDriverPageViewModel> GetDrivers(int page, int pageSize, string? name, int filter, CancellationToken cancellation);
         Task AddDriver(DeliveryDriverPostViewModel driver);
+        Task UpdateDriver(DeliveryDriverPatchViewModel driver);
+        Task DeleteDriver(int id);
     }
 }

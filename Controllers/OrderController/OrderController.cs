@@ -85,5 +85,21 @@ namespace ERP.Controllers.OrderController
 
             return StatusCode(200, _response.Status(200, true, "Order Status Updated Successfully", null));
         }
+
+        [HttpPut("driver/put")]
+        public async Task<IActionResult> PatchDriver([FromBody] DeliveryDriverPatchViewModel driver)
+        {
+            await _orderService.UpdateDriver(driver);
+
+            return StatusCode(200, _response.Status(200, true, "Driver Updated Successfully", null));
+        }
+
+        [HttpDelete("driver/delete")]
+        public async Task<IActionResult> DeleteDriver([FromQuery] int id)
+        {
+            await _orderService.DeleteDriver(id);
+
+            return StatusCode(200, _response.Status(200, true, "Driver Deleted Successfully", null));
+        }
     }
 }
