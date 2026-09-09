@@ -5,20 +5,24 @@ using ERP.Repository.Data;
 using ERP.Repository.Data.InventoryData;
 using ERP.Repository.Data.OrderData;
 using ERP.Repository.Data.ProductData;
+using ERP.Repository.Data.Sales;
 using ERP.Repository.Data.UserAccounts;
 using ERP.Repository.Interface.Data;
 using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Interface.Data.ProductData;
+using ERP.Repository.Interface.Data.SalesData;
 using ERP.Repository.Interface.Data.UserAccountData;
 using ERP.Repository.Interface.Inventories;
 using ERP.Repository.Interface.Orders;
 using ERP.Repository.Interface.Products;
+using ERP.Repository.Interface.Sales;
 using ERP.Repository.Interface.TokenManager;
 using ERP.Repository.Interface.UserAccounts;
 using ERP.Repository.Services.Inventories;
 using ERP.Repository.Services.Orders;
 using ERP.Repository.Services.Products;
+using ERP.Repository.Services.Sales;
 using ERP.Repository.Services.TokenManager;
 using ERP.Repository.Services.UserAccounts;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -58,9 +62,11 @@ namespace ERP
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IInventoryService, InventoryService>();
+            builder.Services.AddScoped<ISaleService, SaleService>();
             #endregion
 
             #region Data Services
+            builder.Services.AddScoped<ISalesData, SalesData>();
             builder.Services.AddScoped<IDriverData, DriverData>();
             builder.Services.AddScoped<IUserAccountData, UserAccountData>();
             builder.Services.AddScoped<IProductData, ProductData>();
