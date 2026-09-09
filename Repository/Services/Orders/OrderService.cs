@@ -342,6 +342,43 @@ namespace ERP.Repository.Services.Orders
             return;
         }
 
+        public async Task UpdateDriver(DeliveryDriverPatchViewModel driver)
+        {
+            if (string.IsNullOrWhiteSpace(driver.FirstName))
+            {
+                throw new BadRequest("First Name is required");
+            }
+
+            var data = await _driver.GetSingleDriverWithTracking(driver.Id);
+
+            if (data == null)
+            {
+                throw new NotFound("Driver not found");
+            }
+
+            data.FirstName = driver.FirstName.ToLower();
+            data.LastName = driver.LastName.ToLower().Trim();
+            data.Updated_At = DateTime.UtcNow;
+
+
+            await _driver.SaveChanges();
+        }
+
+        public async Task DeleteDriver(int id)
+        {
+            var data = await _driver.GetSingleDriverWithTracking(id);
+
+            if (data == null)
+            {
+                throw new NotFound("Driver not found");
+            }
+            data.IsActive = false;
+            data.Deleted_At = DateTime.UtcNow;
+
+            await _driver.SaveChanges();
+
+        }
+
         #endregion
     }
 }
