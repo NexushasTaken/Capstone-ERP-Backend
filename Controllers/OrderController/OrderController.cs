@@ -1,4 +1,5 @@
 ﻿using ERP.Repository.Configuration.Helper;
+using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Interface.Orders;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.ViewModel.Orders;
@@ -43,6 +44,22 @@ namespace ERP.Controllers.OrderController
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="name"></param>
+        /// <param name="filter">input 1 to sort first and last name to A - Z, 2 to sort Z - A</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpGet("driver/all")]
+        public async Task<IActionResult> GetDrivers([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "", [FromQuery] int filter = 0, CancellationToken cancellationToken = default)
+        {
+            var drivers = await _orderService.GetDrivers(page, pageSize, name, filter, cancellationToken);
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", drivers));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="order">Make sure to put List of orders even tho you only have a single order</param>
         /// <returns></returns>
         [HttpPost("insert")]
@@ -51,6 +68,14 @@ namespace ERP.Controllers.OrderController
             var message = await _orderService.InsertOrder(order);
 
             return StatusCode(200, _response.Status(200, true, "Orders Added Successfully", message));
+        }
+
+        [HttpPost("driver/insert")]
+        public async Task<IActionResult> AddNewDriver([FromBody] DeliveryDriverPostViewModel driver)
+        {
+            await _orderService.AddDriver(driver);
+
+            return StatusCode(200, _response.Status(200, true, "Driver Added Successfully", null));
         }
 
         [HttpPatch("status/patch")]

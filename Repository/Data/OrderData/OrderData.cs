@@ -7,11 +7,11 @@ namespace ERP.Repository.Data.OrderData
 {
     public class OrderData(DatabaseContext _context) : BaseData(_context), IOrderData
     {
-        public IQueryable<OrderLine> FilteringQuery(IQueryable<OrderLine> query, string name, int filter, int statusId, int orderTypeId)
+        public IQueryable<OrderLine> FilteringQuery(IQueryable<OrderLine> query, string? name, int filter, int statusId, int orderTypeId)
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
-                query = query.Where(o => o.Product.Name.Contains(name) || o.Order.CustomerName.Contains(name));
+                query = query.Where(o => o.Product.Name.Contains(name.ToLower()) || o.Order.CustomerName.Contains(name.ToLower()));
             }
 
             if(statusId > 0)

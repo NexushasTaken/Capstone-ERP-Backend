@@ -8,12 +8,15 @@ using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Orders;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
+using ERP.Repository.Model.Sales;
 using ERP.Repository.ViewModel.Orders;
 
 namespace ERP.Repository.Services.Orders
 {
-    public class OrderService(IOrderData _orders, IInventoryData _inventory, IProductData _product) : IOrderService
+    public class OrderService(IOrderData _orders, IInventoryData _inventory, IProductData _product, IDriverData _driver) : IOrderService
     {
+        #region Orders
+
         public async Task<OrderPageViewModel> GetOrders(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellationToken = default)
         {
             GlobalValidation.PageValidation(page, pageSize);
@@ -243,6 +246,21 @@ namespace ERP.Repository.Services.Orders
             }
 
             await _orders.SaveChanges();
+
+
+            if (status.OrderStatusId == (int)OrderStatusEnum.Completed)
+            {
+                var sales = new Sale
+                {
+                    OrderId = order.First().OrderId,
+                    Created_At = DateTime.UtcNow,
+                    IsActive = true
+                };
+
+                await _orders.Save(sales);
+            }
+
+            return;
         }
 
         private async Task CommitInventoryTransaction(List<(int inventoryId, int quantity)> inventory)
@@ -257,6 +275,8 @@ namespace ERP.Repository.Services.Orders
             });
 
             await _inventory.SaveMany(transaction);
+
+            return;
         }
 
         private async Task RevertInventoryTransaction(List<(int inventoryId, int quantity)> inventory)
@@ -272,6 +292,56 @@ namespace ERP.Repository.Services.Orders
             }   
 
             await _inventory.SaveChanges();
+
+            return;
         }
+
+        #endregion
+
+        #region Drivers
+
+        public async Task<DeliveryDriverPageViewModel> GetDrivers(int page, int pageSize, string? name, int filter, CancellationToken cancellation)
+        {
+            var driver = await _driver.GetDriversWithoutTracking(page, pageSize, name, filter, cancellation);
+            var count = await _driver.DriverCount(name, filter);   
+
+            var result = driver.Select(d => new DeliveryDriverViewModel
+            {
+                Id = d.Id,
+                FirstName = d.FirstName,
+                LastName = d.LastName,
+                Created_At = d.Created_At
+            });
+
+
+            return new DeliveryDriverPageViewModel {
+                DeliveryDrivers = result,
+                PageCount = (int)Math.Ceiling((double)count / pageSize),
+                Rows = count
+            };
+        }
+
+
+        public async Task AddDriver(DeliveryDriverPostViewModel driver)
+        {
+            if (string.IsNullOrWhiteSpace(driver.FirstName))
+            {
+                throw new BadRequest("First Name is required");
+            }
+
+            var data = new DeliveryDriver
+            {
+                FirstName = driver.FirstName.ToLower(),
+                LastName = driver.LastName.ToLower().Trim(),
+                Created_At = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            await _driver.Save(data);
+
+            return;
+        }
+
+        #endregion
     }
 }
