@@ -15,7 +15,6 @@ namespace ERP.Repository.Model.Orders
         public string? CustomerName { get; set; }
         public string? PibkupAddress { get; set; }
         public string? DeliveryAddress { get; set; }
-        public decimal TotalAmount { get; set; }
 
         public ICollection<Sale> Sales { get; set; } = [];
         public ICollection<OrderLine> OrderLines { get; set; } = [];
