@@ -1,5 +1,6 @@
 ﻿using ERP.Repository.Interface.Dashboard;
 using ERP.Repository.Interface.Data.DashboardData;
+using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.ViewModel.Dashboard;
 
 namespace ERP.Repository.Services.Dashboard
@@ -11,7 +12,7 @@ namespace ERP.Repository.Services.Dashboard
 
             var data = await _dashboard.OverView(from,to,cancellation);
 
-            var prevMonths = await _dashboard.PrevMonths(from, cancellation);
+            var prevMonths = await _dashboard.PrevMonths(from, to, cancellation);
 
             var latest = data.Sum(x => x.Data);
             var prev = prevMonths.Sum(x => x.Data);
@@ -27,6 +28,15 @@ namespace ERP.Repository.Services.Dashboard
             };
 
             return result;
+        }
+
+        public async Task<InventoryOverViewModel> InventoryOverView()
+        {
+            var warehouse = await _dashboard.WarehouseTotal();
+
+            var inventoryStatus = await _dashboard.InventoryStatusOverView();
+
+            throw new NotImplementedException();
         }
     }
 }

@@ -5,8 +5,8 @@
     {
         PRDATOZ = 1,
         PRDZTOA = 2,
-        QHIGH = 3,
-        QLOW = 4,
+        QLOW = 3,
+        QHIGH = 4,
     }
     public class OrderViewModel
     {
