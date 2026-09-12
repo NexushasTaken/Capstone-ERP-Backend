@@ -21,25 +21,10 @@
         public int Total { get; set; }
     }
 
-    public class InventoryViewModel
-    {
-        public string? Name { get; set; }
-        public string? Warehouse { get; set; }
-        public string? Status { get; set; }
-    }
-
-    public class InventoryPageViewModel
-    {
-        public ICollection<InventoryViewModel> Inventory { get; set; } = [];
-        public int PageCount { get; set; }
-        public int Rows { get; set; }
-    }
-
     public class InventoryOverViewModel
     {
         public int TotalWareHouseCapacity { get; set; }
         public int Risk { get; set; }
-        public ICollection<InventoryStatusTotalViewModel> InventoryStatus { get; set; } = [];
-        public InventoryPageViewModel Inventory { get; set; }
+        public IEnumerable<InventoryStatusTotalViewModel> InventoryStatus { get; set; } = [];
     }
 }

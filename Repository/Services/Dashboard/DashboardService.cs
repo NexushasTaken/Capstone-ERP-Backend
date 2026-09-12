@@ -46,7 +46,12 @@ namespace ERP.Repository.Services.Dashboard
 
             var inventoryStatus = await _dashboard.InventoryStatusOverView();
 
-            throw new NotImplementedException();
+            return new InventoryOverViewModel
+            {
+                TotalWareHouseCapacity = warehouse,
+                Risk = 0,
+                InventoryStatus = inventoryStatus
+            };
         }
     }
 }

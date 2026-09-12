@@ -20,6 +20,7 @@ using ERP.Repository.Interface.Inventories;
 using ERP.Repository.Interface.Orders;
 using ERP.Repository.Interface.Products;
 using ERP.Repository.Interface.Sales;
+using ERP.Repository.Interface.SSA;
 using ERP.Repository.Interface.TokenManager;
 using ERP.Repository.Interface.UserAccounts;
 using ERP.Repository.Services.Dashboard;
@@ -27,6 +28,7 @@ using ERP.Repository.Services.Inventories;
 using ERP.Repository.Services.Orders;
 using ERP.Repository.Services.Products;
 using ERP.Repository.Services.Sales;
+using ERP.Repository.Services.SSA;
 using ERP.Repository.Services.TokenManager;
 using ERP.Repository.Services.UserAccounts;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -68,6 +70,7 @@ namespace ERP
             builder.Services.AddScoped<IInventoryService, InventoryService>();
             builder.Services.AddScoped<ISaleService, SaleService>();
             builder.Services.AddScoped<IDashboardService, DashboardService>();
+            builder.Services.AddScoped<IForecastService, ForecastService>();
             #endregion
 
             #region Data Services
