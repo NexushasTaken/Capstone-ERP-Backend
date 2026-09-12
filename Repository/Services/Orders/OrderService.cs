@@ -117,6 +117,8 @@ namespace ERP.Repository.Services.Orders
                 CustomerName = order.CustomerName.ToLower(),
                 PibkupAddress = order.PickUpAddress.ToLower(),
                 DeliveryAddress = order.DeliveryAddress.ToLower(),
+                Created_At = DateTime.UtcNow,
+                IsActive = true
             };
 
             await _orders.Save(header);

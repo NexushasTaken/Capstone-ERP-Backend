@@ -373,9 +373,6 @@ namespace ERP.Migrations
                     b.Property<string>("PibkupAddress")
                         .HasColumnType("text");
 
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("numeric");
-
                     b.Property<DateTime?>("Updated_At")
                         .HasColumnType("timestamp with time zone");
 
