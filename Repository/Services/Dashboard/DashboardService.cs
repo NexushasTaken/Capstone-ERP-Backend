@@ -15,16 +15,26 @@ namespace ERP.Repository.Services.Dashboard
             var prevMonths = await _dashboard.PrevMonths(from, to, cancellation);
 
             var latest = data.Sum(x => x.Data);
-            var prev = prevMonths.Sum(x => x.Data);
+             decimal prev = prevMonths.Sum(x => x.Data);
 
-            var growth = prev == 0 ? 0 : ((latest - prev) / prev) * 100;
+            decimal growth = 0;
+            string error = "";
 
+            if (prev == 0 || prevMonths.Count() < data.Count())
+            {
+                error = "Insufficient previous month data for growth calculation";
+            }
+            else
+            {
+                growth = ((latest - prev) / prev) * 100;
+            }
 
             var result = new DashboardViewModel
             {
                 Data = data,
                 TotalSales = latest,
-                GrowthPercentage = (double)growth
+                GrowthPercentage = growth,
+                GrowthErrorMessage = error
             };
 
             return result;

@@ -13,12 +13,16 @@ namespace ERP.Repository.Data.DashboardData
 
         public async Task<IEnumerable<MonthsDataViewModel>> OverView(DateTime from, DateTime to, CancellationToken cancellation)
         {
-            var data = await BaseQuery<OrderLine>(false).Where(s => s.Created_At >= from.ToUniversalTime() && s.Created_At <= to.ToUniversalTime()).ToListAsync(cancellation);
+            var start = new DateTime(from.Year, from.Month, from.Day, 0,0,0, DateTimeKind.Utc);
+            var end = new DateTime(to.Year, to.Month, to.Day,23,59,59,DateTimeKind.Utc);
+            var data = await BaseQuery<OrderLine>(false).Where(s => s.Created_At >= start && s.Created_At < end).ToListAsync(cancellation);
 
             var result = data
                 .GroupBy(s => new { s.Created_At.Value.Year, s.Created_At.Value.Month })
+                .OrderBy(g => g.Key.Month)
                 .Select(g => new MonthsDataViewModel
                 {
+                    Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM yyyy"),
                     Data = g.Sum(x => x.Amount)
                 });
 
@@ -27,15 +31,24 @@ namespace ERP.Repository.Data.DashboardData
 
         public async Task<IEnumerable<MonthsDataViewModel>> PrevMonths(DateTime from, DateTime to, CancellationToken cancellation)
         {
-            var months = ((to.Year - from.Year) * 12) + (to.Month - from.Month);
-            var start = from.AddMonths(-months).ToUniversalTime();
-            var end = from.ToUniversalTime();
-            var data = await BaseQuery<OrderLine>(false).Where(s => s.Created_At >= start && s.Created_At <= end).ToListAsync(cancellation);
+
+            TimeSpan span = to - from;
+
+            to = from;
+
+            from = from - span;
+
+            var start = new DateTime(from.Year,from.Month,from.Day,0,0,0,DateTimeKind.Utc);
+            var end = new DateTime(to.Year,to.Month,to.Day,0,0,0,DateTimeKind.Utc);
+
+            var data = await BaseQuery<OrderLine>(false).Where(s => s.Created_At >= start && s.Created_At < end).ToListAsync(cancellation);
 
             var result = data
                 .GroupBy(s => new { s.Created_At.Value.Year, s.Created_At.Value.Month })
+                .OrderBy(g => g.Key.Month)
                 .Select(g => new MonthsDataViewModel
                 {
+                    Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM yyyy"),
                     Data = g.Sum(x => x.Amount)
                 });
 
