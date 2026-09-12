@@ -20,7 +20,7 @@ namespace ERP.Repository.ViewModel.Sales
 
     public class SalesPageViewModel
     {
-        public ICollection<SaleTotalViewModel> Sales { get; set; } = [];
+        public IEnumerable<SaleTotalViewModel> Sales { get; set; } = [];
         public int PageCount { get; set; }
         public int Rows { get; set; }
     }

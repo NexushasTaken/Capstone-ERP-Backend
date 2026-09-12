@@ -1,6 +1,7 @@
 ﻿using ERP.Repository.Interface.Data.SalesData;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.ViewModel.Orders;
+using ERP.Repository.ViewModel.Sales;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Repository.Data.Sales
@@ -47,16 +48,43 @@ namespace ERP.Repository.Data.Sales
             return query;
 
         }
-        public async Task<IEnumerable<OrderLine>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int orderTypeId, CancellationToken cancellation = default)
+        public async Task<IEnumerable<SaleTotalViewModel>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int orderTypeId, CancellationToken cancellation = default)
         {
             var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId == 1);
 
             orders = FilteringQuery(orders, name, filter, orderTypeId);
 
-            var result = await orders.Include(o => o.Product)
+
+           var groupedOrders = orders
+                .Include(o => o.Product)
                 .Include(o => o.Order.OrderType)
                 .Include(o => o.Order.OrderStatus)
                 .Include(o => o.Order.DeliveryDriver)
+                .GroupBy(o => o.OrderId)
+                .Select(o => new SaleTotalViewModel
+                {
+                    Id = o.Key,
+                    OrderType = o.First().Order.OrderType.Type,
+                    OrderStatus = o.First().Order.OrderStatus.Status,
+                    DriverName = o.First().Order.DeliveryDriver == null ? ""
+                        : string.Concat(o.First().Order.DeliveryDriver.FirstName, " ", o.First().Order.DeliveryDriver.LastName),
+                    CustomerName = o.First().Order.CustomerName,
+                    PickUpAddress = o.First().Order.PibkupAddress,
+                    DeliveryAddress = o.First().Order.DeliveryAddress,
+                    Orders = o.GroupBy(g => g.ProductId)
+                        .Select(g => new OrderViewModel
+                        {
+                            ProductName = g.First().Product.Name,
+                            Quantity = g.Sum(x => x.Quantity),
+                            Price = g.First().Product.Price,
+                            TotalAmount = g.Sum(x => x.Amount)
+                        }).ToList(),
+                    Total = o.Sum(g => g.Amount),
+                    Created_At = o.First().Created_At
+                });
+
+            var result = await groupedOrders
+                .OrderByDescending(o => o.Created_At)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellation);
