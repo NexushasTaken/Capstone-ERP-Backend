@@ -64,11 +64,11 @@ namespace ERP.Repository.Data.DashboardData
 
         public async Task<IEnumerable<InventoryStatusTotalViewModel>> InventoryStatusOverView()
         {
-            var result = await BaseQuery<Inventory>(false).GroupBy(i => new { i.StatusId, i.InventoryStatus}).Select(i => new InventoryStatusTotalViewModel
+            var result = await BaseQuery<Inventory>(false).Where(i => i.IsActive == true).GroupBy(i =>  new { i.StatusId, Stat = i.InventoryStatus.Status}).Select(i => new InventoryStatusTotalViewModel
             {
-                Status = i.Key.InventoryStatus.Status,
+                Status = i.Key.Stat,
                 Total = i.Count()
-            }).ToArrayAsync();
+            }).ToListAsync();
 
             return result;
         }
