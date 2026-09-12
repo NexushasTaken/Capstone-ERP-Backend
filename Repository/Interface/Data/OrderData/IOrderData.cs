@@ -1,4 +1,5 @@
 ﻿using ERP.Repository.Model.Orders;
+using ERP.Repository.ViewModel.Orders;
 
 namespace ERP.Repository.Interface.Data.OrderData
 {
@@ -7,7 +8,7 @@ namespace ERP.Repository.Interface.Data.OrderData
 
         #region Orders
         IQueryable<OrderLine> FilteringQuery(IQueryable<OrderLine> query, string? name, int filter, int statusId, int orderTypeId);
-        Task<IEnumerable<OrderLine>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<OrderTotalViewModel>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellationToken = default);
         Task<int> OrdersCount(string? name, int filter, int statusId, int orderTypeId);
         Task<IEnumerable<OrderType>> GetOrderTypesWithoutTracking();
         Task<IEnumerable<OrderStatus>> GetOrderStatusesWithoutTracking();

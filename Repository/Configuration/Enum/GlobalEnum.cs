@@ -18,12 +18,4 @@
         ATOZ = 1,
         ZTOA = 2,
     }
-
-    public enum SalesOverView
-    {
-        ThreeMonths = 3,
-        SixMonths = 6,
-        NineMonths = 9,
-        OneYear = 12
-    }
 }

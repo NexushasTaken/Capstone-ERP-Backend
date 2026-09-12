@@ -2,12 +2,15 @@ using ERP.Middleware;
 using ERP.Repository;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Data;
+using ERP.Repository.Data.DashboardData;
 using ERP.Repository.Data.InventoryData;
 using ERP.Repository.Data.OrderData;
 using ERP.Repository.Data.ProductData;
 using ERP.Repository.Data.Sales;
 using ERP.Repository.Data.UserAccounts;
+using ERP.Repository.Interface.Dashboard;
 using ERP.Repository.Interface.Data;
+using ERP.Repository.Interface.Data.DashboardData;
 using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Interface.Data.ProductData;
@@ -19,6 +22,7 @@ using ERP.Repository.Interface.Products;
 using ERP.Repository.Interface.Sales;
 using ERP.Repository.Interface.TokenManager;
 using ERP.Repository.Interface.UserAccounts;
+using ERP.Repository.Services.Dashboard;
 using ERP.Repository.Services.Inventories;
 using ERP.Repository.Services.Orders;
 using ERP.Repository.Services.Products;
@@ -63,6 +67,7 @@ namespace ERP
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IInventoryService, InventoryService>();
             builder.Services.AddScoped<ISaleService, SaleService>();
+            builder.Services.AddScoped<IDashboardService, DashboardService>();
             #endregion
 
             #region Data Services
@@ -74,6 +79,7 @@ namespace ERP
             builder.Services.AddScoped<IOrderData, OrderData>();
             builder.Services.AddScoped<IBaseData, BaseData>();
             builder.Services.AddScoped<IInventoryData, InventoryData>();
+            builder.Services.AddScoped<IDashboardData, DashBoardData>();
             #endregion
 
             #endregion

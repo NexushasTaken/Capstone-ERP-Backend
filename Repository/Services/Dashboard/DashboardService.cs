@@ -1,13 +1,32 @@
 ﻿using ERP.Repository.Interface.Dashboard;
+using ERP.Repository.Interface.Data.DashboardData;
 using ERP.Repository.ViewModel.Dashboard;
 
 namespace ERP.Repository.Services.Dashboard
 {
-    public class DashboardService : IDashboardService
+    public class DashboardService(IDashboardData _dashboard) : IDashboardService
     {
-        public async Task<IEnumerable<MonthsDataViewModel>> SalesOverView(DateTime from, DateTime to)
+        public async Task<DashboardViewModel> SalesOverView(DateTime from, DateTime to, CancellationToken cancellation)
         {
-            throw new NotImplementedException();
+
+            var data = await _dashboard.OverView(from,to,cancellation);
+
+            var prevMonths = await _dashboard.PrevMonths(from, cancellation);
+
+            var latest = data.Sum(x => x.Data);
+            var prev = prevMonths.Sum(x => x.Data);
+
+            var growth = prev == 0 ? 0 : ((latest - prev) / prev) * 100;
+
+
+            var result = new DashboardViewModel
+            {
+                Data = data,
+                TotalSales = latest,
+                GrowthPercentage = (double)growth
+            };
+
+            return result;
         }
     }
 }

@@ -3,12 +3,13 @@
 
    public class MonthsDataViewModel
     {
-        public int Data { get; set; }
+        public decimal Data { get; set; }
     }
 
     public class DashboardViewModel
     {
+        public IEnumerable<MonthsDataViewModel> Data { get; set; } = [];
         public decimal TotalSales { get; set; }
-        public int GrowthPercentage { get; set; }
+        public double GrowthPercentage { get; set; }
     }
 }
