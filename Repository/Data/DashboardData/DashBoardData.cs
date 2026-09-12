@@ -13,7 +13,7 @@ namespace ERP.Repository.Data.DashboardData
 
         public async Task<IEnumerable<MonthsDataViewModel>> OverView(DateTime from, DateTime to, CancellationToken cancellation)
         {
-            var data = await BaseQuery<OrderLine>(false).Where(s => s.Created_At >= from.ToUniversalTime() && s.Order.Created_At <= to.ToUniversalTime()).ToListAsync(cancellation);
+            var data = await BaseQuery<OrderLine>(false).Where(s => s.Created_At >= from.ToUniversalTime() && s.Created_At <= to.ToUniversalTime()).ToListAsync(cancellation);
 
             var result = data
                 .GroupBy(s => new { s.Created_At.Value.Year, s.Created_At.Value.Month })
