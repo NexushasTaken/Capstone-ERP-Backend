@@ -37,6 +37,12 @@
         public int Rows { get; set; }
     }
 
+    public class OrderStatusCount
+    {
+        public string? Status { get; set; }
+        public int Count { get; set; }
+    }
+
     public class  OrderLineViewModel
     {
 

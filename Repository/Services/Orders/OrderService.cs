@@ -69,6 +69,13 @@ namespace ERP.Repository.Services.Orders
             return deliveryRiders;
         }
 
+        public async Task<IEnumerable<OrderStatusCount>> OrdersStatusCount()
+        {
+            var data = await _orders.StatusCount();
+
+            return data;
+        }
+
         public async Task<List<string>?> InsertOrder(OrderPostViewModel order)
         {
             OrderValidation.AddNewOrderValidation(order);
