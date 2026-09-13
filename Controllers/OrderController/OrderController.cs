@@ -41,6 +41,14 @@ namespace ERP.Controllers.OrderController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", riders));
         }
 
+        [HttpGet("status/count")]
+        public async Task<IActionResult> StatusCount()
+        {
+            var data = await _orderService.OrdersStatusCount();
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
+        }
+
         /// <summary>
         /// 
         /// </summary>

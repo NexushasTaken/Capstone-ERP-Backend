@@ -1,5 +1,7 @@
 ﻿using ERP.Repository.Interface.Data.OrderData;
+using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
+using ERP.Repository.ViewModel.Inventories;
 using ERP.Repository.ViewModel.Orders;
 using Microsoft.EntityFrameworkCore;
 
@@ -141,6 +143,18 @@ namespace ERP.Repository.Data.OrderData
             var order = await BaseQuery<OrderLine>(true).Where(o => o.OrderId == id).Include(o => o.Product).Include(o => o.Inventory).Include(o => o.Order).ToListAsync();
 
             return order;
+        }
+
+        public async Task<IEnumerable<OrderStatusCount>> StatusCount()
+        {
+            var status = await BaseQuery<Order>(false).Where(o => o.OrderStatusId != 1).GroupBy(i => new { i.OrderStatusId, i.OrderStatus.Status }).Select(g => new OrderStatusCount
+            {
+                Status = g.Key.Status,
+                Count = g.Count()
+
+            }).ToListAsync();
+
+            return status;
         }
     }
 }

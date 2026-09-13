@@ -19,6 +19,7 @@ namespace ERP.Repository.Interface.Data.OrderData
         Task<IEnumerable<DeliveryDriver>> GetDeliveryRidersWithoutTracking();
         Task<DeliveryDriver> ValidateDriverWithoutTracking(int? driverId);
         Task<IEnumerable<OrderLine>> GetOrderLinesWithTracking(int id);
+        Task<IEnumerable<OrderStatusCount>> StatusCount();
         #endregion
     }
 }

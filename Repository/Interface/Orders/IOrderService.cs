@@ -14,5 +14,6 @@ namespace ERP.Repository.Interface.Orders
         Task AddDriver(DeliveryDriverPostViewModel driver);
         Task UpdateDriver(DeliveryDriverPatchViewModel driver);
         Task DeleteDriver(int id);
+        Task<IEnumerable<OrderStatusCount>> OrdersStatusCount();
     }
 }
