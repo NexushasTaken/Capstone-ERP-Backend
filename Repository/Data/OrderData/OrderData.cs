@@ -83,7 +83,7 @@ namespace ERP.Repository.Data.OrderData
                             TotalAmount = g.Sum(x => x.Amount)
                         }).ToList(),
                     Total = o.Sum(g => g.Amount),
-                    Created_At = o.First().Created_At
+                    Created_At = o.First().Created_At,
                 });
 
             var result = await groupedOrders
@@ -102,7 +102,7 @@ namespace ERP.Repository.Data.OrderData
 
             orders = FilteringQuery(orders,name,filter,statusId,orderTypeId);
 
-            var result = await orders.Distinct().CountAsync();
+            var result = await orders.Distinct().GroupBy(o => o.OrderId).CountAsync();
 
             return result;
         }

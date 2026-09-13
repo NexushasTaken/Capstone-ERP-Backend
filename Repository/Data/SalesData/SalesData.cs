@@ -98,7 +98,7 @@ namespace ERP.Repository.Data.Sales
 
             orders = FilteringQuery(orders, name, filter, orderTypeId);
 
-            var result = await orders.Distinct().CountAsync();
+            var result = await orders.Distinct().GroupBy(s => s.OrderId).CountAsync();
 
             return result;
         }

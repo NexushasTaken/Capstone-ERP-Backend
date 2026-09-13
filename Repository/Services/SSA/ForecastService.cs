@@ -12,42 +12,48 @@ namespace ERP.Repository.Services.SSA
         {
             var data = await _forecast.Movement();
 
-            var series = data.Select(x => new DemandData { NetChange = (float)x.NetChange });
-            var view = mLContext.Data.LoadFromEnumerable(series);
 
-            var Engine = mLContext.Forecasting.ForecastBySsa(
+            var result = new List<FinalForecastViewModel>();
+
+            foreach (var group in data.GroupBy(x => x.InventoryId))
+            {
+                var series = group.Select(x => new DemandData { NetChange = x.NetChange });
+
+                var view = mLContext.Data.LoadFromEnumerable(series);
+
+                var engine = mLContext.Forecasting.ForecastBySsa(
                 outputColumnName: "Forecast",
                 inputColumnName: "NetChange",
-                windowSize: 30,
-                seriesLength: series.Count(),
-                trainSize: series.Count(),
+                windowSize: 7,
+                seriesLength: 60,
+                trainSize: 365,
                 horizon: 30,
-                confidenceLevel: 95
+                confidenceLevel: 0.95f
                 );
 
-            var model = Engine.Fit(view);
+                var model = engine.Fit(view);
 
-            var foreCastEngine = model.CreateTimeSeriesEngine<DemandData, ForeCastResultViewModel>(mLContext);
-            var forecast = foreCastEngine.Predict();
+                var forecastEngine = model.CreateTimeSeriesEngine<DemandData, ForeCastResultViewModel>(mLContext);
 
-            float currentStock = data.Last().EndDayStock;
-            var lastDay = data.Last().Day ?? DateTime.Today;
+                var forecast = forecastEngine.Predict();
 
-            var stockOuts = forecast.Forecast.Select((predicted, index) => {
+                float currentStock = group.Last().EndDayStock;
 
+                var lastDay = group.Last().Day ?? DateTime.Today;
 
-                currentStock += predicted;
-                return new FinalForecastViewModel
+                var stockOuts = forecast.Forecast.Select((predicted, index) => new FinalForecastViewModel
                 {
-                    InventoryId = data.Last().InventoryId,
+                    InventoryId = group.Key,
                     Day = lastDay.AddDays(index + 1),
-                    Stock = currentStock,
-                };
-            })
-            .Where(x => x.Stock <= 0)
-            .ToList();
+                    Stock = currentStock += predicted
+                })
+                .Where(x => x.Stock <= 0)
+                .ToList();
 
-            return stockOuts;
+                result.AddRange(stockOuts);
+            }
+
+            return result;
         }
     }
 }
