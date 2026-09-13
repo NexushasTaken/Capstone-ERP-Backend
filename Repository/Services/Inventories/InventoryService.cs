@@ -151,7 +151,7 @@ namespace ERP.Repository.Services.Inventories
                 throw new NotFound("Inventory Item Not Found");
             }
 
-            existing.Name = inventory.Name.ToLower()    ;
+            existing.Name = inventory.Name.ToLower();
             existing.ProductId = inventory.ProductId;
             existing.WarehouseId = inventory.WarehouseId;
             existing.ReorderPoint = inventory.ReorderPoint;
