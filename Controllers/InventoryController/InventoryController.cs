@@ -70,6 +70,14 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", inventory));
         }
 
+        [HttpGet("status/count")]
+        public async Task<IActionResult> GetStatusCount()
+        {
+            var data = await _inventory.InventoryStatusCount();
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
+        }
+
         /// <summary>
         /// Insert new inventory item
         /// </summary>

@@ -1,11 +1,13 @@
 ﻿using ERP.Repository.Interface.Dashboard;
 using ERP.Repository.Interface.Data.DashboardData;
+using ERP.Repository.Interface.Data.Forecast;
 using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.ViewModel.Dashboard;
+using ERP.Repository.ViewModel.Forecast;
 
 namespace ERP.Repository.Services.Dashboard
 {
-    public class DashboardService(IDashboardData _dashboard) : IDashboardService
+    public class DashboardService(IDashboardData _dashboard, IForecastData _forecast) : IDashboardService
     {
         public async Task<DashboardViewModel> SalesOverView(DateTime from, DateTime to, CancellationToken cancellation)
         {
@@ -52,6 +54,13 @@ namespace ERP.Repository.Services.Dashboard
                 Risk = 0,
                 InventoryStatus = inventoryStatus
             };
+        }
+
+        public async Task<IEnumerable<ForecastViewModel>> Forecasting()
+        {
+            var data = await _forecast.Movement();
+
+            throw new NotImplementedException();
         }
     }
 }

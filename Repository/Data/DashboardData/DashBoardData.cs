@@ -14,7 +14,7 @@ namespace ERP.Repository.Data.DashboardData
         public async Task<IEnumerable<MonthsDataViewModel>> OverView(DateTime from, DateTime to, CancellationToken cancellation)
         {
             var start = new DateTime(from.Year, from.Month, from.Day, 0,0,0, DateTimeKind.Utc);
-            var end = new DateTime(to.Year, to.Month, to.Day,23,59,59,DateTimeKind.Utc);
+            var end = new DateTime(to.Year, to.Month, to.Day,0,0,0,DateTimeKind.Utc);
             var data = await BaseQuery<OrderLine>(false).Where(s => s.Created_At >= start && s.Created_At < end).ToListAsync(cancellation);
 
             var result = data

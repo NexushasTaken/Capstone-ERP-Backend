@@ -14,6 +14,7 @@ namespace ERP.Repository.Interface.Data.InventoryData
         Task<IEnumerable<Inventory>> GetProductInventoryWithTracking(int productId);
         Task<bool> CheckExistingInventory(string name, int warehouseId);
         Task<IEnumerable<Inventory>> GetInventoriesWithTracking(List<int> Id);
+        Task<IEnumerable<InventoryStatusViewModel>> StatusCount();
         #endregion
 
         #region Warehouse

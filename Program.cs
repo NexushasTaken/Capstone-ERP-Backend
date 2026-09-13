@@ -3,6 +3,7 @@ using ERP.Repository;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Data;
 using ERP.Repository.Data.DashboardData;
+using ERP.Repository.Data.ForecastData;
 using ERP.Repository.Data.InventoryData;
 using ERP.Repository.Data.OrderData;
 using ERP.Repository.Data.ProductData;
@@ -11,6 +12,7 @@ using ERP.Repository.Data.UserAccounts;
 using ERP.Repository.Interface.Dashboard;
 using ERP.Repository.Interface.Data;
 using ERP.Repository.Interface.Data.DashboardData;
+using ERP.Repository.Interface.Data.Forecast;
 using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Interface.Data.ProductData;
@@ -35,6 +37,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.ML;
 using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -83,6 +86,7 @@ namespace ERP
             builder.Services.AddScoped<IBaseData, BaseData>();
             builder.Services.AddScoped<IInventoryData, InventoryData>();
             builder.Services.AddScoped<IDashboardData, DashBoardData>();
+            builder.Services.AddScoped<IForecastData, ForecastData>();
             #endregion
 
             #endregion
@@ -91,6 +95,7 @@ namespace ERP
 
             builder.Services.AddSingleton<ITokenManagerService,TokenManagerService>();
             builder.Services.AddSingleton<ResponseHelper>();
+            builder.Services.AddSingleton<MLContext>();
 
             #endregion
 

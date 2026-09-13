@@ -33,6 +33,12 @@
 
     }
 
+    public class InventoryStatusViewModel()
+    {
+        public string? Status { get; set; }
+        public int Count { get; set; }
+    }
+
     public class InventoryPostViewModel
     {
         public string? Name { get; set; }
