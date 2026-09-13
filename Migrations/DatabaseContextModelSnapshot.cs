@@ -234,6 +234,9 @@ namespace ERP.Migrations
                     b.Property<int>("QuantityChanged")
                         .HasColumnType("integer");
 
+                    b.Property<int>("StockLevel")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("Updated_At")
                         .HasColumnType("timestamp with time zone");
 

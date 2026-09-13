@@ -172,6 +172,18 @@ namespace ERP.Repository.Data.InventoryData
 
             return inventory;
         }
+
+        public async Task<IEnumerable<InventoryStatusViewModel>> StatusCount()
+        {
+            var inventory = await BaseQuery<Inventory>(false).GroupBy(i => new { i.StatusId, i.InventoryStatus.Status }).Select(g => new InventoryStatusViewModel
+            {
+                Status = g.Key.Status,
+                Count = g.Count()
+
+            }).ToListAsync();
+
+            return inventory;
+        }
         #endregion
 
         #region Transaction
@@ -188,8 +200,8 @@ namespace ERP.Repository.Data.InventoryData
         {
             var cutOff = DateTime.UtcNow.AddDays(-cutOffDate);
 
-            var inventory = BaseQuery<InventoryTransaction>(false).Include(i => i.Inventory).ThenInclude(i => i.Warehouse)
-                .Where(t => t.Inventory.Created_At <= cutOff)
+                var inventory = BaseQuery<InventoryTransaction>(false).Include(i => i.Inventory).ThenInclude(i => i.Warehouse)
+                .Where(t => t.Inventory.Created_At < cutOff)
                 .GroupBy(t => t.InventoryId)
                 .Select(t => new
                 {

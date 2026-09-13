@@ -230,6 +230,13 @@ namespace ERP.Repository.Services.Inventories
             return;
         }
 
+        public async Task<IEnumerable<InventoryStatusViewModel>> InventoryStatusCount()
+        {
+            var data = await _inventory.StatusCount();
+
+            return data;
+        }
+
         #endregion
 
         #region Warehouse
