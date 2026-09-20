@@ -8,6 +8,7 @@ namespace ERP.Repository.Interface.Data.Forecast
     {
         Task<IEnumerable<ForecastViewModel>> Movement();
         Task<ForecastResult> GetSingleLatestForecast();
-        Task<IEnumerable<ForecastResult>> GetThirtyDaysForecast();
+        Task<IEnumerable<ForecastResult>> GetThirtyDaysForecast(int page, int pageSize, bool dataModeling = false);
+        Task<int> ForecastResultTotalCount();
     }
 }

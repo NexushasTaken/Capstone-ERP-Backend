@@ -13,16 +13,24 @@ namespace ERP.Repository.Services.Products
     {
 
         #region Category
-        public async Task<IEnumerable<CategoryViewModel>> GetCategories()
+        public async Task<CategoryPageViewModel> GetCategories(int page, int pageSize, CancellationToken cancellation)
         {
-            var categories = await _category.GetAllCategoriesWithoutTracking();
+            var categories = await _category.GetAllCategoriesWithoutTracking(page, pageSize, cancellation);
+            var count = await _category.CategoryTotalCount(cancellation);
 
-            return categories.Select(c => new CategoryViewModel
+             var final =  categories.Select(c => new CategoryViewModel
             {
                 Id = c.Id,
                 Type = c.Type,
                 Created_At = c.Created_At
             });
+
+            return new CategoryPageViewModel
+            {
+                Categories = final,
+                PageCount = (int)Math.Ceiling(count / (double)pageSize),
+                Rows = count
+            };
         }
 
         public async Task InsertCategory(string categoryName)

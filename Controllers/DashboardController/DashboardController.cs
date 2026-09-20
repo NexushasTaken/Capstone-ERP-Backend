@@ -26,9 +26,9 @@ namespace ERP.Controllers.DashboardController
         }
 
         [HttpGet("inventory/forecast")]
-        public async Task<IActionResult> Forecast([FromQuery] bool forceForecast = false)
+        public async Task<IActionResult> Forecast([FromQuery] int page = 1,[FromQuery] int pageSize = 10, [FromQuery] bool forceForecast = false)
         {
-            var data = await _forecast.GetLatestForecast(forceForecast);
+            var data = await _forecast.GetLatestForecast(page, pageSize, forceForecast);
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
         }

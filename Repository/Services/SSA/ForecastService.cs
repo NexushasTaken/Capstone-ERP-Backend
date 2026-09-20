@@ -10,32 +10,41 @@ namespace ERP.Repository.Services.SSA
     public class ForecastService(IForecastData _forecast, MLContext mLContext) : IForecastService
     {
         
-        public async Task<IEnumerable<FinalForecastViewModel>> GetLatestForecast(bool forceForecast)
+        public async Task<ForecastPageViewModel> GetLatestForecast(int page, int pageSize, bool forceForecast)
         {
             var lastForecast = await _forecast.GetSingleLatestForecast();
 
             if (lastForecast == null || lastForecast.Created_At > DateTime.UtcNow)
             {
-                return await SsaModel();
+                await SsaModel(page, pageSize, true);
             }
 
             if (forceForecast)
             {
-                return await SsaModel();
+                await SsaModel(page, pageSize, true);
             }
 
-            var data = await _forecast.GetThirtyDaysForecast();
+            var data = await _forecast.GetThirtyDaysForecast(page, pageSize);
 
-            return data.Select(f => new FinalForecastViewModel
+            var count = await _forecast.ForecastResultTotalCount();
+
+            var final =  data.Select(f => new FinalForecastViewModel
             {
                 InventoryId  = f.InventoryId,
                 Name = f.Inventory.Name,
                 EarliestStockOutDay = f.EarliestStockOutDay
             }).ToList();
+
+            return new ForecastPageViewModel
+            {
+                ForecastResults = final,
+                PageCount = (int)Math.Ceiling(count / (double)pageSize),
+                Rows = count
+            };
         }
 
 
-        public async Task<List<FinalForecastViewModel>> SsaModel() 
+        public async Task SsaModel(int page, int pageSize, bool dataModeling) 
         {
             var data = await _forecast.Movement();
 
@@ -97,7 +106,7 @@ namespace ERP.Repository.Services.SSA
                 }
             }
 
-            var existing = await _forecast.GetThirtyDaysForecast();
+            var existing = await _forecast.GetThirtyDaysForecast(page, pageSize, dataModeling);
 
             if (!existing.Any())
             {
@@ -111,7 +120,7 @@ namespace ERP.Repository.Services.SSA
 
                 await _forecast.SaveMany(forecastResults);
 
-                return result;
+                return;
             }
 
             var forecastResult = result
@@ -127,7 +136,7 @@ namespace ERP.Repository.Services.SSA
 
             await _forecast.SaveMany(forecastResult);
 
-            return result;
+            return;
         }
 
         private IEnumerable<ForecastViewModel> FillDaysGap(IEnumerable<ForecastViewModel> data)

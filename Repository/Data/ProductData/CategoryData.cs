@@ -7,10 +7,16 @@ namespace ERP.Repository.Data.ProductData
 {
     public class CategoryData(DatabaseContext _context) : BaseData(_context), ICategoryData
     {
-        public async Task<IEnumerable<Category>> GetAllCategoriesWithoutTracking(CancellationToken cancellation = default)
+        public async Task<IEnumerable<Category>> GetAllCategoriesWithoutTracking(int page, int pageSize, CancellationToken cancellation = default)
         {
-            var categories = await BaseQuery<Category>(false).Where(c => c.IsActive == true).OrderByDescending(c => c.Created_At).ToListAsync(cancellation);
+            var categories = await BaseQuery<Category>(false).Where(c => c.IsActive == true).OrderByDescending(c => c.Created_At).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellation);
 
+            return categories;
+        }
+
+        public async Task<int> CategoryTotalCount(CancellationToken cancellation)
+        {
+            var categories = await BaseQuery<Category>(false).Where(c => c.IsActive == true).CountAsync(cancellation);
             return categories;
         }
 

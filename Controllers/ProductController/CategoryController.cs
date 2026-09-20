@@ -10,9 +10,9 @@ namespace ERP.Controllers.ProductController
     public class CategoryController(IProductService _productService, ResponseHelper _response) : ControllerBase
     {
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllCategory()
+        public async Task<IActionResult> GetAllCategory([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellation = default)
         {
-            var categories = await _productService.GetCategories();
+            var categories = await _productService.GetCategories(page, pageSize, cancellation);
 
             return StatusCode(200, _response.Status(200, true, "Successfully Retrieved Category", categories));
         }

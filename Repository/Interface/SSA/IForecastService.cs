@@ -4,7 +4,7 @@ namespace ERP.Repository.Interface.SSA
 {
     public interface IForecastService
     {
-        Task<List<FinalForecastViewModel>> SsaModel();
-        Task<IEnumerable<FinalForecastViewModel>> GetLatestForecast(bool forceForecast);
+        Task SsaModel(int page, int pageSize, bool dataModeling);
+        Task<ForecastPageViewModel> GetLatestForecast(int page, int pageSize, bool forceForecast);
     }
 }
