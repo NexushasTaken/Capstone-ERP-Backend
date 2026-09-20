@@ -16,12 +16,12 @@ namespace ERP.Repository.Services.SSA
 
             if (lastForecast == null || lastForecast.Created_At > DateTime.UtcNow)
             {
-                await SsaModel(page, pageSize, true);
+                await SsaModel();
             }
 
             if (forceForecast)
             {
-                await SsaModel(page, pageSize, true);
+                await SsaModel();
             }
 
             var data = await _forecast.GetThirtyDaysForecast(page, pageSize);
@@ -44,7 +44,7 @@ namespace ERP.Repository.Services.SSA
         }
 
 
-        public async Task SsaModel(int page, int pageSize, bool dataModeling) 
+        public async Task SsaModel() 
         {
             var data = await _forecast.Movement();
 
@@ -106,35 +106,17 @@ namespace ERP.Repository.Services.SSA
                 }
             }
 
-            var existing = await _forecast.GetThirtyDaysForecast(page, pageSize, dataModeling);
-
-            if (!existing.Any())
+            var forecastResults = result.Select(f => new ForecastResult
             {
-                var forecastResults = result.Select(f => new ForecastResult
-                {
-                    InventoryId = f.InventoryId,
-                    EarliestStockOutDay = f.EarliestStockOutDay,
-                    Created_At = DateTime.UtcNow,
-                    IsActive = true
-                }).OrderBy(f => f.EarliestStockOutDay).ToList();
+                InventoryId = f.InventoryId,
+                EarliestStockOutDay = f.EarliestStockOutDay,
+                Created_At = DateTime.UtcNow,
+                IsActive = true
+            }).OrderBy(f => f.EarliestStockOutDay).ToList();
 
-                await _forecast.SaveMany(forecastResults);
+            await _forecast.TruncateForecastTable();
 
-                return;
-            }
-
-            var forecastResult = result
-                .Where(f => !existing.Any(e => e.InventoryId == f.InventoryId && e.EarliestStockOutDay == f.EarliestStockOutDay))
-                .Select(f => new ForecastResult
-                {
-                    InventoryId = f.InventoryId,
-                    EarliestStockOutDay = f.EarliestStockOutDay,
-                    Created_At = DateTime.UtcNow,
-                    IsActive = true
-
-                }).OrderBy(f => f.EarliestStockOutDay).ToList();
-
-            await _forecast.SaveMany(forecastResult);
+            await _forecast.SaveMany(forecastResults);
 
             return;
         }
