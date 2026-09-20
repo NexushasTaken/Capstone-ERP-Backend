@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Model.Inventories;
+﻿using ERP.Repository.Model.Forecast;
+using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.Model.Products;
 using ERP.Repository.Model.Sales;
@@ -36,6 +37,7 @@ namespace ERP.Repository
         public DbSet<OrderStatus> OrderStatuses { get; set; }
         public DbSet<DeliveryDriver> DeliveryDrivers { get; set; }
         public DbSet<OrderLine> OrderLines { get; set; }
+        public DbSet<ForecastResult> ForecastResults { get; set; }
         #endregion
 
         #region Sales
@@ -97,6 +99,8 @@ namespace ERP.Repository
                 .HasKey(p => p.Id);
             #endregion
 
+            modelBuilder.Entity<ForecastResult>()
+            .HasKey(k => k.Id);
             #endregion
 
             #region Setting up Relationships
@@ -186,6 +190,10 @@ namespace ERP.Repository
                 .WithMany(w => w.OrderLines)
                 .HasForeignKey(i => i.InventoryId);
 
+            modelBuilder.Entity<ForecastResult>()
+                .HasOne(f => f.Inventory)
+                .WithMany(f => f.ForecastResults)
+                .HasForeignKey(f => f.InventoryId);
             #endregion
 
         }

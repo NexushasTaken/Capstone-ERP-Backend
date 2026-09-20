@@ -22,6 +22,48 @@ namespace ERP.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ERP.Repository.Model.Forecast.ForecastResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("Created_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Created_By")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("Deleted_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Deleted_By")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("EarliestStockOutDay")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("InventoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("Updated_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Updated_By")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryId");
+
+                    b.ToTable("ForecastResults");
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.Inventories.DamagedInventory", b =>
                 {
                     b.Property<int>("Id")
@@ -816,6 +858,17 @@ namespace ERP.Migrations
                     b.ToTable("UserTypes");
                 });
 
+            modelBuilder.Entity("ERP.Repository.Model.Forecast.ForecastResult", b =>
+                {
+                    b.HasOne("ERP.Repository.Model.Inventories.Inventory", "Inventory")
+                        .WithMany("ForecastResults")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Inventory");
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.Inventories.DamagedInventory", b =>
                 {
                     b.HasOne("ERP.Repository.Model.Inventories.Inventory", "Inventory")
@@ -977,6 +1030,8 @@ namespace ERP.Migrations
             modelBuilder.Entity("ERP.Repository.Model.Inventories.Inventory", b =>
                 {
                     b.Navigation("DamagedInventories");
+
+                    b.Navigation("ForecastResults");
 
                     b.Navigation("InventoryTransactions");
 

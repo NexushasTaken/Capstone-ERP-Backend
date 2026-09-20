@@ -1,5 +1,6 @@
 ﻿using ERP.Repository.Interface.Data.Forecast;
 using ERP.Repository.Interface.SSA;
+using ERP.Repository.Model.Forecast;
 using ERP.Repository.ViewModel.Forecast;
 using Microsoft.ML;
 using Microsoft.ML.Transforms.TimeSeries;
@@ -8,11 +9,34 @@ namespace ERP.Repository.Services.SSA
 {
     public class ForecastService(IForecastData _forecast, MLContext mLContext) : IForecastService
     {
+        
+        public async Task<IEnumerable<FinalForecastViewModel>> GetLatestForecast(bool forceForecast)
+        {
+            var lastForecast = await _forecast.GetSingleLatestForecast();
+
+            if (lastForecast != null && lastForecast.EarliestStockOutDay > DateTime.UtcNow)
+            {
+                return await SsaModel();
+            }
+
+            if (forceForecast)
+            {
+                return await SsaModel();
+            }
+
+            var data = await _forecast.GetThirtyDaysForecast();
+
+            return data.Select(f => new FinalForecastViewModel
+            {
+                InventoryId  = f.InventoryId,
+                EarliestStockOutDay = f.EarliestStockOutDay
+            }).ToList();
+        }
+
+
         public async Task<List<FinalForecastViewModel>> SsaModel() 
         {
-           
             var data = await _forecast.Movement();
-
 
             data = FillDaysGap(data);
             
@@ -65,13 +89,42 @@ namespace ERP.Repository.Services.SSA
                     result.Add(new FinalForecastViewModel
                     {
                         InventoryId = group.Key,
-                        Name = group.First().Name,
                         EarliestStockOutDay = earliest?.Day,
-                        ProbabilityNext30Days = probNext30Days,
-                        Stock = stockTrajectory.Last().Stock
+                        //ProbabilityNext30Days = probNext30Days,
+                        //Stock = stockTrajectory.Last().Stock
                     });
                 }
             }
+
+            var existing = await _forecast.GetThirtyDaysForecast();
+
+            if (!existing.Any())
+            {
+                var forecastResults = result.Select(f => new ForecastResult
+                {
+                    InventoryId = f.InventoryId,
+                    EarliestStockOutDay = f.EarliestStockOutDay,
+                    Created_At = DateTime.UtcNow,
+                    IsActive = true
+                }).OrderBy(f => f.EarliestStockOutDay).ToList();
+
+                await _forecast.SaveMany(forecastResults);
+
+                return result;
+            }
+
+            var forecastResult = result
+                .Where(f => !existing.Any(e => e.InventoryId == f.InventoryId && e.EarliestStockOutDay == f.EarliestStockOutDay))
+                .Select(f => new ForecastResult
+                {
+                    InventoryId = f.InventoryId,
+                    EarliestStockOutDay = f.EarliestStockOutDay,
+                    Created_At = DateTime.UtcNow,
+                    IsActive = true
+
+                }).OrderBy(f => f.EarliestStockOutDay).ToList();
+
+            await _forecast.SaveMany(forecastResult);
 
             return result;
         }
@@ -102,7 +155,6 @@ namespace ERP.Repository.Services.SSA
                         return new ForecastViewModel
                         {
                             InventoryId = group.Key,
-                            Name = group.First().Name,
                             Day = day,
                             NetChange = 0,
                             EndDayStock = lastKnownStock
