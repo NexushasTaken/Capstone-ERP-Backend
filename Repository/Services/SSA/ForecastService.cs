@@ -10,23 +10,32 @@ namespace ERP.Repository.Services.SSA
     {
         public async Task<List<FinalForecastViewModel>> SsaModel() 
         {
+           
             var data = await _forecast.Movement();
 
 
+            data = FillDaysGap(data);
+            
             var result = new List<FinalForecastViewModel>();
+            DateTime today = DateTime.Today;
 
             foreach (var group in data.GroupBy(x => x.InventoryId))
             {
-                var series = group.Select(x => new DemandData { NetChange = x.NetChange });
+                var series = group.Select(x => new DemandData { EndDayStock = x.EndDayStock });
+
+                if(series.Count() < 14)
+                {
+                    continue;
+                }
 
                 var view = mLContext.Data.LoadFromEnumerable(series);
 
                 var engine = mLContext.Forecasting.ForecastBySsa(
                 outputColumnName: "Forecast",
-                inputColumnName: "NetChange",
+                inputColumnName: "EndDayStock",
                 windowSize: 7,
-                seriesLength: 60,
-                trainSize: 365,
+                seriesLength: Math.Min(series.Count(), 60),
+                trainSize: Math.Min(series.Count(), 365),
                 horizon: 30,
                 confidenceLevel: 0.95f
                 );
@@ -37,23 +46,69 @@ namespace ERP.Repository.Services.SSA
 
                 var forecast = forecastEngine.Predict();
 
-                float currentStock = group.Last().EndDayStock;
+                var lastDay = group.Max(x => x.Day) ?? DateTime.Today;
 
-                var lastDay = group.Last().Day ?? DateTime.Today;
-
-                var stockOuts = forecast.Forecast.Select((predicted, index) => new FinalForecastViewModel
+                var stockTrajectory = forecast.Forecast.Select((predicted, index) =>
                 {
-                    InventoryId = group.Key,
-                    Day = lastDay.AddDays(index + 1),
-                    Stock = currentStock += predicted
+                    return new { Day = lastDay.AddDays(index + 1), Stock = predicted };
                 })
-                .Where(x => x.Stock <= 0)
-                .ToList();
+                  .Where(x => x.Day >= today)
+                  .ToList();
 
-                result.AddRange(stockOuts);
+                var earliest = stockTrajectory.FirstOrDefault(x => x.Stock <= 0);
+
+                int zeroDays = stockTrajectory.Count(x => x.Stock == 0);
+                double probNext30Days = (double)zeroDays / stockTrajectory.Count() * 100;
+
+                if (earliest != null)
+                {
+                    result.Add(new FinalForecastViewModel
+                    {
+                        InventoryId = group.Key,
+                        Name = group.First().Name,
+                        EarliestStockOutDay = earliest?.Day,
+                        ProbabilityNext30Days = probNext30Days,
+                        Stock = stockTrajectory.Last().Stock
+                    });
+                }
             }
 
             return result;
+        }
+
+        private IEnumerable<ForecastViewModel> FillDaysGap(IEnumerable<ForecastViewModel> data)
+        {
+            return data
+                .GroupBy(x => x.InventoryId)
+                .SelectMany(group =>
+                {
+                    var minDate = group.Min(x => x.Day);
+                    var maxDate = group.Max(x => x.Day);
+
+                    var allDays = Enumerable.Range(0, (maxDate - minDate).Value.Days + 1)
+                    .Select(offset => minDate.Value.AddDays(offset));
+
+                    int lastKnownStock = group.First().EndDayStock;
+
+                    return allDays.Select(day =>
+                    {
+                        var existing = group.FirstOrDefault(x => x.Day == day);
+                        if(existing != null)
+                        {
+                            lastKnownStock = existing.EndDayStock;
+                            return existing;
+                        }
+
+                        return new ForecastViewModel
+                        {
+                            InventoryId = group.Key,
+                            Name = group.First().Name,
+                            Day = day,
+                            NetChange = 0,
+                            EndDayStock = lastKnownStock
+                        };
+                    });
+                });
         }
     }
 }
