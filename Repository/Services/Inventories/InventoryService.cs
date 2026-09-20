@@ -116,7 +116,7 @@ namespace ERP.Repository.Services.Inventories
                 {
                     Id = existing.Id,
                     Quantity = +inventory.Quantity,
-                    Label = 4
+                    Label = 2
                 };
             }
 
@@ -204,7 +204,7 @@ namespace ERP.Repository.Services.Inventories
             {
                 Id = inventory.Id,
                 Quantity = -damaged.Quantity,
-                Label = 2
+                Label = damaged.DamagedType == 1 ? 4 : 2
             };
 
             await InventoryTransaction(transaction);

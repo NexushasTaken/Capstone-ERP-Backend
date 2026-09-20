@@ -221,8 +221,6 @@ namespace ERP.Repository.Services.Orders
                     case OrderStatusEnum.Cancelled:
                         await RevertInventoryTransaction(inventory);
                         break;
-                    default:
-                        return;
                 }
             }
             else

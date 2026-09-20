@@ -1,4 +1,5 @@
 ﻿using ERP.Repository.Interface.Data.Forecast;
+using ERP.Repository.Model.Forecast;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.ViewModel.Forecast;
 using Microsoft.EntityFrameworkCore;
@@ -13,12 +14,32 @@ namespace ERP.Repository.Data.ForecastData
                 .Select(g => new ForecastViewModel
                 {
                     InventoryId = g.Key.InventoryId,
-                    Name = g.First().Inventory.Name,
                     Day = g.Key.Day,
                     NetChange = g.Sum(x => x.QuantityChanged),
                     EndDayStock = g.OrderBy(x => x.Created_At).Last().StockLevel
                 })
                 .OrderBy(x => x.Day)
+                .ToListAsync();
+
+            return data;
+        }
+
+        public async Task<ForecastResult> GetSingleLatestForecast()
+        {
+            var data = await BaseQuery<ForecastResult>(false).LastAsync();
+
+            return data;
+        }
+
+        public async Task<IEnumerable<ForecastResult>> GetThirtyDaysForecast()
+        {
+            var start = DateTime.UtcNow.AddDays(-30);
+            var end = DateTime.UtcNow;
+
+            var data = await BaseQuery<ForecastResult>(false)
+                .Include(f => f.Inventory)
+                .Where(f => f.EarliestStockOutDay.Value >= start && f.EarliestStockOutDay.Value <= end)
+                .OrderBy(f => f.EarliestStockOutDay)
                 .ToListAsync();
 
             return data;
