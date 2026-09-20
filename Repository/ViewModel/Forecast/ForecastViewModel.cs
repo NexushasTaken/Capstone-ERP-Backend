@@ -26,4 +26,11 @@
         //public double ProbabilityNext30Days { get; set; }
         //public float Stock { get; set; }
     }
+
+    public class ForecastPageViewModel
+    {
+        public ICollection<FinalForecastViewModel> ForecastResults { get; set; } = [];
+        public int PageCount { get; set; }
+        public int Rows { get; set; }
+    }
 }

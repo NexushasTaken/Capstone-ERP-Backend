@@ -31,15 +31,45 @@ namespace ERP.Repository.Data.ForecastData
             return data;
         }
 
-        public async Task<IEnumerable<ForecastResult>> GetThirtyDaysForecast()
+        public async Task<IEnumerable<ForecastResult>> GetThirtyDaysForecast(int page, int pageSize, bool dataModeling)
         {
-            var data = await BaseQuery<ForecastResult>(false)
-                .Include(f => f.Inventory)
-                .OrderByDescending(f => f.EarliestStockOutDay)
-                .Take(30)
-                .ToListAsync();
+            var start = DateTime.UtcNow;
+            var end = DateTime.UtcNow.AddDays(30);
 
+            var data = new List<ForecastResult>();
+
+            if (dataModeling)
+            {
+                data = await BaseQuery<ForecastResult>(false)
+               .Include(f => f.Inventory)
+               .Where(f => f.EarliestStockOutDay.Value >= start && f.EarliestStockOutDay.Value <= end)
+               .OrderBy(f => f.EarliestStockOutDay)
+               .ToListAsync();
+            }
+            else
+            {
+                data = await BaseQuery<ForecastResult>(false)
+               .Include(f => f.Inventory)
+               .Where(f => f.EarliestStockOutDay.Value >= start && f.EarliestStockOutDay.Value <= end)
+               .OrderBy(f => f.EarliestStockOutDay)
+               .Skip((page - 1) * pageSize)
+               .Take(pageSize)
+               .ToListAsync();
+            }
+           
             return data;
+        }
+
+        public async Task<int> ForecastResultTotalCount()
+        {
+            var start = DateTime.UtcNow;
+            var end = DateTime.UtcNow.AddDays(30);
+
+            var total = await BaseQuery<ForecastResult>(false)
+                .Where(f => f.EarliestStockOutDay.Value >= start && f.EarliestStockOutDay.Value <= end)
+                .CountAsync();
+
+            return total;
         }
     }
 }
