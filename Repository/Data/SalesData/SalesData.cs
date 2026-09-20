@@ -84,7 +84,7 @@ namespace ERP.Repository.Data.Sales
                 });
 
             var result = await groupedOrders
-                .OrderByDescending(o => o.Created_At)
+                .OrderByDescending(o => o.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellation);
