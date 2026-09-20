@@ -26,7 +26,7 @@ namespace ERP.Repository.Data.ForecastData
 
         public async Task<ForecastResult> GetSingleLatestForecast()
         {
-            var data = await BaseQuery<ForecastResult>(false).LastAsync();
+            var data = await BaseQuery<ForecastResult>(false).OrderByDescending(x => x.Created_At).FirstOrDefaultAsync();
 
             return data;
         }
