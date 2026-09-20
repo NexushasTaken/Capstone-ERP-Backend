@@ -33,13 +33,10 @@ namespace ERP.Repository.Data.ForecastData
 
         public async Task<IEnumerable<ForecastResult>> GetThirtyDaysForecast()
         {
-            var start = DateTime.UtcNow.AddDays(-30);
-            var end = DateTime.UtcNow;
-
             var data = await BaseQuery<ForecastResult>(false)
                 .Include(f => f.Inventory)
-                .Where(f => f.EarliestStockOutDay.Value >= start && f.EarliestStockOutDay.Value <= end)
-                .OrderBy(f => f.EarliestStockOutDay)
+                .OrderByDescending(f => f.EarliestStockOutDay)
+                .Take(30)
                 .ToListAsync();
 
             return data;
