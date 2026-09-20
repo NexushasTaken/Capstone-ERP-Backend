@@ -9,10 +9,11 @@ namespace ERP.Repository.Data.ForecastData
     {
         public async Task<IEnumerable<ForecastViewModel>> Movement()
         {
-            var data = await BaseQuery<InventoryTransaction>(false).GroupBy(t => new { t.InventoryId, Day = t.Created_At.HasValue ? t.Created_At.Value.Date : DateTime.MinValue})
+            var data = await BaseQuery<InventoryTransaction>(false).Include(t => t.Inventory).GroupBy(t => new { t.InventoryId, Day = t.Created_At.HasValue ? t.Created_At.Value.Date : DateTime.MinValue})
                 .Select(g => new ForecastViewModel
                 {
                     InventoryId = g.Key.InventoryId,
+                    Name = g.First().Inventory.Name,
                     Day = g.Key.Day,
                     NetChange = g.Sum(x => x.QuantityChanged),
                     EndDayStock = g.OrderBy(x => x.Created_At).Last().StockLevel

@@ -199,9 +199,10 @@ namespace ERP.Repository.Data.InventoryData
         public async Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocityWithoutTracking(int cutOffDate, int page, int pageSize)
         {
             var cutOff = DateTime.UtcNow.AddDays(-cutOffDate);
+            cutOff = new DateTime(cutOff.Year, cutOff.Month, cutOff.Day, 23,59,59, DateTimeKind.Utc);
 
                 var inventory = BaseQuery<InventoryTransaction>(false).Include(i => i.Inventory).ThenInclude(i => i.Warehouse)
-                .Where(t => t.Inventory.Created_At < cutOff)
+                .Where(t => t.Inventory.Created_At <= cutOff)
                 .GroupBy(t => t.InventoryId)
                 .Select(t => new
                 {

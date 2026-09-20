@@ -3,6 +3,7 @@
     public class ForecastViewModel
     {
         public int InventoryId { get; set; }
+        public string? Name { get; set; }
         public DateTime? Day { get; set; }
         public int NetChange { get; set; }
         public int EndDayStock { get; set; }
@@ -10,7 +11,7 @@
 
     public class DemandData
     {
-        public float NetChange { get; set; }
+        public float EndDayStock { get; set; }
     }
 
     public class ForeCastResultViewModel
@@ -21,7 +22,9 @@
     public class FinalForecastViewModel
     {
         public int InventoryId { get; set; }
-        public DateTime Day { get; set; }
+        public string? Name { get; set; }
+        public DateTime? EarliestStockOutDay { get; set; }
+        public double ProbabilityNext30Days { get; set; }
         public float Stock { get; set; }
     }
 }
