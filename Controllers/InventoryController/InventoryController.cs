@@ -4,6 +4,7 @@ using ERP.Repository.Model.Inventories;
 using ERP.Repository.ViewModel.Inventories;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection.Emit;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ERP.Controllers.InventoryController
 {
@@ -78,6 +79,14 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
         }
 
+        [HttpGet("insert/product/all")]
+        public async Task<IActionResult> GetAllProductsForInsert()
+        {
+            var product = await _inventory.GetAllProductForInsert();
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", product));
+        }
+
         /// <summary>
         /// Insert new inventory item
         /// </summary>
@@ -99,6 +108,7 @@ namespace ERP.Controllers.InventoryController
 
             return StatusCode(200, _response.Status(200, true, "Added Successfully", null));
         }
+
 
         [HttpPatch("patch")]
         public async Task<IActionResult> UpdateInventory([FromBody] InventoryUpdateViewModel inventory)
