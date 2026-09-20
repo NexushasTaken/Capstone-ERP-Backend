@@ -14,7 +14,7 @@ namespace ERP.Repository.Services.SSA
         {
             var lastForecast = await _forecast.GetSingleLatestForecast();
 
-            if (lastForecast != null && lastForecast.EarliestStockOutDay > DateTime.UtcNow)
+            if (lastForecast == null || lastForecast.Created_At > DateTime.UtcNow)
             {
                 return await SsaModel();
             }
@@ -29,6 +29,7 @@ namespace ERP.Repository.Services.SSA
             return data.Select(f => new FinalForecastViewModel
             {
                 InventoryId  = f.InventoryId,
+                Name = f.Inventory.Name,
                 EarliestStockOutDay = f.EarliestStockOutDay
             }).ToList();
         }
