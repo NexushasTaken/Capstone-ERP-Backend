@@ -3,15 +3,18 @@ using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Interface.Data.InventoryData;
+using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Inventories;
+using ERP.Repository.Interface.Products;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.ViewModel.Inventories;
+using ERP.Repository.ViewModel.Products;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.ConstrainedExecution;
 
 namespace ERP.Repository.Services.Inventories
 {
-    public class InventoryService(IInventoryData _inventory) : IInventoryService
+    public class InventoryService(IInventoryData _inventory, IProductData _product) : IInventoryService
     {
 
         #region Inventory
@@ -46,16 +49,32 @@ namespace ERP.Repository.Services.Inventories
             return result;
         }
 
+        public async Task<IEnumerable<ProductViewModel>> GetAllProductForInsert()
+        {
+            var product = await _product.GetAllProductForInventoryInsert();
+
+            return product.Select( p => new ProductViewModel
+            {
+                Id = p.Id,
+                CategoryId = p.CategoryId,
+                Name = p.Name,
+                Price = p.Price,
+                CategoryName = p.Category == null ? "No Category" : p.Category.Type,
+                Created_At = p.Created_At
+            }).ToList();
+        }
+
         public async Task InsertItem(InventoryPostViewModel inventory)
         {
 
             InventoryValidation.ValidateItem(inventory);
 
-            var wareHouseCapacity = await _inventory.GetIndividualWarehousesMaxCapacityWithoutTracking(inventory.WarehouseId);
+            var maxWareHouseCapacity = await _inventory.GetIndividualWarehousesMaxCapacityWithoutTracking(inventory.WarehouseId);
+            var currentWareHouseCapacity = await _inventory.GetIndividualWarehouseCurrentCapacityWithoutTracking(inventory.WarehouseId);
 
-            if (inventory.Quantity > wareHouseCapacity)
+            if ((currentWareHouseCapacity + 1) > maxWareHouseCapacity)
             {
-                throw new BadRequest("The item quantity exceeds the warehouse capacity.");
+                throw new BadRequest("Warehouse is full.");
             }
 
             var duplicate = await _inventory.CheckExistingInventory(inventory.Name.ToLower(), inventory.WarehouseId);
@@ -145,10 +164,17 @@ namespace ERP.Repository.Services.Inventories
             InventoryValidation.ValidateUpdate(inventory);
 
             var existing = await _inventory.GetInventoryWithTracking(inventory.Id);
+            var currentWareHouseCapacity = await _inventory.GetIndividualWarehouseCurrentCapacityWithoutTracking(inventory.WarehouseId);
+            var maxWareHouseCapacity = await _inventory.GetIndividualWarehousesMaxCapacityWithoutTracking(inventory.WarehouseId);
 
             if (existing == null)
             {
                 throw new NotFound("Inventory Item Not Found");
+            }
+
+            if((currentWareHouseCapacity + 1) > maxWareHouseCapacity)
+            {
+                throw new BadRequest("Warehouse is full");
             }
 
             existing.Name = inventory.Name.ToLower();
@@ -306,10 +332,16 @@ namespace ERP.Repository.Services.Inventories
             InventoryValidation.InventoryWareHouseUpdateValidation(wareHouse);
 
             var wh = await _inventory.GetIndividualWareHouseWithTracking(wareHouse.Id);
+            var currentWareHouseCapacity = await _inventory.GetIndividualWarehouseCurrentCapacityWithoutTracking(wareHouse.Id);
 
             if(wh == null)
             {
                 throw new NotFound("Warehouse not found");
+            }
+
+            if (wareHouse.Capicity < currentWareHouseCapacity)
+            {
+                throw new BadRequest("You cannot update below your current Warehouse Capacity");
             }
 
             wh.Name = wareHouse.Name.ToLower();

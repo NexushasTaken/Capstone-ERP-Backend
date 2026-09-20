@@ -58,5 +58,15 @@ namespace ERP.Repository.Data.ProductData
 
             return result;
         }
+
+        public async Task<IEnumerable<Product>> GetAllProductForInventoryInsert()
+        {
+            var product = await BaseQuery<Product>(false)
+                .Include(p => p.Category)
+                .Where(p => p.IsActive == true)
+                .ToListAsync();
+
+            return product;
+        }
     }
 }

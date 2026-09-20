@@ -1,4 +1,5 @@
 ﻿using ERP.Repository.ViewModel.Inventories;
+using ERP.Repository.ViewModel.Products;
 
 namespace ERP.Repository.Interface.Inventories
 {
@@ -33,5 +34,6 @@ namespace ERP.Repository.Interface.Inventories
         Task<InventoryMovementVelocityPageViewModel> GetMovementVelocity(int cutOffDate, int page, int pageSize);
         Task Restock(InventoryRestockViewModel inventory);
         Task<IEnumerable<InventoryStatusViewModel>> InventoryStatusCount();
+        Task<IEnumerable<ProductViewModel>> GetAllProductForInsert();
     }
 }
