@@ -38,8 +38,7 @@ namespace ERP.Repository.Data.ForecastData
 
             var data = await BaseQuery<ForecastResult>(false)
                .Include(f => f.Inventory)
-               .Where(f => f.EarliestStockOutDay.Value >= start && f.EarliestStockOutDay.Value <= end)
-                .OrderBy(f => f.EarliestStockOutDay)
+               .OrderBy(f => f.EarliestStockOutDay)
                .Skip((page - 1) * pageSize)
                .Take(pageSize)
                .ToListAsync();
@@ -53,7 +52,6 @@ namespace ERP.Repository.Data.ForecastData
             var end = DateTime.UtcNow.AddDays(30);
 
             var total = await BaseQuery<ForecastResult>(false)
-                .Where(f => f.EarliestStockOutDay.Value >= start && f.EarliestStockOutDay.Value <= end)
                 .CountAsync();
 
             return total;
