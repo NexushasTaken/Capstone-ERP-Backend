@@ -15,7 +15,7 @@ namespace ERP.Repository.Data.DashboardData
         {
             var start = new DateTime(from.Year, from.Month, from.Day, 0,0,0, DateTimeKind.Utc);
             var end = new DateTime(to.Year, to.Month, to.Day,0,0,0,DateTimeKind.Utc);
-            var data = await BaseQuery<OrderLine>(false).Where(s => s.Created_At >= start && s.Created_At < end).ToListAsync(cancellation);
+            var data = await BaseQuery<OrderLine>(false).Include(o => o.Order).Where(s => s.Created_At >= start && s.Created_At < end && s.Order.OrderStatusId == 1).ToListAsync(cancellation);
 
             var result = data
                 .GroupBy(s => new { s.Created_At.Value.Year, s.Created_At.Value.Month })
