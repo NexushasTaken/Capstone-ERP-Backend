@@ -53,11 +53,13 @@ namespace ERP.Repository.Services.SSA
             var result = new List<FinalForecastViewModel>();
             DateTime today = DateTime.Today;
 
+            const int windowSize = 7;
+
             foreach (var group in data.GroupBy(x => x.InventoryId))
             {
                 var series = group.Select(x => new DemandData { EndDayStock = x.EndDayStock });
 
-                if(series.Count() < 14)
+                if(series.Count() <= 2 * windowSize)
                 {
                     continue;
                 }
@@ -67,7 +69,7 @@ namespace ERP.Repository.Services.SSA
                 var engine = mLContext.Forecasting.ForecastBySsa(
                 outputColumnName: "Forecast",
                 inputColumnName: "EndDayStock",
-                windowSize: 7,
+                windowSize: windowSize,
                 seriesLength: Math.Min(series.Count(), 60),
                 trainSize: Math.Min(series.Count(), 365),
                 horizon: 30,
