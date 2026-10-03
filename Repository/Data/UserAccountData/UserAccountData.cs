@@ -27,6 +27,13 @@ namespace ERP.Repository.Data.UserAccounts
             return user;
         }
 
+        public async Task<UserAccount> GetUserByIdWithTracking(int userId, CancellationToken cancellation = default)
+        {
+            var user = await BaseQuery<UserAccount>(true).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Id == userId, cancellation);
+
+            return user;
+        }
+
         public async Task<IEnumerable<UserAccount>> GetAllUsersWithoutTracking(CancellationToken cancellation = default)
         {
             var users = await BaseQuery<UserAccount>(false)
@@ -36,6 +43,24 @@ namespace ERP.Repository.Data.UserAccounts
                 .ToListAsync(cancellation);
 
             return users;
+        }
+
+        public async Task<IEnumerable<UserAccount>> GetAllAccountsWithoutTracking(CancellationToken cancellation = default)
+        {
+            var accounts = await BaseQuery<UserAccount>(false)
+                .Include(i => i.UserInformation)
+                .Include(r => r.UserRole)
+                .OrderBy(u => u.Id)
+                .ToListAsync(cancellation);
+
+            return accounts;
+        }
+
+        public async Task<UserRole> GetRoleByName(string roleName, CancellationToken cancellation = default)
+        {
+            var role = await BaseQuery<UserRole>(false).FirstOrDefaultAsync(r => r.Role!.ToLower() == roleName.ToLower(), cancellation);
+
+            return role;
         }
     }
 }

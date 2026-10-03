@@ -38,6 +38,7 @@
         Driver = 3,
         Order = 4,
         Inventory = 5,
-        Warehouse = 6
+        Warehouse = 6,
+        Account = 7
     }
 }

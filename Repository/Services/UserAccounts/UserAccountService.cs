@@ -1,4 +1,7 @@
-﻿using ERP.Repository.Configuration.Validation.UserAccounts;
+﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Configuration.Exception_Extender;
+using ERP.Repository.Configuration.Validation.UserAccounts;
+using ERP.Repository.Interface.AuditLogs;
 using ERP.Repository.Interface.Data.UserAccountData;
 using ERP.Repository.Interface.TokenManager;
 using ERP.Repository.Interface.UserAccounts;
@@ -9,7 +12,8 @@ namespace ERP.Repository.Services.UserAccounts
 {
     public class UserAccountService(
         IUserAccountData _userAccountData,
-        ITokenManagerService _tokenManagerService) : IUserAccountService
+        ITokenManagerService _tokenManagerService,
+        IAuditLogService _auditLog) : IUserAccountService
     {
         public async Task<UserLoginSuccess> Login(UserAccountViewModel user)
         {
@@ -71,6 +75,171 @@ namespace ERP.Repository.Services.UserAccounts
                 FullName = $"{u.UserInformation?.FirstName} {u.UserInformation?.LastName}".Trim(),
                 IsActive = u.IsActive == true
             });
+        }
+
+        public async Task<IEnumerable<AccountListItemViewModel>> GetAccounts(CancellationToken cancellation = default)
+        {
+            var accounts = await _userAccountData.GetAllAccountsWithoutTracking(cancellation);
+
+            return accounts.Select(a => new AccountListItemViewModel
+            {
+                Id = a.Id,
+                Role = a.UserRole?.Role,
+                FirstName = a.UserInformation?.FirstName,
+                LastName = a.UserInformation?.LastName,
+                Email = a.Email
+            });
+        }
+
+        public async Task CreateAccount(CreateAccountViewModel account)
+        {
+            AccountValidation.CreateValidation(account);
+
+            var existingUser = await _userAccountData.GetUserByEmailWithoutTracking(account.Email!);
+
+            if (existingUser != null)
+            {
+                throw new BadRequest("An account with this email already exists.");
+            }
+
+            var role = await _userAccountData.GetRoleByName(account.Role!);
+
+            if (role == null)
+            {
+                throw new BadRequest("Role must be owner or secretary");
+            }
+
+            var now = DateTime.UtcNow;
+            var salt = _tokenManagerService.GenerateSalt();
+            var hashedPassword = _tokenManagerService.Hashed(account.Password!, salt);
+
+            var newAccount = new UserAccount
+            {
+                Email = account.Email,
+                Password = hashedPassword,
+                Salt = salt,
+                UserRoleId = role.Id,
+                Created_By = _auditLog.CurrentUserId,
+                Created_At = now,
+                IsActive = true,
+                UserInformation = new UserInformation
+                {
+                    FirstName = account.FirstName,
+                    LastName = account.LastName,
+                    Created_By = _auditLog.CurrentUserId,
+                    Created_At = now,
+                    IsActive = true
+                }
+            };
+
+            await _userAccountData.Save(newAccount);
+
+            _auditLog.Log(AuditModuleEnum.Account, AuditActionEnum.Create, $"Created account for '{account.Email}'", newAccount.Id, now);
+            await _userAccountData.SaveChanges();
+        }
+
+        public async Task UpdateAccountRole(int id, UpdateAccountRoleViewModel account)
+        {
+            AccountValidation.RoleUpdateValidation(id, account);
+
+            var existingAccount = await _userAccountData.GetUserByIdWithTracking(id);
+
+            if (existingAccount == null)
+            {
+                throw new NotFound($"Account with ID {id} not found.");
+            }
+
+            var role = await _userAccountData.GetRoleByName(account.Role!);
+
+            if (role == null)
+            {
+                throw new BadRequest("Role must be owner or secretary");
+            }
+
+            var now = DateTime.UtcNow;
+
+            existingAccount.UserRoleId = role.Id;
+            existingAccount.Updated_By = _auditLog.CurrentUserId;
+            existingAccount.Updated_At = now;
+
+            _auditLog.Log(AuditModuleEnum.Account, AuditActionEnum.Update, $"Updated role for account {id} to '{role.Role}'", id, now);
+            await _userAccountData.SaveChanges();
+        }
+
+        public async Task UpdateProfile(int userId, UpdateProfileViewModel profile)
+        {
+            AccountValidation.ProfileValidation(profile);
+
+            var existingAccount = await _userAccountData.GetUserByIdWithTracking(userId);
+
+            if (existingAccount == null)
+            {
+                throw new NotFound("Account not found.");
+            }
+
+            var now = DateTime.UtcNow;
+
+            existingAccount.UserInformation!.FirstName = profile.FirstName;
+            existingAccount.UserInformation!.LastName = profile.LastName;
+            existingAccount.UserInformation!.Updated_By = userId;
+            existingAccount.UserInformation!.Updated_At = now;
+
+            await _userAccountData.SaveChanges();
+        }
+
+        public async Task<CredentialsViewModel> GetCredentials(int userId)
+        {
+            var existingAccount = await _userAccountData.GetUserByIdWithoutTracking(userId);
+
+            if (existingAccount == null)
+            {
+                throw new NotFound("Account not found.");
+            }
+
+            return new CredentialsViewModel { Email = existingAccount.Email };
+        }
+
+        public async Task UpdateCredentials(int userId, UpdateCredentialsViewModel credentials)
+        {
+            AccountValidation.CredentialsValidation(credentials);
+
+            var existingAccount = await _userAccountData.GetUserByIdWithTracking(userId);
+
+            if (existingAccount == null)
+            {
+                throw new NotFound("Account not found.");
+            }
+
+            var hashedCurrentPassword = _tokenManagerService.Hashed(credentials.CurrentPassword!, existingAccount.Salt);
+
+            if (hashedCurrentPassword != existingAccount.Password)
+            {
+                throw new UnauthorizedAccessException("Current password is incorrect.");
+            }
+
+            if (!string.Equals(credentials.Email, existingAccount.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                var emailOwner = await _userAccountData.GetUserByEmailWithoutTracking(credentials.Email!);
+
+                if (emailOwner != null && emailOwner.Id != userId)
+                {
+                    throw new BadRequest("An account with this email already exists.");
+                }
+            }
+
+            existingAccount.Email = credentials.Email;
+            existingAccount.Updated_By = userId;
+            existingAccount.Updated_At = DateTime.UtcNow;
+
+            if (!string.IsNullOrEmpty(credentials.Password))
+            {
+                var newSalt = _tokenManagerService.GenerateSalt();
+
+                existingAccount.Salt = newSalt;
+                existingAccount.Password = _tokenManagerService.Hashed(credentials.Password, newSalt);
+            }
+
+            await _userAccountData.SaveChanges();
         }
 
         private UserLoginSuccess ToCurrentUser(UserAccount user, string? token)
