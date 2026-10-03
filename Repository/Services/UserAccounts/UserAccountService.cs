@@ -61,6 +61,18 @@ namespace ERP.Repository.Services.UserAccounts
             return ToCurrentUser(user, null);
         }
 
+        public async Task<IEnumerable<UserListViewModel>> GetUsers(CancellationToken cancellation = default)
+        {
+            var users = await _userAccountData.GetAllUsersWithoutTracking(cancellation);
+
+            return users.Select(u => new UserListViewModel
+            {
+                Id = u.Id,
+                FullName = $"{u.UserInformation?.FirstName} {u.UserInformation?.LastName}".Trim(),
+                IsActive = u.IsActive == true
+            });
+        }
+
         private UserLoginSuccess ToCurrentUser(UserAccount user, string? token)
         {
             return new UserLoginSuccess

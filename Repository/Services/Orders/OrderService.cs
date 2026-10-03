@@ -2,6 +2,7 @@
 using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
+using ERP.Repository.Interface.AuditLogs;
 using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Interface.Data.ProductData;
@@ -13,7 +14,7 @@ using ERP.Repository.ViewModel.Orders;
 
 namespace ERP.Repository.Services.Orders
 {
-    public class OrderService(IOrderData _orders, IInventoryData _inventory, IProductData _product, IDriverData _driver) : IOrderService
+    public class OrderService(IOrderData _orders, IInventoryData _inventory, IProductData _product, IDriverData _driver, IAuditLogService _auditLog) : IOrderService
     {
         #region Orders
 
@@ -92,6 +93,8 @@ namespace ERP.Repository.Services.Orders
                 }
             }
           
+            var now = DateTime.UtcNow;
+
             var header = new Order
             {
                 OrderTypeId = order.OrderTypeId,
@@ -100,7 +103,8 @@ namespace ERP.Repository.Services.Orders
                 CustomerName = order.CustomerName.ToLower(),
                 PibkupAddress = order.PickUpAddress.ToLower(),
                 DeliveryAddress = order.DeliveryAddress.ToLower(),
-                Created_At = DateTime.UtcNow,
+                Created_By = _auditLog.CurrentUserId,
+                Created_At = now,
                 IsActive = true
             };
 
@@ -139,10 +143,16 @@ namespace ERP.Repository.Services.Orders
                         Quantity = inv.Quantity,
                         Amount = product.Price * inv.Quantity,
                         IsActive = true,
-                        Created_At = DateTime.UtcNow,
+                        Created_By = _auditLog.CurrentUserId,
+                        Created_At = now,
                     });
                 }
             }
+
+            var orderType = (await _orders.GetOrderTypesWithoutTracking()).FirstOrDefault(t => t.Id == header.OrderTypeId)?.Type;
+
+            _auditLog.Log(AuditModuleEnum.Order, AuditActionEnum.Create,
+                $"Created {orderType ?? "new"} order #{header.Id} for {header.CustomerName} ({order.OrderLines.Count()} item(s))", header.Id, now);
 
             await _orders.SaveMany(orders);
 
@@ -179,6 +189,8 @@ namespace ERP.Repository.Services.Orders
                     result.Add((inv.Quantity, inv.Id, quantity, inv.Warehouse.Name == null ? "No Warehouse" : inv.Warehouse.Name, true));
                     inv.Quantity = 0;
                     inv.StatusId = ReorderRatio.Ratio(inv.Quantity, inv.ReorderPoint);
+                    inv.Updated_By = _auditLog.CurrentUserId;
+                    inv.Updated_At = DateTime.UtcNow;
                 }
                 else
                 {
@@ -186,6 +198,8 @@ namespace ERP.Repository.Services.Orders
                     inv.Quantity -= quantity;
                     quantity = 0;
                     inv.StatusId = ReorderRatio.Ratio(inv.Quantity, inv.ReorderPoint);
+                    inv.Updated_By = _auditLog.CurrentUserId;
+                    inv.Updated_At = DateTime.UtcNow;
                 }
             }
 
@@ -200,12 +214,25 @@ namespace ERP.Repository.Services.Orders
 
             var order = await _orders.GetOrderLinesWithTracking(status.OrderId);
 
-            if (order == null)
+            if (order == null || !order.Any())
             {
                 throw new BadRequest("Order Not Found");
             }
 
-            order.First().Order.OrderStatusId = status.OrderStatusId;
+            var now = DateTime.UtcNow;
+            var header = order.First().Order;
+            var oldStatusId = header.OrderStatusId;
+
+            header.OrderStatusId = status.OrderStatusId;
+            header.Updated_By = _auditLog.CurrentUserId;
+            header.Updated_At = now;
+
+            var statuses = await _orders.GetOrderStatusesWithoutTracking();
+            var oldStatus = statuses.FirstOrDefault(s => s.Id == oldStatusId)?.Status ?? oldStatusId.ToString();
+            var newStatus = statuses.FirstOrDefault(s => s.Id == status.OrderStatusId)?.Status ?? status.OrderStatusId.ToString();
+
+            _auditLog.Log(AuditModuleEnum.Order, AuditActionEnum.StatusChange,
+                $"Changed order #{header.Id} status {oldStatus} → {newStatus}", header.Id, now);
 
             if(Enum.IsDefined(typeof(OrderStatusEnum), status.OrderStatusId))
             {
@@ -236,7 +263,8 @@ namespace ERP.Repository.Services.Orders
                 var sales = new Sale
                 {
                     OrderId = order.First().OrderId,
-                    Created_At = DateTime.UtcNow,
+                    Created_By = _auditLog.CurrentUserId,
+                    Created_At = now,
                     IsActive = true
                 };
 
@@ -253,6 +281,7 @@ namespace ERP.Repository.Services.Orders
                 InventoryId = i.inventoryId,
                 QuantityChanged = -i.quantity,
                 InventoryLabelId = 1,
+                Created_By = _auditLog.CurrentUserId,
                 Created_At = DateTime.UtcNow,
                 IsActive = true
             });
@@ -271,6 +300,7 @@ namespace ERP.Repository.Services.Orders
                 var qty = inventory.FirstOrDefault(x => x.inventoryId == i.Id).quantity;
                 i.Quantity += qty;
                 i.StatusId = ReorderRatio.Ratio(i.Quantity, i.ReorderPoint);
+                i.Updated_By = _auditLog.CurrentUserId;
                 i.Updated_At = DateTime.UtcNow;
             }   
 
@@ -312,15 +342,21 @@ namespace ERP.Repository.Services.Orders
                 throw new BadRequest("First Name is required");
             }
 
+            var now = DateTime.UtcNow;
+
             var data = new DeliveryDriver
             {
                 FirstName = driver.FirstName.ToLower(),
                 LastName = driver.LastName.ToLower().Trim(),
-                Created_At = DateTime.UtcNow,
+                Created_By = _auditLog.CurrentUserId,
+                Created_At = now,
                 IsActive = true
             };
 
             await _driver.Save(data);
+
+            _auditLog.Log(AuditModuleEnum.Driver, AuditActionEnum.Create, $"Added driver {data.FirstName} {data.LastName}".Trim(), data.Id, now);
+            await _driver.SaveChanges();
 
             return;
         }
@@ -339,9 +375,15 @@ namespace ERP.Repository.Services.Orders
                 throw new NotFound("Driver not found");
             }
 
+            var now = DateTime.UtcNow;
+            var oldName = $"{data.FirstName} {data.LastName}".Trim();
+
             data.FirstName = driver.FirstName.ToLower();
             data.LastName = driver.LastName.ToLower().Trim();
-            data.Updated_At = DateTime.UtcNow;
+            data.Updated_By = _auditLog.CurrentUserId;
+            data.Updated_At = now;
+
+            _auditLog.Log(AuditModuleEnum.Driver, AuditActionEnum.Update, $"Updated driver {oldName} → {data.FirstName} {data.LastName}".Trim(), data.Id, now);
 
 
             await _driver.SaveChanges();
@@ -355,8 +397,13 @@ namespace ERP.Repository.Services.Orders
             {
                 throw new NotFound("Driver not found");
             }
+            var now = DateTime.UtcNow;
+
             data.IsActive = false;
-            data.Deleted_At = DateTime.UtcNow;
+            data.Deleted_By = _auditLog.CurrentUserId;
+            data.Deleted_At = now;
+
+            _auditLog.Log(AuditModuleEnum.Driver, AuditActionEnum.Delete, $"Deleted driver {data.FirstName} {data.LastName}".Trim(), data.Id, now);
 
             await _driver.SaveChanges();
 

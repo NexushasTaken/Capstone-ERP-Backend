@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Model.Forecast;
+﻿using ERP.Repository.Model.AuditLogs;
+using ERP.Repository.Model.Forecast;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.Model.Products;
@@ -41,6 +42,10 @@ namespace ERP.Repository
 
         #region Sales
         public DbSet<Sale> Sales { get; set; }
+        #endregion
+
+        #region AuditLogs
+        public DbSet<AuditLog> AuditLogs { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -98,6 +103,9 @@ namespace ERP.Repository
 
             modelBuilder.Entity<ForecastResult>()
             .HasKey(k => k.Id);
+
+            modelBuilder.Entity<AuditLog>()
+                .HasKey(k => k.Id);
             #endregion
 
             #region Setting up Relationships
@@ -186,6 +194,26 @@ namespace ERP.Repository
                 .HasOne(f => f.Inventory)
                 .WithMany(f => f.ForecastResults)
                 .HasForeignKey(f => f.InventoryId);
+
+            #region AuditLogs
+            modelBuilder.Entity<AuditLog>()
+                .HasOne(a => a.UserAccount)
+                .WithMany()
+                .HasForeignKey(a => a.UserAccountId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.Module)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<AuditLog>()
+                .Property(a => a.Action)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(a => a.Created_At)
+                .IsDescending();
+            #endregion
             #endregion
 
         }

@@ -21,6 +21,17 @@ namespace ERP.Controllers.UserController
             return StatusCode(200, _response.Status(200, true, "Successfully Login", result));
         }
 
+        /// <summary>
+        /// Retrieves all users including deactivated ones, used for the Audit Logs user filter.
+        /// </summary>
+        [HttpGet("all")]
+        public async Task<IActionResult> GetUsers(CancellationToken cancellation = default)
+        {
+            var users = await _userAccountService.GetUsers(cancellation);
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", users));
+        }
+
         [Authorize]
         [HttpPost("Logout")]
         public async Task<IActionResult> Logout()

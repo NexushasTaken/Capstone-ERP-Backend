@@ -6,5 +6,6 @@ namespace ERP.Repository.Interface.UserAccounts
     {
         Task<UserLoginSuccess> Login(UserAccountViewModel user);
         Task<UserLoginSuccess> GetCurrentUser(int userId);
+        Task<IEnumerable<UserListViewModel>> GetUsers(CancellationToken cancellation = default);
     }
 }
