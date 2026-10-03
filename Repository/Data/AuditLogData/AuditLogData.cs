@@ -15,11 +15,13 @@ namespace ERP.Repository.Data.AuditLogData
             _context.Add(log);
         }
 
-        public async Task<IEnumerable<AuditLog>> GetAuditLogsWithoutTracking(int page, int pageSize, int userId, int action, int module, CancellationToken cancellation = default)
+        public async Task<IEnumerable<AuditLog>> GetAuditLogsWithoutTracking(int page, int pageSize, int userId, int action, int module, string? role, CancellationToken cancellation = default)
         {
-            var logs = await FilteringQuery(BaseQuery<AuditLog>(false), userId, action, module)
+            var logs = await FilteringQuery(BaseQuery<AuditLog>(false), userId, action, module, role)
                 .Include(l => l.UserAccount)
                 .ThenInclude(u => u!.UserInformation)
+                .Include(l => l.UserAccount)
+                .ThenInclude(u => u!.UserRole)
                 .OrderByDescending(l => l.Created_At)
                 .ThenByDescending(l => l.Id)
                 .Skip((page - 1) * pageSize)
@@ -29,14 +31,14 @@ namespace ERP.Repository.Data.AuditLogData
             return logs;
         }
 
-        public async Task<int> AuditLogCount(int userId, int action, int module, CancellationToken cancellation = default)
+        public async Task<int> AuditLogCount(int userId, int action, int module, string? role, CancellationToken cancellation = default)
         {
-            var count = await FilteringQuery(BaseQuery<AuditLog>(false), userId, action, module).CountAsync(cancellation);
+            var count = await FilteringQuery(BaseQuery<AuditLog>(false), userId, action, module, role).CountAsync(cancellation);
 
             return count;
         }
 
-        private static IQueryable<AuditLog> FilteringQuery(IQueryable<AuditLog> query, int userId, int action, int module)
+        private static IQueryable<AuditLog> FilteringQuery(IQueryable<AuditLog> query, int userId, int action, int module, string? role)
         {
             if (userId > 0)
             {
@@ -53,6 +55,11 @@ namespace ERP.Repository.Data.AuditLogData
             {
                 var moduleEnum = (AuditModuleEnum)module;
                 query = query.Where(l => l.Module == moduleEnum);
+            }
+
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                query = query.Where(l => l.UserAccount!.UserRole!.Role == role);
             }
 
             return query;

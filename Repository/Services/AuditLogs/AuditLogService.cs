@@ -29,7 +29,7 @@ namespace ERP.Repository.Services.AuditLogs
             });
         }
 
-        public async Task<AuditLogPageViewModel> GetLogs(int page, int pageSize, int userId, int action, int module, CancellationToken cancellation = default)
+        public async Task<AuditLogPageViewModel> GetLogs(int page, int pageSize, int userId, int action, int module, string? role, CancellationToken cancellation = default)
         {
             GlobalValidation.PageValidation(page, pageSize);
 
@@ -43,8 +43,8 @@ namespace ERP.Repository.Services.AuditLogs
                 throw new BadRequest("Invalid module filter");
             }
 
-            var logs = await _auditLog.GetAuditLogsWithoutTracking(page, pageSize, userId, action, module, cancellation);
-            var count = await _auditLog.AuditLogCount(userId, action, module, cancellation);
+            var logs = await _auditLog.GetAuditLogsWithoutTracking(page, pageSize, userId, action, module, role, cancellation);
+            var count = await _auditLog.AuditLogCount(userId, action, module, role, cancellation);
 
             var final = logs.Select(l => new AuditLogViewModel
             {
@@ -57,6 +57,7 @@ namespace ERP.Repository.Services.AuditLogs
                 UserFullName = l.UserAccount?.UserInformation == null
                     ? "Unknown"
                     : $"{l.UserAccount.UserInformation.FirstName} {l.UserAccount.UserInformation.LastName}".Trim(),
+                UserRole = l.UserAccount?.UserRole?.Role,
                 Created_At = l.Created_At
             });
 
