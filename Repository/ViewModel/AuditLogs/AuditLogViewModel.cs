@@ -9,6 +9,7 @@ namespace ERP.Repository.ViewModel.AuditLogs
         public int? EntityId { get; set; }
         public int? UserAccountId { get; set; }
         public string? UserFullName { get; set; }
+        public string? UserRole { get; set; }
         public DateTime Created_At { get; set; }
     }
 
