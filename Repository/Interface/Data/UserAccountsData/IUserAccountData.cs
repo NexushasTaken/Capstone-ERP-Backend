@@ -6,5 +6,6 @@ namespace ERP.Repository.Interface.Data.UserAccountData
     {
         Task<UserAccount> GetUserByEmailWithoutTracking(string email, CancellationToken cancellation = default);
         Task<UserAccount> GetUserByEmailWithTracking(string email, CancellationToken cancellation = default);
+        Task<UserAccount> GetUserByIdWithoutTracking(int userId, CancellationToken cancellation = default);
     }
 }

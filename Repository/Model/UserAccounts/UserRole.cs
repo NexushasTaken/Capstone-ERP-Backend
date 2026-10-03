@@ -2,9 +2,9 @@
 
 namespace ERP.Repository.Model.UserAccounts
 {
-    public class UserType : BaseModel
+    public class UserRole : BaseModel
     {
-        public string? Type { get; set; }
+        public string? Role { get; set; }
 
         public ICollection<UserAccount> UserAccounts { get; set; } = [];
     }
