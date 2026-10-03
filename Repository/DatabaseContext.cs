@@ -13,8 +13,7 @@ namespace ERP.Repository
         #region UserAccounts
         public DbSet<UserAccount> UserAccounts { get; set; }
         public DbSet<UserInformation> UserInformations { get; set; }
-        public DbSet<UserPosition> UserPositions { get; set; }
-        public DbSet<UserType> UserTypes { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
         #endregion
 
         #region Inventory
@@ -53,9 +52,7 @@ namespace ERP.Repository
                 .HasKey(k => k.Id);
             modelBuilder.Entity<UserInformation>()
                 .HasKey(k => k.Id);
-            modelBuilder.Entity<UserPosition>()
-                .HasKey(k => k.Id);
-            modelBuilder.Entity<UserType>()
+            modelBuilder.Entity<UserRole>()
                 .HasKey(k => k.Id);
             #endregion
 
@@ -106,16 +103,11 @@ namespace ERP.Repository
             #region Setting up Relationships
 
 
-            #region UserAccounts    
+            #region UserAccounts
             modelBuilder.Entity<UserAccount>()
-                .HasOne(u => u.UserType)
+                .HasOne(u => u.UserRole)
                 .WithMany(u => u.UserAccounts)
-                .HasForeignKey(u => u.UserTypeId);  
-
-            modelBuilder.Entity<UserAccount>()
-                .HasOne(u => u.UserPosition)
-                .WithMany(u => u.UserAccounts)
-                .HasForeignKey(u => u.UserPositionId);
+                .HasForeignKey(u => u.UserRoleId);
 
             modelBuilder.Entity<UserInformation>()
                 .HasOne(i => i.UserAccount)

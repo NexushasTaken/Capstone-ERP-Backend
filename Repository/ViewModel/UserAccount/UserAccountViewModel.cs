@@ -1,4 +1,6 @@
-﻿namespace ERP.Repository.ViewModel.UserAccount
+﻿using System.Text.Json.Serialization;
+
+namespace ERP.Repository.ViewModel.UserAccount
 {
     public class UserAccountViewModel
     {
@@ -8,8 +10,8 @@
     public class UserAccountViewModelResponse
     {
         public string? FirstName { get; set; }
-        public string? Position { get; set; }
-        public string? Type { get; set; }
+        public string? LastName { get; set; }
+        public string? Role { get; set; }
     }
 
     public class UserRoleAndPolicy : UserAccountViewModelResponse
@@ -22,8 +24,9 @@
     {
         public int Id { get; set; }
         public string? FirstName { get; set; }
-        public string? Position { get; set; }
-        public string? Type { get; set; }
+        public string? LastName { get; set; }
+        public string? Role { get; set; }
+        [JsonIgnore]
         public string? Token { get; set; }
     }
 }

@@ -18,8 +18,6 @@ namespace ERP.Controllers.UserController
 
             _tokenManagerService.FinalizeToken(result.Token, HttpContext);
 
-            result.Token = null;
-
             return StatusCode(200, _response.Status(200, true, "Successfully Login", result));
         }
 

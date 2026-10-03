@@ -22,8 +22,7 @@ namespace ERP.Repository.Services.TokenManager
                 new (JwtRegisteredClaimNames.Sub, role.Id.ToString()),
                 new (JwtRegisteredClaimNames.Name, role.FirstName!),
                 new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new (ClaimTypes.Role, role.Type!),
-                new ("position", role.Position!)
+                new (ClaimTypes.Role, role.Role!)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSetting.Key));

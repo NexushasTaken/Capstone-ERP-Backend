@@ -2,6 +2,7 @@
 using ERP.Repository.Interface.Data.UserAccountData;
 using ERP.Repository.Interface.TokenManager;
 using ERP.Repository.Interface.UserAccounts;
+using ERP.Repository.Model.UserAccounts;
 using ERP.Repository.ViewModel.UserAccount;
 
 namespace ERP.Repository.Services.UserAccounts
@@ -12,7 +13,6 @@ namespace ERP.Repository.Services.UserAccounts
     {
         public async Task<UserLoginSuccess> Login(UserAccountViewModel user)
         {
-
             //var salt = _tokenManagerService.GenerateSalt();
 
             //var pass = _tokenManagerService.Hashed(user.Password, salt);
@@ -39,20 +39,37 @@ namespace ERP.Repository.Services.UserAccounts
             var jwt = new UserRoleAndPolicy
             {
                 Id = existingUser.Id,
-                FirstName = existingUser.UserInformation.FirstName,
-                Type = existingUser.UserType.Type,
-                Position = existingUser.UserPosition.Position,
+                FirstName = existingUser.UserInformation?.FirstName,
+                LastName = existingUser.UserInformation?.LastName,
+                Role = existingUser.UserRole?.Role,
             };
 
             var accessToken = _tokenManagerService.GenerateJwtToken(jwt);
 
+            return ToCurrentUser(existingUser, accessToken);
+        }
+
+        public async Task<UserLoginSuccess> GetCurrentUser(int userId)
+        {
+            var user = await _userAccountData.GetUserByIdWithoutTracking(userId);
+
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("User not found");
+            }
+
+            return ToCurrentUser(user, null);
+        }
+
+        private UserLoginSuccess ToCurrentUser(UserAccount user, string? token)
+        {
             return new UserLoginSuccess
             {
-                Id = existingUser.Id,
-                FirstName = existingUser.UserInformation.FirstName,
-                Type = existingUser.UserType.Type,
-                Position = existingUser.UserPosition.Position,
-                Token = accessToken
+                Id = user.Id,
+                FirstName = user.UserInformation?.FirstName,
+                LastName = user.UserInformation?.LastName,
+                Role = user.UserRole?.Role,
+                Token = token
             };
         }
     }

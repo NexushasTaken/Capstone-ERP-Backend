@@ -723,17 +723,12 @@ namespace ERP.Migrations
                     b.Property<int?>("Updated_By")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserPositionId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserTypeId")
+                    b.Property<int>("UserRoleId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserPositionId");
-
-                    b.HasIndex("UserTypeId");
+                    b.HasIndex("UserRoleId");
 
                     b.ToTable("UserAccounts");
                 });
@@ -784,7 +779,7 @@ namespace ERP.Migrations
                     b.ToTable("UserInformations");
                 });
 
-            modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserPosition", b =>
+            modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserRole", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -807,7 +802,7 @@ namespace ERP.Migrations
                     b.Property<bool?>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Position")
+                    b.Property<string>("Role")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("Updated_At")
@@ -818,44 +813,7 @@ namespace ERP.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserPositions");
-                });
-
-            modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("Created_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Type")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserTypes");
+                    b.ToTable("UserRoles");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Forecast.ForecastResult", b =>
@@ -999,21 +957,13 @@ namespace ERP.Migrations
 
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>
                 {
-                    b.HasOne("ERP.Repository.Model.UserAccounts.UserPosition", "UserPosition")
+                    b.HasOne("ERP.Repository.Model.UserAccounts.UserRole", "UserRole")
                         .WithMany("UserAccounts")
-                        .HasForeignKey("UserPositionId")
+                        .HasForeignKey("UserRoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ERP.Repository.Model.UserAccounts.UserType", "UserType")
-                        .WithMany("UserAccounts")
-                        .HasForeignKey("UserTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("UserPosition");
-
-                    b.Navigation("UserType");
+                    b.Navigation("UserRole");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserInformation", b =>
@@ -1092,12 +1042,7 @@ namespace ERP.Migrations
                     b.Navigation("UserInformation");
                 });
 
-            modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserPosition", b =>
-                {
-                    b.Navigation("UserAccounts");
-                });
-
-            modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserType", b =>
+            modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserRole", b =>
                 {
                     b.Navigation("UserAccounts");
                 });
