@@ -22,6 +22,44 @@ namespace ERP.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ERP.Repository.Model.AuditLogs.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Created_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("UserAccountId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Created_At")
+                        .IsDescending();
+
+                    b.HasIndex("UserAccountId");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.Forecast.ForecastResult", b =>
                 {
                     b.Property<int>("Id")
@@ -814,6 +852,16 @@ namespace ERP.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserRoles");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.AuditLogs.AuditLog", b =>
+                {
+                    b.HasOne("ERP.Repository.Model.UserAccounts.UserAccount", "UserAccount")
+                        .WithMany()
+                        .HasForeignKey("UserAccountId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("UserAccount");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Forecast.ForecastResult", b =>

@@ -1,7 +1,8 @@
-using ERP.Middleware;
+﻿using ERP.Middleware;
 using ERP.Repository;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Data;
+using ERP.Repository.Data.AuditLogData;
 using ERP.Repository.Data.DashboardData;
 using ERP.Repository.Data.ForecastData;
 using ERP.Repository.Data.InventoryData;
@@ -9,8 +10,11 @@ using ERP.Repository.Data.OrderData;
 using ERP.Repository.Data.ProductData;
 using ERP.Repository.Data.Sales;
 using ERP.Repository.Data.UserAccounts;
+using ERP.Repository.Interface.AuditLogs;
+using ERP.Repository.Interface.CurrentUser;
 using ERP.Repository.Interface.Dashboard;
 using ERP.Repository.Interface.Data;
+using ERP.Repository.Interface.Data.AuditLogData;
 using ERP.Repository.Interface.Data.DashboardData;
 using ERP.Repository.Interface.Data.Forecast;
 using ERP.Repository.Interface.Data.InventoryData;
@@ -25,6 +29,8 @@ using ERP.Repository.Interface.Sales;
 using ERP.Repository.Interface.SSA;
 using ERP.Repository.Interface.TokenManager;
 using ERP.Repository.Interface.UserAccounts;
+using ERP.Repository.Services.AuditLogs;
+using ERP.Repository.Services.CurrentUser;
 using ERP.Repository.Services.Dashboard;
 using ERP.Repository.Services.Inventories;
 using ERP.Repository.Services.Orders;
@@ -50,6 +56,8 @@ namespace ERP
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddHttpContextAccessor();
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("FrontEnd", policy =>
@@ -74,6 +82,8 @@ namespace ERP
             builder.Services.AddScoped<ISaleService, SaleService>();
             builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IForecastService, ForecastService>();
+            builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
             #endregion
 
             #region Data Services
@@ -87,6 +97,7 @@ namespace ERP
             builder.Services.AddScoped<IInventoryData, InventoryData>();
             builder.Services.AddScoped<IDashboardData, DashBoardData>();
             builder.Services.AddScoped<IForecastData, ForecastData>();
+            builder.Services.AddScoped<IAuditLogData, AuditLogData>();
             #endregion
 
             #endregion

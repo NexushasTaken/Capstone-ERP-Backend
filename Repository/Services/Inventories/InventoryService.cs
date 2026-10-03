@@ -1,7 +1,9 @@
 ﻿using ERP.Controllers.InventoryController;
+using ERP.Repository.Configuration.Enum;
 using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
+using ERP.Repository.Interface.AuditLogs;
 using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Inventories;
@@ -14,7 +16,7 @@ using System.Runtime.ConstrainedExecution;
 
 namespace ERP.Repository.Services.Inventories
 {
-    public class InventoryService(IInventoryData _inventory, IProductData _product) : IInventoryService
+    public class InventoryService(IInventoryData _inventory, IProductData _product, IAuditLogService _auditLog) : IInventoryService
     {
 
         #region Inventory
@@ -88,6 +90,8 @@ namespace ERP.Repository.Services.Inventories
 
             parsedDate = parsedDate.ToUniversalTime();
 
+            var now = DateTime.UtcNow;
+
             var inv = new Inventory
             {
                 Name = inventory.Name.ToLower(),
@@ -98,10 +102,17 @@ namespace ERP.Repository.Services.Inventories
                 DateArrived = parsedDate,
                 StatusId = ReorderRatio.Ratio(inventory.Quantity, inventory.ReorderPoint),
                 IsActive = true,
-                Created_At = DateTime.UtcNow,
+                Created_By = _auditLog.CurrentUserId,
+                Created_At = now,
             };
 
             await _inventory.Save(inv);
+
+            var warehouse = await _inventory.GetIndividualWareHouseWithTracking(inventory.WarehouseId);
+
+            _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.Create,
+                $"Added {inv.Quantity} '{inv.Name}' to {warehouse?.Name ?? "no warehouse"}", inv.Id, now);
+            await _inventory.SaveChanges();
 
             return;
         }
@@ -111,10 +122,29 @@ namespace ERP.Repository.Services.Inventories
 
             var existing = await _inventory.GetInventoryWithTracking(inventory.Id);
 
+            if (existing == null)
+            {
+                throw new NotFound("Inventory item not found");
+            }
+
+            var now = DateTime.UtcNow;
+
             existing.Quantity += inventory.Quantity;
-            existing.Updated_At = DateTime.UtcNow;
+            existing.Updated_By = _auditLog.CurrentUserId;
+            existing.Updated_At = now;
 
             existing.StatusId = ReorderRatio.Ratio(existing.Quantity, existing.ReorderPoint);
+
+            if (inventory.RestockType == 1)
+            {
+                _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.IncreaseStock,
+                    $"Increased stock of '{existing.Name}' by {inventory.Quantity}", existing.Id, now);
+            }
+            else
+            {
+                _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.ReturnStock,
+                    $"Returned {inventory.Quantity} '{existing.Name}' to stock", existing.Id, now);
+            }
 
             await _inventory.SaveChanges();
 
@@ -153,8 +183,18 @@ namespace ERP.Repository.Services.Inventories
 
             var inventory = await _inventory.GetInventoryWithTracking(id);
 
+            if (inventory == null)
+            {
+                throw new NotFound("Inventory item not found");
+            }
+
+            var now = DateTime.UtcNow;
+
             inventory.IsActive = false;
-            inventory.Deleted_At = DateTime.UtcNow;
+            inventory.Deleted_By = _auditLog.CurrentUserId;
+            inventory.Deleted_At = now;
+
+            _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.Delete, $"Deleted inventory '{inventory.Name}'", inventory.Id, now);
 
             await _inventory.SaveChanges();
         }
@@ -177,12 +217,46 @@ namespace ERP.Repository.Services.Inventories
                 throw new BadRequest("Warehouse is full");
             }
 
-            existing.Name = inventory.Name.ToLower();
+            var now = DateTime.UtcNow;
+            var oldName = existing.Name;
+            var changes = new List<string>();
+
+            var newName = inventory.Name.ToLower();
+
+            if (existing.Name != newName)
+            {
+                changes.Add($"name '{existing.Name}' → '{newName}'");
+            }
+
+            if (existing.ProductId != inventory.ProductId)
+            {
+                changes.Add("product changed");
+            }
+
+            if (existing.WarehouseId != inventory.WarehouseId)
+            {
+                changes.Add("warehouse changed");
+            }
+
+            if (existing.ReorderPoint != inventory.ReorderPoint)
+            {
+                changes.Add($"reorder point {existing.ReorderPoint} → {inventory.ReorderPoint}");
+            }
+
+            existing.Name = newName;
             existing.ProductId = inventory.ProductId;
             existing.WarehouseId = inventory.WarehouseId;
             existing.ReorderPoint = inventory.ReorderPoint;
+            existing.Updated_By = _auditLog.CurrentUserId;
+            existing.Updated_At = now;
 
             existing.StatusId = ReorderRatio.Ratio(existing.Quantity, existing.ReorderPoint);
+
+            var message = changes.Count > 0
+                ? $"Updated inventory '{oldName}': {string.Join(", ", changes)}"
+                : $"Updated inventory '{oldName}' (no changes)";
+
+            _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.Update, message, existing.Id, now);
 
             await _inventory.SaveChanges();
 
@@ -200,6 +274,8 @@ namespace ERP.Repository.Services.Inventories
                 throw new NotFound("Inventory item not found");
             }
 
+            var now = DateTime.UtcNow;
+
             if (damaged.DamagedType == 1)
             {
                 if (inventory.Quantity < damaged.Quantity)
@@ -210,9 +286,9 @@ namespace ERP.Repository.Services.Inventories
                 var sub = inventory.Quantity - damaged.Quantity;
 
                 inventory.Quantity = sub;
-                inventory.Updated_At = DateTime.UtcNow;
+                inventory.Updated_By = _auditLog.CurrentUserId;
+                inventory.Updated_At = now;
                 inventory.StatusId = ReorderRatio.Ratio(sub, inventory.ReorderPoint);
-                await _inventory.SaveChanges();
             }
 
             var damn = new DamagedInventory
@@ -220,9 +296,21 @@ namespace ERP.Repository.Services.Inventories
                 InventoryId = inventory.Id,
                 Reason = damaged.Reason.ToLower(),
                 Quantity = damaged.Quantity,
-                Created_At = DateTime.UtcNow,
+                Created_By = _auditLog.CurrentUserId,
+                Created_At = now,
                 IsActive = true
             };
+
+            if (damaged.DamagedType == 1)
+            {
+                _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.CurrentItemDamage,
+                    $"Marked {damaged.Quantity} '{inventory.Name}' as damaged (Current Item): {damn.Reason}", inventory.Id, now);
+            }
+            else
+            {
+                _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.ReturnItemDamage,
+                    $"Recorded {damaged.Quantity} returned '{inventory.Name}' as damaged (Return Item): {damn.Reason}", inventory.Id, now);
+            }
 
             await _inventory.Save(damn);
 
@@ -247,6 +335,7 @@ namespace ERP.Repository.Services.Inventories
                 InventoryId = transaction.Id,
                 QuantityChanged = transaction.Quantity,
                 InventoryLabelId = transaction.Label,
+                Created_By = _auditLog.CurrentUserId,
                 Created_At = DateTime.UtcNow,
                 IsActive = true 
             };
@@ -313,16 +402,22 @@ namespace ERP.Repository.Services.Inventories
         {
             InventoryValidation.InventoryWareHouseValidation(wareHouse);
 
+            var now = DateTime.UtcNow;
+
             var wh = new Warehouse
             {
                 Name = wareHouse.Name.ToLower(),
                 Address = wareHouse.Address.ToLower(),
                 Capacity = wareHouse.Capicity,
-                Created_At = DateTime.UtcNow,
+                Created_By = _auditLog.CurrentUserId,
+                Created_At = now,
                 IsActive = true
             };
 
             await _inventory.Save(wh);
+
+            _auditLog.Log(AuditModuleEnum.Warehouse, AuditActionEnum.Create, $"Added warehouse '{wh.Name}'", wh.Id, now);
+            await _inventory.SaveChanges();
 
             return;
         }
@@ -344,10 +439,39 @@ namespace ERP.Repository.Services.Inventories
                 throw new BadRequest("You cannot update below your current Warehouse Capacity");
             }
 
-            wh.Name = wareHouse.Name.ToLower();
-            wh.Address = wareHouse.Address.ToLower();
+            var now = DateTime.UtcNow;
+            var oldName = wh.Name;
+            var changes = new List<string>();
+
+            var newName = wareHouse.Name.ToLower();
+            var newAddress = wareHouse.Address.ToLower();
+
+            if (wh.Name != newName)
+            {
+                changes.Add($"name '{wh.Name}' → '{newName}'");
+            }
+
+            if (wh.Address != newAddress)
+            {
+                changes.Add($"address '{wh.Address}' → '{newAddress}'");
+            }
+
+            if (wh.Capacity != wareHouse.Capicity)
+            {
+                changes.Add($"capacity {wh.Capacity} → {wareHouse.Capicity}");
+            }
+
+            wh.Name = newName;
+            wh.Address = newAddress;
             wh.Capacity = wareHouse.Capicity;
-            wh.Updated_At = DateTime.UtcNow;
+            wh.Updated_By = _auditLog.CurrentUserId;
+            wh.Updated_At = now;
+
+            var message = changes.Count > 0
+                ? $"Updated warehouse '{oldName}': {string.Join(", ", changes)}"
+                : $"Updated warehouse '{oldName}' (no changes)";
+
+            _auditLog.Log(AuditModuleEnum.Warehouse, AuditActionEnum.Update, message, wh.Id, now);
 
             await _inventory.SaveChanges();
 
@@ -368,16 +492,26 @@ namespace ERP.Repository.Services.Inventories
                 throw new NotFound("Warehouse not found");
             }
 
+            var now = DateTime.UtcNow;
+
             wareHouse.IsActive = false;
-            wareHouse.Deleted_At = DateTime.UtcNow;
+            wareHouse.Deleted_By = _auditLog.CurrentUserId;
+            wareHouse.Deleted_At = now;
 
             var inventories = await _inventory.GetInventoryWithWareHouseId(id);
 
             foreach (var inv in inventories)
             {
                 inv.WarehouseId = null;
-                inv.Updated_At = DateTime.UtcNow;
+                inv.Updated_By = _auditLog.CurrentUserId;
+                inv.Updated_At = now;
             }
+
+            var message = inventories.Count > 0
+                ? $"Deleted warehouse '{wareHouse.Name}' ({inventories.Count} inventory item(s) unassigned)"
+                : $"Deleted warehouse '{wareHouse.Name}'";
+
+            _auditLog.Log(AuditModuleEnum.Warehouse, AuditActionEnum.Delete, message, wareHouse.Id, now);
 
             await _inventory.SaveChanges();
 

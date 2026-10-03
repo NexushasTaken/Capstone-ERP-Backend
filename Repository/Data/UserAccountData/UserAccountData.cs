@@ -26,5 +26,16 @@ namespace ERP.Repository.Data.UserAccounts
 
             return user;
         }
+
+        public async Task<IEnumerable<UserAccount>> GetAllUsersWithoutTracking(CancellationToken cancellation = default)
+        {
+            var users = await BaseQuery<UserAccount>(false)
+                .Include(i => i.UserInformation)
+                .OrderBy(u => u.UserInformation!.FirstName)
+                .ThenBy(u => u.UserInformation!.LastName)
+                .ToListAsync(cancellation);
+
+            return users;
+        }
     }
 }

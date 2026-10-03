@@ -1,6 +1,8 @@
-﻿using ERP.Repository.Configuration.Exception_Extender;
+﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
+using ERP.Repository.Interface.AuditLogs;
 using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Products;
 using ERP.Repository.Model.Products;
@@ -9,7 +11,7 @@ using System.ComponentModel;
 
 namespace ERP.Repository.Services.Products
 {
-    public class ProductService(ICategoryData _category, IProductData _product) : IProductService
+    public class ProductService(ICategoryData _category, IProductData _product, IAuditLogService _auditLog) : IProductService
     {
 
         #region Category
@@ -37,14 +39,20 @@ namespace ERP.Repository.Services.Products
         {
             ProductValidation.CategoryInsertValidation(categoryName);
 
+            var now = DateTime.UtcNow;
+
             var category = new Category
             {
                 Type = categoryName.ToLower(),
-                Created_At = DateTime.UtcNow,
+                Created_By = _auditLog.CurrentUserId,
+                Created_At = now,
                 IsActive = true
             };
 
             await _category.Save(category);
+
+            _auditLog.Log(AuditModuleEnum.Category, AuditActionEnum.Create, $"Added category '{category.Type}'", category.Id, now);
+            await _category.SaveChanges();
         }
 
         public async Task DeleteCategory(int id)
@@ -59,17 +67,27 @@ namespace ERP.Repository.Services.Products
                 throw new NotFound($"Category with ID {id} not found.");
             }
 
-            category.IsActive = false;
-            category.Deleted_At = DateTime.UtcNow;
+            var now = DateTime.UtcNow;
 
-            await _category.SaveChanges();
+            category.IsActive = false;
+            category.Deleted_By = _auditLog.CurrentUserId;
+            category.Deleted_At = now;
 
             var categoryReferences = await _product.GetAllProductReferenceByCategoryWithTracking(id);
 
             foreach (var reference in categoryReferences)
             {
                 reference.CategoryId = null;
+                reference.Updated_By = _auditLog.CurrentUserId;
+                reference.Updated_At = now;
             }
+
+            var uncategorized = categoryReferences.Count();
+            var message = uncategorized > 0
+                ? $"Deleted category '{category.Type}' ({uncategorized} product(s) set to uncategorized)"
+                : $"Deleted category '{category.Type}'";
+
+            _auditLog.Log(AuditModuleEnum.Category, AuditActionEnum.Delete, message, category.Id, now);
 
             await _product.SaveChanges();
         }
@@ -85,8 +103,15 @@ namespace ERP.Repository.Services.Products
                 throw new NotFound("Category not found");
             }
 
+            var now = DateTime.UtcNow;
+            var oldType = ct.Type;
+
             ct.Type = category.Type;
-            ct.Updated_At = DateTime.UtcNow;
+            ct.Updated_By = _auditLog.CurrentUserId;
+            ct.Updated_At = now;
+
+            _auditLog.Log(AuditModuleEnum.Category, AuditActionEnum.Update, $"Renamed category '{oldType}' to '{ct.Type}'", ct.Id, now);
+
             await _category.SaveChanges();
 
             return;
@@ -128,16 +153,22 @@ namespace ERP.Repository.Services.Products
         {
             ProductValidation.ProductInsertValidation(product);
 
+            var now = DateTime.UtcNow;
+
             var pr = new Product
             {
                 CategoryId = product.CategoryId == 0 ? null : product.CategoryId,
                 Name = product.Name.ToLower(),
                 Price = product.Price,
                 IsActive = true,
-                Created_At = DateTime.UtcNow,
+                Created_By = _auditLog.CurrentUserId,
+                Created_At = now,
             };
 
             await _product.Save(pr);
+
+            _auditLog.Log(AuditModuleEnum.Product, AuditActionEnum.Create, $"Added product '{pr.Name}' (₱{pr.Price:N2})", pr.Id, now);
+            await _product.SaveChanges();
         }
 
         public async Task DeleteProduct(int id)
@@ -149,8 +180,13 @@ namespace ERP.Repository.Services.Products
                 throw new NotFound($"Product not found");
             }
 
+            var now = DateTime.UtcNow;
+
             product.IsActive = false;
-            product.Deleted_At = DateTime.UtcNow;
+            product.Deleted_By = _auditLog.CurrentUserId;
+            product.Deleted_At = now;
+
+            _auditLog.Log(AuditModuleEnum.Product, AuditActionEnum.Delete, $"Deleted product '{product.Name}'", product.Id, now);
 
             await _product.SaveChanges();
 
@@ -168,10 +204,39 @@ namespace ERP.Repository.Services.Products
                 throw new NotFound("Product not found");
             }
 
-            pr.Name = product.Name.ToLower();
+            var now = DateTime.UtcNow;
+            var oldName = pr.Name;
+            var changes = new List<string>();
+
+            var newName = product.Name.ToLower();
+            var newCategoryId = product.CategoryId == 0 ? null : product.CategoryId;
+
+            if (pr.Name != newName)
+            {
+                changes.Add($"name '{pr.Name}' → '{newName}'");
+            }
+
+            if (pr.Price != product.Price)
+            {
+                changes.Add($"price ₱{pr.Price:N2} → ₱{product.Price:N2}");
+            }
+
+            if (pr.CategoryId != newCategoryId)
+            {
+                changes.Add("category changed");
+            }
+
+            pr.Name = newName;
             pr.Price = product.Price;
-            pr.CategoryId = product.CategoryId == 0 ? null : product.CategoryId ;
-            pr.Updated_At = DateTime.UtcNow;
+            pr.CategoryId = newCategoryId;
+            pr.Updated_By = _auditLog.CurrentUserId;
+            pr.Updated_At = now;
+
+            var message = changes.Count > 0
+                ? $"Updated product '{oldName}': {string.Join(", ", changes)}"
+                : $"Updated product '{oldName}' (no changes)";
+
+            _auditLog.Log(AuditModuleEnum.Product, AuditActionEnum.Update, message, pr.Id, now);
 
             await _product.SaveChanges();
 
