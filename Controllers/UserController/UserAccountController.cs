@@ -4,6 +4,7 @@ using ERP.Repository.Interface.UserAccounts;
 using ERP.Repository.ViewModel.UserAccount;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ERP.Controllers.UserController
 {
@@ -11,6 +12,18 @@ namespace ERP.Controllers.UserController
     [Route("api/User")]
     public class UserAccountController(IUserAccountService _userAccountService, ITokenManagerService _tokenManagerService, ResponseHelper _response) : ControllerBase
     {
+        private int CurrentUserId()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                throw new UnauthorizedAccessException("Invalid token");
+            }
+
+            return userId;
+        }
+
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] UserAccountViewModel user)
         {
@@ -42,6 +55,60 @@ namespace ERP.Controllers.UserController
             }
 
             return StatusCode(200, _response.Status(200, true, "Successfully Logout"));
+        }
+
+        [Authorize(Roles = "owner")]
+        [HttpGet("accounts")]
+        public async Task<IActionResult> GetAccounts(CancellationToken cancellation = default)
+        {
+            var accounts = await _userAccountService.GetAccounts(cancellation);
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", accounts));
+        }
+
+        [Authorize(Roles = "owner")]
+        [HttpPost("accounts")]
+        public async Task<IActionResult> CreateAccount([FromBody] CreateAccountViewModel account)
+        {
+            await _userAccountService.CreateAccount(account);
+
+            return StatusCode(200, _response.Status(200, true, "Created Successfully", null));
+        }
+
+        [Authorize(Roles = "owner")]
+        [HttpPatch("accounts/{id}/role")]
+        public async Task<IActionResult> UpdateAccountRole(int id, [FromBody] UpdateAccountRoleViewModel account)
+        {
+            await _userAccountService.UpdateAccountRole(id, account);
+
+            return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
+        }
+
+        [Authorize]
+        [HttpPatch("me/profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileViewModel profile)
+        {
+            await _userAccountService.UpdateProfile(CurrentUserId(), profile);
+
+            return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
+        }
+
+        [Authorize]
+        [HttpGet("me/credentials")]
+        public async Task<IActionResult> GetCredentials()
+        {
+            var credentials = await _userAccountService.GetCredentials(CurrentUserId());
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", credentials));
+        }
+
+        [Authorize]
+        [HttpPatch("me/credentials")]
+        public async Task<IActionResult> UpdateCredentials([FromBody] UpdateCredentialsViewModel credentials)
+        {
+            await _userAccountService.UpdateCredentials(CurrentUserId(), credentials);
+
+            return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
         }
     }
 }
