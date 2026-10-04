@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Interface.Data.SalesData;
+﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Interface.Data.SalesData;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.ViewModel.Orders;
 using ERP.Repository.ViewModel.Sales;
@@ -50,7 +51,7 @@ namespace ERP.Repository.Data.Sales
         }
         public async Task<IEnumerable<SaleTotalViewModel>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int orderTypeId, CancellationToken cancellation = default)
         {
-            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId == 1);
+            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId == (int)OrderStatusEnum.Completed);
 
             orders = FilteringQuery(orders, name, filter, orderTypeId);
 
@@ -94,7 +95,7 @@ namespace ERP.Repository.Data.Sales
 
         public async Task<int> OrdersCount(string? name, int filter, int orderTypeId)
         {
-            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId == 1);
+            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId == (int)OrderStatusEnum.Completed);
 
             orders = FilteringQuery(orders, name, filter, orderTypeId);
 

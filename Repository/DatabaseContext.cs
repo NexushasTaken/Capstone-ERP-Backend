@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Model.AuditLogs;
+﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Model.AuditLogs;
 using ERP.Repository.Model.Forecast;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
@@ -214,6 +215,35 @@ namespace ERP.Repository
                 .HasIndex(a => a.Created_At)
                 .IsDescending();
             #endregion
+            #endregion
+
+            #region Seeding Default Values
+            var seededAt = new DateTime(2025, 8, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            modelBuilder.Entity<UserRole>().HasData(
+                new UserRole { Id = (int)UserRoleEnum.Owner, Role = "owner", IsActive = true, Created_At = seededAt },
+                new UserRole { Id = (int)UserRoleEnum.Secretary, Role = "secretary", IsActive = true, Created_At = seededAt });
+
+            modelBuilder.Entity<OrderType>().HasData(
+                new OrderType { Id = (int)OrderTypeEnum.Walkin, Type = "walkin", IsActive = true, Created_At = seededAt },
+                new OrderType { Id = (int)OrderTypeEnum.Delivery, Type = "delivery", IsActive = true, Created_At = seededAt });
+
+            modelBuilder.Entity<OrderStatus>().HasData(
+                new OrderStatus { Id = (int)OrderStatusEnum.Completed, Status = "completed", IsActive = true, Created_At = seededAt },
+                new OrderStatus { Id = (int)OrderStatusEnum.Processing, Status = "processing", IsActive = true, Created_At = seededAt },
+                new OrderStatus { Id = (int)OrderStatusEnum.Shipped, Status = "shipped", IsActive = true, Created_At = seededAt },
+                new OrderStatus { Id = (int)OrderStatusEnum.Cancelled, Status = "cancelled", IsActive = true, Created_At = seededAt });
+
+            modelBuilder.Entity<InventoryStatus>().HasData(
+                new InventoryStatus { Id = (int)InventoryStatusEnum.Available, Status = "available", IsActive = true, Created_At = seededAt },
+                new InventoryStatus { Id = (int)InventoryStatusEnum.LowStock, Status = "low stock", IsActive = true, Created_At = seededAt },
+                new InventoryStatus { Id = (int)InventoryStatusEnum.Critical, Status = "critical", IsActive = true, Created_At = seededAt });
+
+            modelBuilder.Entity<InventoryLabel>().HasData(
+                new InventoryLabel { Id = (int)InventoryLabelEnum.Purchase, Type = "purchase", IsActive = true, Created_At = seededAt },
+                new InventoryLabel { Id = (int)InventoryLabelEnum.Return, Type = "return", IsActive = true, Created_At = seededAt },
+                new InventoryLabel { Id = (int)InventoryLabelEnum.Restock, Type = "restock", IsActive = true, Created_At = seededAt },
+                new InventoryLabel { Id = (int)InventoryLabelEnum.Damage, Type = "damage", IsActive = true, Created_At = seededAt });
             #endregion
 
         }

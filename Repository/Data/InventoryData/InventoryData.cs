@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Interface.Data.InventoryData;
+﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.ViewModel.Inventories;
 using Microsoft.EntityFrameworkCore;
@@ -159,7 +160,7 @@ namespace ERP.Repository.Data.InventoryData
         #region Inventory Label
         public async Task<IEnumerable<InventoryLabel>> GetLabelForInsert()
         {
-            var label = await BaseQuery<InventoryLabel>(false).Where(i => i.Type == "restock" || i.Type == "return" && i.IsActive == true).ToListAsync();
+            var label = await BaseQuery<InventoryLabel>(false).Where(i => (i.Type == "restock" || i.Type == "return") && i.IsActive == true).ToListAsync();
 
             return label;
         }
@@ -211,8 +212,8 @@ namespace ERP.Repository.Data.InventoryData
                     LastDate = t.Max(t => t.Created_At),
                     Name = t.First().Inventory.Name,
                     NetMovement = t.Sum(g =>
-                    g.InventoryLabelId == 1 || g.InventoryLabelId == 2 ? -g.QuantityChanged :
-                    g.InventoryLabelId == 3 || g.InventoryLabelId == 4 ? +g.QuantityChanged : 0),
+                    g.InventoryLabelId == (int)InventoryLabelEnum.Purchase || g.InventoryLabelId == (int)InventoryLabelEnum.Return ? -g.QuantityChanged :
+                    g.InventoryLabelId == (int)InventoryLabelEnum.Restock || g.InventoryLabelId == (int)InventoryLabelEnum.Damage ? +g.QuantityChanged : 0),
                     WarehouseName = t.First().Inventory.Warehouse.Name != null ? t.First().Inventory.Warehouse.Name : "No Warehouse"
                 })
                 .Skip((page - 1) * pageSize)
