@@ -244,6 +244,35 @@ namespace ERP.Repository
                 new InventoryLabel { Id = (int)InventoryLabelEnum.Return, Type = "return", IsActive = true, Created_At = seededAt },
                 new InventoryLabel { Id = (int)InventoryLabelEnum.Restock, Type = "restock", IsActive = true, Created_At = seededAt },
                 new InventoryLabel { Id = (int)InventoryLabelEnum.Damage, Type = "damage", IsActive = true, Created_At = seededAt });
+
+            // Default accounts (password "mypassword"). Salt and hash are fixed literals so the model stays
+            // deterministic; Password = Base64(SHA256(password + salt)), same as TokenManagerService.Hashed.
+            // Account Id 1 must be the owner, since AccountValidation locks its role.
+            modelBuilder.Entity<UserAccount>().HasData(
+                new UserAccount
+                {
+                    Id = 1,
+                    UserRoleId = (int)UserRoleEnum.Owner,
+                    Email = "owner@gmail.com",
+                    Salt = "OmUBGSIov6YDrqLo4SaFuw==",
+                    Password = "0ULmzYhoKo1MJ9WyeS3WAktEqN/QYeXPEb7z7akCUxM=",
+                    IsActive = true,
+                    Created_At = seededAt
+                },
+                new UserAccount
+                {
+                    Id = 2,
+                    UserRoleId = (int)UserRoleEnum.Secretary,
+                    Email = "secretary@gmail.com",
+                    Salt = "ELFJLUKQLNZ1usWM/oILqA==",
+                    Password = "lgKIp/sJWDvi74qQ/TYwXAsb7Bv/Z1fpdrDxsanRmqA=",
+                    IsActive = true,
+                    Created_At = seededAt
+                });
+
+            modelBuilder.Entity<UserInformation>().HasData(
+                new UserInformation { Id = 1, UserAccountId = 1, FirstName = "Bill", LastName = "Gates", IsActive = true, Created_At = seededAt },
+                new UserInformation { Id = 2, UserAccountId = 2, FirstName = "Mark", LastName = "Zucherbeard", IsActive = true, Created_At = seededAt });
             #endregion
 
         }
