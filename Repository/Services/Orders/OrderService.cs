@@ -98,7 +98,7 @@ namespace ERP.Repository.Services.Orders
             var header = new Order
             {
                 OrderTypeId = order.OrderTypeId,
-                OrderStatusId = 3,
+                OrderStatusId = (int)OrderStatusEnum.Processing,
                 DeliveryDriverId = order.DeliveryRiderId == 0 ? null : order.DeliveryRiderId,
                 CustomerName = order.CustomerName.ToLower(),
                 PibkupAddress = order.PickUpAddress.ToLower(),
@@ -280,7 +280,7 @@ namespace ERP.Repository.Services.Orders
             {
                 InventoryId = i.inventoryId,
                 QuantityChanged = -i.quantity,
-                InventoryLabelId = 1,
+                InventoryLabelId = (int)InventoryLabelEnum.Purchase,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = DateTime.UtcNow,
                 IsActive = true

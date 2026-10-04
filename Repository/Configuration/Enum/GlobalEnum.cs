@@ -13,6 +13,33 @@
         Cancelled = 4
     }
 
+    public enum OrderTypeEnum
+    {
+        Walkin = 1,
+        Delivery = 2
+    }
+
+    public enum InventoryStatusEnum
+    {
+        Available = 1,
+        LowStock = 2,
+        Critical = 3
+    }
+
+    public enum InventoryLabelEnum
+    {
+        Purchase = 1,
+        Return = 2,
+        Restock = 3,
+        Damage = 4
+    }
+
+    public enum UserRoleEnum
+    {
+        Owner = 1,
+        Secretary = 2
+    }
+
     public enum DriverFilterEnum
     {
         ATOZ = 1,

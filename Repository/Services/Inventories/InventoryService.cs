@@ -156,7 +156,7 @@ namespace ERP.Repository.Services.Inventories
                 {
                     Id = existing.Id,
                     Quantity = +inventory.Quantity,
-                    Label = 3
+                    Label = (int)InventoryLabelEnum.Restock
                 };
             }
             else
@@ -165,7 +165,7 @@ namespace ERP.Repository.Services.Inventories
                 {
                     Id = existing.Id,
                     Quantity = +inventory.Quantity,
-                    Label = 2
+                    Label = (int)InventoryLabelEnum.Return
                 };
             }
 
@@ -318,7 +318,7 @@ namespace ERP.Repository.Services.Inventories
             {
                 Id = inventory.Id,
                 Quantity = -damaged.Quantity,
-                Label = damaged.DamagedType == 1 ? 4 : 2
+                Label = damaged.DamagedType == 1 ? (int)InventoryLabelEnum.Damage : (int)InventoryLabelEnum.Return
             };
 
             await InventoryTransaction(transaction);

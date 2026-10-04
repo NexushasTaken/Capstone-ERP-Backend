@@ -1,4 +1,6 @@
-﻿namespace ERP.Repository.Configuration.Helper
+﻿using ERP.Repository.Configuration.Enum;
+
+namespace ERP.Repository.Configuration.Helper
 {
     public class ReorderRatio
     {
@@ -8,13 +10,13 @@
 
             if (ratio >= 2.0)
             {
-                return 1;
+                return (int)InventoryStatusEnum.Available;
             }
             else if (ratio >= 1.0)
             {
-                return 2;
+                return (int)InventoryStatusEnum.LowStock;
             }
-            return 3;
+            return (int)InventoryStatusEnum.Critical;
         }
     }
 }

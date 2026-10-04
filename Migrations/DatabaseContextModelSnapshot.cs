@@ -243,6 +243,36 @@ namespace ERP.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("InventoryLabels");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Type = "purchase"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Type = "return"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Type = "restock"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Type = "damage"
+                        });
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.InventoryStatus", b =>
@@ -280,6 +310,29 @@ namespace ERP.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("InventoryStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Status = "available"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Status = "low stock"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Status = "critical"
+                        });
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.InventoryTransaction", b =>
@@ -563,6 +616,36 @@ namespace ERP.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("OrderStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Status = "completed"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Status = "processing"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Status = "shipped"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Status = "cancelled"
+                        });
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Orders.OrderType", b =>
@@ -600,6 +683,22 @@ namespace ERP.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("OrderTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Type = "walkin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Type = "delivery"
+                        });
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Products.Category", b =>
@@ -852,6 +951,22 @@ namespace ERP.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserRoles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Role = "owner"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Role = "secretary"
+                        });
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.AuditLogs.AuditLog", b =>

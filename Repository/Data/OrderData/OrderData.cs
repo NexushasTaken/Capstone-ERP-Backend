@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Interface.Data.OrderData;
+﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.ViewModel.Inventories;
@@ -56,7 +57,7 @@ namespace ERP.Repository.Data.OrderData
         }
         public async Task<IEnumerable<OrderTotalViewModel>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellation = default)
         {
-            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId != 1);
+            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
 
             orders = FilteringQuery(orders, name, filter, statusId, orderTypeId);
 
@@ -100,7 +101,7 @@ namespace ERP.Repository.Data.OrderData
 
         public async Task<int> OrdersCount(string? name, int filter, int statusId, int orderTypeId)
         {
-            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId != 1);
+            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
 
             orders = FilteringQuery(orders,name,filter,statusId,orderTypeId);
 
@@ -147,7 +148,7 @@ namespace ERP.Repository.Data.OrderData
 
         public async Task<IEnumerable<OrderStatusCount>> StatusCount()
         {
-            var status = await BaseQuery<Order>(false).Where(o => o.OrderStatusId != 1).GroupBy(i => new { i.OrderStatusId, i.OrderStatus.Status }).Select(g => new OrderStatusCount
+            var status = await BaseQuery<Order>(false).Where(o => o.OrderStatusId != (int)OrderStatusEnum.Completed).GroupBy(i => new { i.OrderStatusId, i.OrderStatus.Status }).Select(g => new OrderStatusCount
             {
                 Status = g.Key.Status,
                 Count = g.Count()
