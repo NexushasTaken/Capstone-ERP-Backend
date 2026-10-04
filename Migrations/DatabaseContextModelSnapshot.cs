@@ -868,6 +868,28 @@ namespace ERP.Migrations
                     b.HasIndex("UserRoleId");
 
                     b.ToTable("UserAccounts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "owner@gmail.com",
+                            IsActive = true,
+                            Password = "0ULmzYhoKo1MJ9WyeS3WAktEqN/QYeXPEb7z7akCUxM=",
+                            Salt = "OmUBGSIov6YDrqLo4SaFuw==",
+                            UserRoleId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "secretary@gmail.com",
+                            IsActive = true,
+                            Password = "lgKIp/sJWDvi74qQ/TYwXAsb7Bv/Z1fpdrDxsanRmqA=",
+                            Salt = "ELFJLUKQLNZ1usWM/oILqA==",
+                            UserRoleId = 2
+                        });
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserInformation", b =>
@@ -914,6 +936,26 @@ namespace ERP.Migrations
                         .IsUnique();
 
                     b.ToTable("UserInformations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FirstName = "Bill",
+                            IsActive = true,
+                            LastName = "Gates",
+                            UserAccountId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            FirstName = "Mark",
+                            IsActive = true,
+                            LastName = "Zucherbeard",
+                            UserAccountId = 2
+                        });
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserRole", b =>
