@@ -11,6 +11,15 @@
         WHOUSE = 6
     }
 
+    // Optional list filters; zero / null means "not filtered".
+    public record InventoryListFilter(
+        int WarehouseId = 0,
+        int CategoryId = 0,
+        int? MinQuantity = null,
+        int? MaxQuantity = null,
+        DateTime? DateFrom = null,
+        DateTime? DateTo = null);
+
     public class InventoryViewModel
     {
         public int Id { get; set; }
@@ -21,6 +30,7 @@
         public int? WarehouseId { get; set; }
         public string? WarehouseName { get; set; }
         public string? Status { get; set; }
+        public string? CategoryName { get; set; }
         public DateTime DateArrived { get; set; }
         public DateTime? Created_At { get; set; }
     }

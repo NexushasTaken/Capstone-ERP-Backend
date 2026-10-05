@@ -141,6 +141,9 @@ namespace ERP.Repository
                 .WithMany(w => w.Inventory)
                 .HasForeignKey(i => i.ProductId);
 
+            modelBuilder.Entity<Inventory>()
+                .HasIndex(i => i.DateArrived);
+
             modelBuilder.Entity<InventoryTransaction>()
              .HasOne(t => t.Inventory)
              .WithMany(i => i.InventoryTransactions)

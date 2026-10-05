@@ -30,12 +30,13 @@ namespace ERP.Repository.Services.Inventories
     {
 
         #region Inventory
-        public async Task<InventoryPageViewModel> GetInventories(int page, int pageSize, string name, int filter,int statusId, int wareHousePresent, CancellationToken cancellationToken)
+        public async Task<InventoryPageViewModel> GetInventories(int page, int pageSize, string name, int filter,int statusId, int wareHousePresent, InventoryListFilter listFilter, CancellationToken cancellationToken)
         {
+            PageQueryValidator.Ensure(page, pageSize);
 
-            var inv = await _inventory.GetInventoriesWithoutTracking(page, pageSize, name, filter, statusId, wareHousePresent, cancellationToken);
+            var inv = await _inventory.GetInventoriesWithoutTracking(page, pageSize, name, filter, statusId, wareHousePresent, listFilter, cancellationToken);
 
-            var totalCount = await _inventory.InventoryCount(name, filter, statusId, wareHousePresent);
+            var totalCount = await _inventory.InventoryCount(name, filter, statusId, wareHousePresent, listFilter);
 
             var inventory = inv.Select(i => new InventoryViewModel
             {
@@ -47,6 +48,7 @@ namespace ERP.Repository.Services.Inventories
                 WarehouseId = i.WarehouseId ?? 0,
                 WarehouseName = i.Warehouse?.Name ?? "No Warehouse",
                 Status = i.InventoryStatus.Status,
+                CategoryName = i.Product?.Category?.Type ?? "No Category",
                 DateArrived = i.DateArrived,
                 Created_At = i.Created_At
             });

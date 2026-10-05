@@ -14,7 +14,7 @@ namespace ERP.Repository.Data.InventoryData
 
         #region Inventory
 
-        public IQueryable<Inventory> FilteringQuery(IQueryable<Inventory> query, string? name, int filter, int statusId, int wareHousePresent)
+        public IQueryable<Inventory> FilteringQuery(IQueryable<Inventory> query, string? name, int filter, int statusId, int wareHousePresent, InventoryListFilter listFilter)
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -36,6 +36,39 @@ namespace ERP.Repository.Data.InventoryData
             if(wareHousePresent == 1)
             {
                 query = query.Where(i => i.WarehouseId == null);
+            }
+
+            if (listFilter.WarehouseId > 0)
+            {
+                query = query.Where(i => i.WarehouseId == listFilter.WarehouseId);
+            }
+
+            if (listFilter.CategoryId > 0)
+            {
+                query = query.Where(i => i.Product.CategoryId == listFilter.CategoryId);
+            }
+
+            if (listFilter.MinQuantity.HasValue)
+            {
+                query = query.Where(i => i.Quantity >= listFilter.MinQuantity.Value);
+            }
+
+            if (listFilter.MaxQuantity.HasValue)
+            {
+                query = query.Where(i => i.Quantity <= listFilter.MaxQuantity.Value);
+            }
+
+            if (listFilter.DateFrom.HasValue)
+            {
+                var from = DateTime.SpecifyKind(listFilter.DateFrom.Value.Date, DateTimeKind.Utc);
+                query = query.Where(i => i.DateArrived >= from);
+            }
+
+            if (listFilter.DateTo.HasValue)
+            {
+                // exclusive upper bound so the whole "to" day is included
+                var to = DateTime.SpecifyKind(listFilter.DateTo.Value.Date.AddDays(1), DateTimeKind.Utc);
+                query = query.Where(i => i.DateArrived < to);
             }
 
             if (Enum.IsDefined(typeof(InventoryFilter), filter))
@@ -69,26 +102,27 @@ namespace ERP.Repository.Data.InventoryData
                 query = query.OrderByDescending(i => i.Created_At);
             }
 
-            return query;
+            // ties fall back to Id so paging stays stable
+            return ((IOrderedQueryable<Inventory>)query).ThenBy(i => i.Id);
         }
 
 
-        public async Task<IEnumerable<Inventory>> GetInventoriesWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int wareHousePresent, CancellationToken cancellationToken)
+        public async Task<IEnumerable<Inventory>> GetInventoriesWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int wareHousePresent, InventoryListFilter listFilter, CancellationToken cancellationToken)
         {
             var inventories = BaseQuery<Inventory>(false).Where(i => i.IsActive == true);
 
-            inventories = FilteringQuery(inventories,name,filter,statusId,wareHousePresent);
+            inventories = FilteringQuery(inventories,name,filter,statusId,wareHousePresent,listFilter);
 
-            var result = await inventories.Include(i => i.Warehouse).Include(i => i.InventoryStatus).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+            var result = await inventories.Include(i => i.Warehouse).Include(i => i.InventoryStatus).Include(i => i.Product).ThenInclude(p => p.Category).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
             return result;
         }
 
-        public async Task<int> InventoryCount(string name, int filter, int statusId, int wareHousePresent)
+        public async Task<int> InventoryCount(string? name, int filter, int statusId, int wareHousePresent, InventoryListFilter listFilter)
         {
             var count = BaseQuery<Inventory>(false).Where(i => i.IsActive == true);
 
-            count = FilteringQuery(count,name,filter, statusId, wareHousePresent);
+            count = FilteringQuery(count,name,filter, statusId, wareHousePresent, listFilter);
 
             var result = await count.CountAsync();
 
@@ -215,7 +249,7 @@ namespace ERP.Repository.Data.InventoryData
 
         public async Task<IEnumerable<InventoryStatusViewModel>> StatusCount()
         {
-            var inventory = await BaseQuery<Inventory>(false).GroupBy(i => new { i.StatusId, i.InventoryStatus.Status }).Select(g => new InventoryStatusViewModel
+            var inventory = await BaseQuery<Inventory>(false).Where(i => i.IsActive == true).GroupBy(i => new { i.StatusId, i.InventoryStatus.Status }).Select(g => new InventoryStatusViewModel
             {
                 Status = g.Key.Status,
                 Count = g.Count()
