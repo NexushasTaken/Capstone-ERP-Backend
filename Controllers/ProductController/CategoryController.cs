@@ -12,7 +12,7 @@ namespace ERP.Controllers.ProductController
         /// <summary>
         /// Retrieves one page of categories.
         /// </summary>
-        /// <param name="name">case-insensitive search on the category type</param>
+        /// <param name="name">case-insensitive search on the category type; a number also matches the Id</param>
         /// <param name="filter">sort: 0 newest first, 1 Id, 2 type A - Z, 3 type Z - A</param>
         [HttpGet("all")]
         public async Task<IActionResult> GetAllCategory([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "", [FromQuery] int filter = 0, CancellationToken cancellation = default)

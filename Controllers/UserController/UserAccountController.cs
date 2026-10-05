@@ -60,7 +60,7 @@ namespace ERP.Controllers.UserController
         /// <summary>
         /// Retrieves one page of accounts (owner only).
         /// </summary>
-        /// <param name="name">case-insensitive search on first name, last name, email and role; a number also matches the Id</param>
+        /// <param name="name">case-insensitive search on first name, last name, email and role; a number or ACC-n also matches the Id</param>
         /// <param name="filter">sort: 0 Id, 1 role A - Z, 2 first name A - Z, 3 first name Z - A</param>
         [Authorize(Roles = "owner")]
         [HttpGet("accounts")]

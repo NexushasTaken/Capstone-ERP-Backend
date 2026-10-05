@@ -16,7 +16,12 @@ namespace ERP.Repository.Data.ProductData
             if (!string.IsNullOrWhiteSpace(name))
             {
                 var pattern = SearchPattern.Contains(name);
-                query = query.Where(p => EF.Functions.ILike(p.Name, pattern));
+                var hasId = SearchPattern.TryParseId(name, "PR", out var id);
+
+                query = query.Where(p =>
+                    EF.Functions.ILike(p.Name, pattern) ||
+                    (p.Category != null && EF.Functions.ILike(p.Category.Type, pattern)) ||
+                    (hasId && p.Id == id));
             }
 
             query = categoryPresent == 1

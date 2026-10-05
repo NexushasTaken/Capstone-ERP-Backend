@@ -54,7 +54,7 @@ namespace ERP.Repository.Data.UserAccounts
             if (!string.IsNullOrWhiteSpace(name))
             {
                 var pattern = SearchPattern.Contains(name);
-                var hasId = int.TryParse(name.Trim(), out var id);
+                var hasId = SearchPattern.TryParseId(name, "ACC", out var id);
 
                 query = query.Where(u =>
                     EF.Functions.ILike(u.UserInformation!.FirstName!, pattern) ||

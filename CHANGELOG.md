@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-10-05
+
+### Changed
+
+- The `name` search on the Product, Category, Warehouse, Inventory, Order, Sale, Driver and Account lists now matches every text column shown in that list (e.g. a product's category, an inventory item's warehouse and status, an order's type, status and customer).
+- Those searches also match the record's id, either as a bare number (`12`) or as shown in the list (`PR-12`, `INV-3`, `ORD-7`, `SAL-7`, `ACC-5`).
+
 ## [2.1.0] - 2026-10-05
 
 ### Added
