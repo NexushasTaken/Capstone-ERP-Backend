@@ -9,28 +9,28 @@ namespace ERP.Repository.Data.UserAccounts
     {
         public async Task<UserAccount> GetUserByEmailWithoutTracking(string email, CancellationToken cancellation = default)
         {
-            var user = await BaseQuery<UserAccount>(false).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Email == email, cancellation);
+            var user = await BaseQuery<UserAccount>(false).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Email == email && x.IsActive == true, cancellation);
 
             return user;
         }
 
         public async Task<UserAccount> GetUserByEmailWithTracking(string email, CancellationToken cancellation = default)
         {
-            var user = await BaseQuery<UserAccount>(true).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Email == email, cancellation);
+            var user = await BaseQuery<UserAccount>(true).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Email == email && x.IsActive == true, cancellation);
 
             return user;
         }
 
         public async Task<UserAccount> GetUserByIdWithoutTracking(int userId, CancellationToken cancellation = default)
         {
-            var user = await BaseQuery<UserAccount>(false).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Id == userId, cancellation);
+            var user = await BaseQuery<UserAccount>(false).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Id == userId && x.IsActive == true, cancellation);
 
             return user;
         }
 
         public async Task<UserAccount> GetUserByIdWithTracking(int userId, CancellationToken cancellation = default)
         {
-            var user = await BaseQuery<UserAccount>(true).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Id == userId, cancellation);
+            var user = await BaseQuery<UserAccount>(true).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Id == userId && x.IsActive == true, cancellation);
 
             return user;
         }
@@ -46,10 +46,10 @@ namespace ERP.Repository.Data.UserAccounts
             return users;
         }
 
-        // Case-insensitive search over first name, last name, email and role. A number also matches the account Id.
+        // Active accounts only. Case-insensitive search over first name, last name, email and role. A number also matches the account Id.
         private IQueryable<UserAccount> AccountFilteringQuery(string? name)
         {
-            var query = BaseQuery<UserAccount>(false);
+            var query = BaseQuery<UserAccount>(false).Where(u => u.IsActive == true);
 
             if (!string.IsNullOrWhiteSpace(name))
             {
