@@ -2,6 +2,7 @@
 using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
+using FluentValidation;
 using ERP.Repository.Interface.AuditLogs;
 using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Products;
@@ -11,13 +12,19 @@ using System.ComponentModel;
 
 namespace ERP.Repository.Services.Products
 {
-    public class ProductService(ICategoryData _category, IProductData _product, IAuditLogService _auditLog) : IProductService
+    public class ProductService(
+        ICategoryData _category,
+        IProductData _product,
+        IAuditLogService _auditLog,
+        IValidator<CategoryUpdateViewModel> _categoryUpdateValidator,
+        IValidator<ProductPostViewModel> _productPostValidator,
+        IValidator<ProductUpdateViewModel> _productUpdateValidator) : IProductService
     {
 
         #region Category
         public async Task<CategoryPageViewModel> GetCategories(int page, int pageSize, string? name, int filter, CancellationToken cancellation)
         {
-            GlobalValidation.PageValidation(page, pageSize);
+            PageQueryValidator.Ensure(page, pageSize);
 
             var categories = await _category.GetAllCategoriesWithoutTracking(page, pageSize, name, filter, cancellation);
             var count = await _category.CategoryTotalCount(name, cancellation);
@@ -39,7 +46,11 @@ namespace ERP.Repository.Services.Products
 
         public async Task InsertCategory(string categoryName)
         {
-            ProductValidation.CategoryInsertValidation(categoryName);
+            // categoryName arrives as a query parameter, so it's checked here rather than by a validator.
+            if (string.IsNullOrWhiteSpace(categoryName))
+            {
+                throw new ValidationFailed("categoryName", "Category Name is required");
+            }
 
             var now = DateTime.UtcNow;
 
@@ -60,7 +71,10 @@ namespace ERP.Repository.Services.Products
         public async Task DeleteCategory(int id)
         {
 
-            ProductValidation.CategoryDeleteValidation(id);
+            if (id <= 0)
+            {
+                throw new BadRequest("Category ID is required");
+            }
 
             var category = await _category.GetCategoryByIdWithTracking(id);
 
@@ -96,7 +110,7 @@ namespace ERP.Repository.Services.Products
 
         public async Task UpdateCategory(CategoryUpdateViewModel category)
         {
-            ProductValidation.CategoryUpdateValidation(category);
+            await _categoryUpdateValidator.EnsureValidAsync(category);
 
             var ct = await _category.GetCategoryByIdWithTracking(category.Id);
 
@@ -125,7 +139,7 @@ namespace ERP.Repository.Services.Products
 
         public async Task<ProductPageViewModel> GetProducts(int page, int pageSize, string? name, int categoryPresent, int filter)
         {
-            GlobalValidation.PageValidation(page, pageSize);
+            PageQueryValidator.Ensure(page, pageSize);
 
             var products = await _product.GetAllProductWithoutTracking(page, pageSize, name, categoryPresent, filter);
 
@@ -153,7 +167,7 @@ namespace ERP.Repository.Services.Products
 
         public async Task InsertProduct(ProductPostViewModel product)
         {
-            ProductValidation.ProductInsertValidation(product);
+            await _productPostValidator.EnsureValidAsync(product);
 
             var now = DateTime.UtcNow;
 
@@ -197,7 +211,7 @@ namespace ERP.Repository.Services.Products
 
         public async Task UpdateProduct(ProductUpdateViewModel product)
         {
-            ProductValidation.ProductUpdateValidation(product);
+            await _productUpdateValidator.EnsureValidAsync(product);
 
             var pr = await _product.GetProductByIdWithTracking(product.Id);
 

@@ -1,6 +1,7 @@
 ﻿using ERP.Middleware;
 using ERP.Repository;
 using ERP.Repository.Configuration.Helper;
+using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Data;
 using ERP.Repository.Data.AuditLogData;
 using ERP.Repository.Data.DashboardData;
@@ -39,8 +40,10 @@ using ERP.Repository.Services.Sales;
 using ERP.Repository.Services.SSA;
 using ERP.Repository.Services.TokenManager;
 using ERP.Repository.Services.UserAccounts;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.ML;
@@ -102,6 +105,9 @@ namespace ERP
 
             #endregion
 
+            // Registers every AbstractValidator<T> in Repository/Configuration/Validation.
+            builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
             #region Singleton Services
 
             builder.Services.AddSingleton<ITokenManagerService,TokenManagerService>();
@@ -146,7 +152,22 @@ namespace ERP
 
 
             builder.Services.AddDbContext<DatabaseContext>(context => context.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+            {
+                // Model-binding failures (missing query params, malformed JSON) use the same 400 envelope as ValidationFailed.
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var errors = context.ModelState
+                        .Where(entry => entry.Value?.Errors.Count > 0)
+                        .ToDictionary(
+                            entry => ValidatorExtensions.ToFieldPath(entry.Key),
+                            entry => entry.Value!.Errors.Select(e => e.ErrorMessage).ToArray());
+                    var response = context.HttpContext.RequestServices.GetRequiredService<ResponseHelper>();
+                    var message = errors.Values.SelectMany(e => e).FirstOrDefault() ?? "Invalid request";
+
+                    return new BadRequestObjectResult(response.Status(400, false, message, null, errors));
+                };
+            });
             builder.Services.AddSwaggerGen(c =>
             {
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

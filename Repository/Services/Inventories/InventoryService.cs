@@ -11,12 +11,22 @@ using ERP.Repository.Interface.Products;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.ViewModel.Inventories;
 using ERP.Repository.ViewModel.Products;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.ConstrainedExecution;
 
 namespace ERP.Repository.Services.Inventories
 {
-    public class InventoryService(IInventoryData _inventory, IProductData _product, IAuditLogService _auditLog) : IInventoryService
+    public class InventoryService(
+        IInventoryData _inventory,
+        IProductData _product,
+        IAuditLogService _auditLog,
+        IValidator<InventoryPostViewModel> _inventoryPostValidator,
+        IValidator<InventoryUpdateViewModel> _inventoryUpdateValidator,
+        IValidator<InventoryDamagePostViewModel> _damageValidator,
+        IValidator<InventoryTransactionPostViewModel> _transactionValidator,
+        IValidator<InventoryWareHousePostViewModel> _warehousePostValidator,
+        IValidator<InventoryWareHouseUpdateViewModel> _warehouseUpdateValidator) : IInventoryService
     {
 
         #region Inventory
@@ -69,7 +79,7 @@ namespace ERP.Repository.Services.Inventories
         public async Task InsertItem(InventoryPostViewModel inventory)
         {
 
-            InventoryValidation.ValidateItem(inventory);
+            await _inventoryPostValidator.EnsureValidAsync(inventory);
 
             var duplicate = await _inventory.CheckExistingInventory(inventory.Name.ToLower(), inventory.WarehouseId);
 
@@ -193,7 +203,7 @@ namespace ERP.Repository.Services.Inventories
 
         public async Task UpdateInventory(InventoryUpdateViewModel inventory)
         {
-            InventoryValidation.ValidateUpdate(inventory);
+            await _inventoryUpdateValidator.EnsureValidAsync(inventory);
 
             var existing = await _inventory.GetInventoryWithTracking(inventory.Id);
 
@@ -250,7 +260,7 @@ namespace ERP.Repository.Services.Inventories
 
         public async Task MarkAsDamaged(InventoryDamagePostViewModel damaged)
         {
-            InventoryValidation.MarkAsDamagedValidation(damaged);
+            await _damageValidator.EnsureValidAsync(damaged);
 
             var inventory = await _inventory.GetInventoryWithTracking(damaged.Id);
 
@@ -313,7 +323,7 @@ namespace ERP.Repository.Services.Inventories
 
         public async Task InventoryTransaction(InventoryTransactionPostViewModel transaction)
         {
-            InventoryValidation.InventoryTransactionValidation(transaction);
+            await _transactionValidator.EnsureValidAsync(transaction);
 
             var transac = new InventoryTransaction
             {
@@ -342,7 +352,7 @@ namespace ERP.Repository.Services.Inventories
         #region Warehouse
         public async Task<WarehousePageViewModel> GetWarehouses(int page, int pageSize, string? name, int filter, CancellationToken cancellation)
         {
-            GlobalValidation.PageValidation(page, pageSize);
+            PageQueryValidator.Ensure(page, pageSize);
 
             var wareHouses = await _inventory.GetWarehousesWithoutTracking(page, pageSize, name, filter, cancellation);
             var count = await _inventory.WarehouseTotalCount(name, cancellation);
@@ -357,7 +367,7 @@ namespace ERP.Repository.Services.Inventories
 
         public async Task NewWareHouse(InventoryWareHousePostViewModel wareHouse)
         {
-            InventoryValidation.InventoryWareHouseValidation(wareHouse);
+            await _warehousePostValidator.EnsureValidAsync(wareHouse);
 
             var now = DateTime.UtcNow;
 
@@ -380,7 +390,7 @@ namespace ERP.Repository.Services.Inventories
 
         public async Task UpdateWareHouse(InventoryWareHouseUpdateViewModel wareHouse)
         {
-            InventoryValidation.InventoryWareHouseUpdateValidation(wareHouse);
+            await _warehouseUpdateValidator.EnsureValidAsync(wareHouse);
 
             var wh = await _inventory.GetIndividualWareHouseWithTracking(wareHouse.Id);
 

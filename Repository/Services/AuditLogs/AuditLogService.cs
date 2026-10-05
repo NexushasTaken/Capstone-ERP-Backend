@@ -1,4 +1,4 @@
-using ERP.Repository.Configuration.Enum;
+﻿using ERP.Repository.Configuration.Enum;
 using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Interface.AuditLogs;
@@ -31,7 +31,7 @@ namespace ERP.Repository.Services.AuditLogs
 
         public async Task<AuditLogPageViewModel> GetLogs(int page, int pageSize, int userId, int action, int module, string? role, CancellationToken cancellation = default)
         {
-            GlobalValidation.PageValidation(page, pageSize);
+            PageQueryValidator.Ensure(page, pageSize);
 
             if (action != 0 && !Enum.IsDefined(typeof(AuditActionEnum), action))
             {

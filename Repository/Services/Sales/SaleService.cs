@@ -11,7 +11,7 @@ namespace ERP.Repository.Services.Sales
     {
         public async Task<SalesPageViewModel> GetSales(int page, int pageSize, string? name, int filter, int orderTypeId, CancellationToken cancellationToken = default)
         {
-            GlobalValidation.PageValidation(page, pageSize);
+            PageQueryValidator.Ensure(page, pageSize);
 
             var result = await _sales.GetOrdersWithoutTracking(page, pageSize, name, filter, orderTypeId, cancellationToken);
             var totalCount = await _sales.OrdersCount(name, filter, orderTypeId);

@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-10-05
+
+### Added
+
+- Validation failures (400) include an `errors` object mapping each rejected field to its messages, e.g. `{ "name": ["Product Name is required"], "orderLines.1.quantity": ["Quantity is required"] }`. Keys are camelCase paths matching the request JSON. `message` still holds the first error.
+- All rejected fields are reported at once instead of only the first one.
+- `POST /api/Order/insert` rejects an order with no order lines.
+
+### Changed
+
+- Model-binding failures (missing required query parameters, malformed JSON) use the same `{ status, success, message, errors }` body instead of ASP.NET's ProblemDetails.
+- `POST /api/User/accounts` and the credentials update report a duplicate email under `errors.email`.
+
+### Fixed
+
+- Invalid `page`/`pageSize` on list endpoints, an empty `categoryName` on `POST /api/Category/insert` and an invalid id on category delete return 400 instead of 500.
+
 ## [2.0.0] - 2026-10-05
 
 ### Changed

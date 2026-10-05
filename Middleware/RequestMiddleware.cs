@@ -15,7 +15,15 @@ namespace ERP.Middleware
             {
                 await _next(context);
             }
+            catch (ValidationFailed ex)
+            {
+                await Response(context, 400, "application/json", ex.Message, ex.Errors);
+            }
             catch (BadRequest ex)
+            {
+                await Response(context, 400, "application/json", ex.Message);
+            }
+            catch (ArgumentException ex)
             {
                 await Response(context, 400, "application/json", ex.Message);
             }
@@ -32,11 +40,11 @@ namespace ERP.Middleware
             }
         }
 
-        public async Task<HttpContext> Response(HttpContext context, int statusCode, string contentType, string error)
+        public async Task<HttpContext> Response(HttpContext context, int statusCode, string contentType, string error, IDictionary<string, string[]>? errors = null)
         {
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = contentType;
-            await context.Response.WriteAsJsonAsync(_response.Status(statusCode,false,error,null));
+            await context.Response.WriteAsJsonAsync(_response.Status(statusCode, false, error, null, errors));
 
             return context;
         }

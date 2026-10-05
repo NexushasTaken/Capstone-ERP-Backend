@@ -8,14 +8,22 @@ using ERP.Repository.Interface.TokenManager;
 using ERP.Repository.Interface.UserAccounts;
 using ERP.Repository.Model.UserAccounts;
 using ERP.Repository.ViewModel.UserAccount;
+using FluentValidation;
 
 namespace ERP.Repository.Services.UserAccounts
 {
     public class UserAccountService(
         IUserAccountData _userAccountData,
         ITokenManagerService _tokenManagerService,
-        IAuditLogService _auditLog) : IUserAccountService
+        IAuditLogService _auditLog,
+        IValidator<UserAccountViewModel> _loginValidator,
+        IValidator<CreateAccountViewModel> _createValidator,
+        IValidator<UpdateAccountRoleViewModel> _roleValidator,
+        IValidator<UpdateProfileViewModel> _profileValidator,
+        IValidator<UpdateCredentialsViewModel> _credentialsValidator) : IUserAccountService
     {
+        private const int LockedAccountId = 1;
+
         public async Task<UserLoginSuccess> Login(UserAccountViewModel user)
         {
             //var salt = _tokenManagerService.GenerateSalt();
@@ -25,7 +33,7 @@ namespace ERP.Repository.Services.UserAccounts
 
             // Implement your login logic here
 
-            LoginValidation.NotNullEmailAndPassword(user);
+            await _loginValidator.EnsureValidAsync(user);
 
             var existingUser = await _userAccountData.GetUserByEmailWithoutTracking(user.Email);
 
@@ -80,7 +88,7 @@ namespace ERP.Repository.Services.UserAccounts
 
         public async Task<AccountPageViewModel> GetAccounts(int page, int pageSize, string? name, int filter, CancellationToken cancellation = default)
         {
-            GlobalValidation.PageValidation(page, pageSize);
+            PageQueryValidator.Ensure(page, pageSize);
 
             var accounts = await _userAccountData.GetAccountsWithoutTracking(page, pageSize, name, filter, cancellation);
             var count = await _userAccountData.AccountTotalCount(name, cancellation);
@@ -102,13 +110,13 @@ namespace ERP.Repository.Services.UserAccounts
 
         public async Task CreateAccount(CreateAccountViewModel account)
         {
-            AccountValidation.CreateValidation(account);
+            await _createValidator.EnsureValidAsync(account);
 
             var existingUser = await _userAccountData.GetUserByEmailWithoutTracking(account.Email!);
 
             if (existingUser != null)
             {
-                throw new BadRequest("An account with this email already exists.");
+                throw new ValidationFailed("email", "An account with this email already exists.");
             }
 
             var role = await _userAccountData.GetRoleByName(account.Role!);
@@ -149,7 +157,12 @@ namespace ERP.Repository.Services.UserAccounts
 
         public async Task UpdateAccountRole(int id, UpdateAccountRoleViewModel account)
         {
-            AccountValidation.RoleUpdateValidation(id, account);
+            if (id == LockedAccountId)
+            {
+                throw new BadRequest("This account's role cannot be changed.");
+            }
+
+            await _roleValidator.EnsureValidAsync(account);
 
             var existingAccount = await _userAccountData.GetUserByIdWithTracking(id);
 
@@ -178,7 +191,15 @@ namespace ERP.Repository.Services.UserAccounts
         // Soft delete: the account is deactivated, not removed.
         public async Task DeleteAccount(int id)
         {
-            AccountValidation.DeleteValidation(id, _auditLog.CurrentUserId);
+            if (id == LockedAccountId)
+            {
+                throw new BadRequest("This account cannot be deleted.");
+            }
+
+            if (id == _auditLog.CurrentUserId)
+            {
+                throw new BadRequest("You cannot delete your own account.");
+            }
 
             var existingAccount = await _userAccountData.GetUserByIdWithTracking(id);
 
@@ -206,7 +227,7 @@ namespace ERP.Repository.Services.UserAccounts
 
         public async Task UpdateProfile(int userId, UpdateProfileViewModel profile)
         {
-            AccountValidation.ProfileValidation(profile);
+            await _profileValidator.EnsureValidAsync(profile);
 
             var existingAccount = await _userAccountData.GetUserByIdWithTracking(userId);
 
@@ -239,7 +260,7 @@ namespace ERP.Repository.Services.UserAccounts
 
         public async Task UpdateCredentials(int userId, UpdateCredentialsViewModel credentials)
         {
-            AccountValidation.CredentialsValidation(credentials);
+            await _credentialsValidator.EnsureValidAsync(credentials);
 
             var existingAccount = await _userAccountData.GetUserByIdWithTracking(userId);
 
@@ -261,7 +282,7 @@ namespace ERP.Repository.Services.UserAccounts
 
                 if (emailOwner != null && emailOwner.Id != userId)
                 {
-                    throw new BadRequest("An account with this email already exists.");
+                    throw new ValidationFailed("email", "An account with this email already exists.");
                 }
             }
 
