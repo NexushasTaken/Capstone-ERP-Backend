@@ -130,25 +130,54 @@ namespace ERP.Repository.Data.InventoryData
         #endregion
 
         #region Warehouse
-        public async Task<int> GetIndividualWarehouseCurrentCapacityWithoutTracking(int id)
+        private IQueryable<Warehouse> WarehouseFilteringQuery(string? name)
         {
-            var capacity = await BaseQuery<Inventory>(false).Where(w => w.WarehouseId == id && w.IsActive == true).CountAsync();
+            var query = BaseQuery<Warehouse>(false).Where(w => w.IsActive == true);
 
-            return capacity;
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                var pattern = SearchPattern.Contains(name);
+                query = query.Where(w => EF.Functions.ILike(w.Name, pattern) || EF.Functions.ILike(w.Address, pattern));
+            }
+
+            return query;
         }
 
-        public async Task<List<Warehouse>> GetWarehousesWithoutTracking()
+        // filter: 0 = newest first, 1 = Id, 2 = Name A-Z, 3 = Name Z-A. Ties fall back to Id so paging stays stable.
+        private static IQueryable<Warehouse> WarehouseSortingQuery(IQueryable<Warehouse> query, int filter)
         {
-            var wareHouse = await BaseQuery<Warehouse>(false).Where(w => w.IsActive == true).ToListAsync();
+            var sorted = filter switch
+            {
+                1 => query.OrderBy(w => w.Id),
+                2 => query.OrderBy(w => w.Name),
+                3 => query.OrderByDescending(w => w.Name),
+                _ => query.OrderByDescending(w => w.Created_At),
+            };
 
-            return wareHouse;
+            return sorted.ThenBy(w => w.Id);
         }
 
-        public async Task<int> GetIndividualWarehousesMaxCapacityWithoutTracking(int id)
+        public async Task<IEnumerable<InventoryWareHouseViewModel>> GetWarehousesWithoutTracking(int page, int pageSize, string? name, int filter, CancellationToken cancellation = default)
         {
-            var wareHouse = await BaseQuery<Warehouse>(false).FirstOrDefaultAsync(w => w.Id == id && w.IsActive == true);
+            var wareHouses = await WarehouseSortingQuery(WarehouseFilteringQuery(name), filter)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(w => new InventoryWareHouseViewModel
+                {
+                    Id = w.Id,
+                    Name = w.Name,
+                    Address = w.Address,
+                    Stocks = w.Inventory.Count(i => i.IsActive == true),
+                    Created_At = w.Created_At
+                })
+                .ToListAsync(cancellation);
 
-            return wareHouse.Capacity;
+            return wareHouses;
+        }
+
+        public async Task<int> WarehouseTotalCount(string? name, CancellationToken cancellation = default)
+        {
+            return await WarehouseFilteringQuery(name).CountAsync(cancellation);
         }
 
         public async Task<Warehouse> GetIndividualWareHouseWithTracking(int id)

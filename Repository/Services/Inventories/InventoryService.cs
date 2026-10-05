@@ -71,14 +71,6 @@ namespace ERP.Repository.Services.Inventories
 
             InventoryValidation.ValidateItem(inventory);
 
-            var maxWareHouseCapacity = await _inventory.GetIndividualWarehousesMaxCapacityWithoutTracking(inventory.WarehouseId);
-            var currentWareHouseCapacity = await _inventory.GetIndividualWarehouseCurrentCapacityWithoutTracking(inventory.WarehouseId);
-
-            if ((currentWareHouseCapacity + 1) > maxWareHouseCapacity)
-            {
-                throw new BadRequest("Warehouse is full.");
-            }
-
             var duplicate = await _inventory.CheckExistingInventory(inventory.Name.ToLower(), inventory.WarehouseId);
 
             if (duplicate)
@@ -204,17 +196,10 @@ namespace ERP.Repository.Services.Inventories
             InventoryValidation.ValidateUpdate(inventory);
 
             var existing = await _inventory.GetInventoryWithTracking(inventory.Id);
-            var currentWareHouseCapacity = await _inventory.GetIndividualWarehouseCurrentCapacityWithoutTracking(inventory.WarehouseId);
-            var maxWareHouseCapacity = await _inventory.GetIndividualWarehousesMaxCapacityWithoutTracking(inventory.WarehouseId);
 
             if (existing == null)
             {
                 throw new NotFound("Inventory Item Not Found");
-            }
-
-            if((currentWareHouseCapacity + 1) > maxWareHouseCapacity)
-            {
-                throw new BadRequest("Warehouse is full");
             }
 
             var now = DateTime.UtcNow;
@@ -355,47 +340,19 @@ namespace ERP.Repository.Services.Inventories
         #endregion
 
         #region Warehouse
-        public async Task<IEnumerable<InventoryWareHouseViewModel>> GetWarehouses()
+        public async Task<WarehousePageViewModel> GetWarehouses(int page, int pageSize, string? name, int filter, CancellationToken cancellation)
         {
-            var wareHouses = await _inventory.GetWarehousesWithoutTracking();
+            GlobalValidation.PageValidation(page, pageSize);
 
-            if(wareHouses == null)
+            var wareHouses = await _inventory.GetWarehousesWithoutTracking(page, pageSize, name, filter, cancellation);
+            var count = await _inventory.WarehouseTotalCount(name, cancellation);
+
+            return new WarehousePageViewModel
             {
-                throw new NotFound("No warehouse is detected. please add first");
-            }
-
-            var result = new List<InventoryWareHouseViewModel>();
-            var totalCapacity = 0;
-            var totalStocks = 0;
-
-
-            foreach (var wh in wareHouses)
-            {
-                var tasks = await _inventory.GetIndividualWarehouseCurrentCapacityWithoutTracking(wh.Id);
-
-                result.Add(new InventoryWareHouseViewModel
-                {
-                    Id = wh.Id,
-                    Name = wh.Name,
-                    Address = wh.Address,
-                    Capicity = wh.Capacity,
-                    Stocks = tasks
-                });
-
-                totalCapacity += wh.Capacity;
-                totalStocks += tasks;
-            }
-
-            result.Add(new InventoryWareHouseViewModel
-            {
-                Id = result.Count() + 1,
-                Name = "All Warehouse Record",
-                Address = "",
-                Capicity = totalCapacity,
-                Stocks = totalStocks
-            });
-
-            return result;
+                Warehouses = wareHouses,
+                PageCount = (int)Math.Ceiling(count / (double)pageSize),
+                Rows = count
+            };
         }
 
         public async Task NewWareHouse(InventoryWareHousePostViewModel wareHouse)
@@ -408,7 +365,6 @@ namespace ERP.Repository.Services.Inventories
             {
                 Name = wareHouse.Name.ToLower(),
                 Address = wareHouse.Address.ToLower(),
-                Capacity = wareHouse.Capicity,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
                 IsActive = true
@@ -427,16 +383,10 @@ namespace ERP.Repository.Services.Inventories
             InventoryValidation.InventoryWareHouseUpdateValidation(wareHouse);
 
             var wh = await _inventory.GetIndividualWareHouseWithTracking(wareHouse.Id);
-            var currentWareHouseCapacity = await _inventory.GetIndividualWarehouseCurrentCapacityWithoutTracking(wareHouse.Id);
 
             if(wh == null)
             {
                 throw new NotFound("Warehouse not found");
-            }
-
-            if (wareHouse.Capicity < currentWareHouseCapacity)
-            {
-                throw new BadRequest("You cannot update below your current Warehouse Capacity");
             }
 
             var now = DateTime.UtcNow;
@@ -456,14 +406,8 @@ namespace ERP.Repository.Services.Inventories
                 changes.Add($"address '{wh.Address}' → '{newAddress}'");
             }
 
-            if (wh.Capacity != wareHouse.Capicity)
-            {
-                changes.Add($"capacity {wh.Capacity} → {wareHouse.Capicity}");
-            }
-
             wh.Name = newName;
             wh.Address = newAddress;
-            wh.Capacity = wareHouse.Capicity;
             wh.Updated_By = _auditLog.CurrentUserId;
             wh.Updated_At = now;
 

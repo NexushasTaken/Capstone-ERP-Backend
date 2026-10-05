@@ -96,7 +96,6 @@
     {
         public string? Name { get; set; }
         public string? Address { get; set; }
-        public int Capicity { get; set; }
     }
 
     public class InventoryWareHouseUpdateViewModel : InventoryWareHousePostViewModel
@@ -107,6 +106,14 @@
     public class InventoryWareHouseViewModel : InventoryWareHouseUpdateViewModel
     {
         public int Stocks { get; set; }
+        public DateTime? Created_At { get; set; }
+    }
+
+    public class WarehousePageViewModel
+    {
+        public IEnumerable<InventoryWareHouseViewModel> Warehouses { get; set; } = [];
+        public int PageCount { get; set; }
+        public int Rows { get; set; }
     }
 
     public class InventoryLabelViewModel

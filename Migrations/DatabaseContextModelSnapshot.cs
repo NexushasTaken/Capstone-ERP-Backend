@@ -396,9 +396,6 @@ namespace ERP.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
-                    b.Property<int>("Capacity")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime?>("Created_At")
                         .HasColumnType("timestamp with time zone");
 

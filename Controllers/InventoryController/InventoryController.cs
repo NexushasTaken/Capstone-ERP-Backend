@@ -31,10 +31,15 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", inventories));
         }
 
+        /// <summary>
+        /// Retrieves one page of warehouses.
+        /// </summary>
+        /// <param name="name">case-insensitive search on the warehouse name or address</param>
+        /// <param name="filter">sort: 0 newest first, 1 Id, 2 name A - Z, 3 name Z - A</param>
         [HttpGet("warehouse/all")]
-        public async Task<IActionResult> GetWareHouses()
+        public async Task<IActionResult> GetWareHouses([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "", [FromQuery] int filter = 0, CancellationToken cancellation = default)
         {
-            var wareHouse = await _inventory.GetWarehouses();
+            var wareHouse = await _inventory.GetWarehouses(page, pageSize, name, filter, cancellation);
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", wareHouse));
         }

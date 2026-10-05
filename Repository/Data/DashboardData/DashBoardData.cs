@@ -56,9 +56,9 @@ namespace ERP.Repository.Data.DashboardData
             return result;
         }
 
-       public async Task<int> WarehouseTotal()
+        public async Task<int> TotalStock()
         {
-            var result = await BaseQuery<Warehouse>(false).Where(w => w.IsActive == true).Select(w => w.Capacity).SumAsync();
+            var result = await BaseQuery<Inventory>(false).Where(i => i.IsActive == true).SumAsync(i => i.Quantity);
 
             return result;
         }

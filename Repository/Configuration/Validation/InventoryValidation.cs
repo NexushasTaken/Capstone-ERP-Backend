@@ -95,10 +95,6 @@ namespace ERP.Repository.Configuration.Validation
             {
                 throw new BadRequest("Warehouse Address is required");
             }
-            if (wareHouse.Capicity <= 0)
-            {
-                throw new BadRequest("Warehouse Capacity is required");
-            }
         }
 
         public static void InventoryWareHouseUpdateValidation(InventoryWareHouseUpdateViewModel wareHouse)
@@ -106,8 +102,7 @@ namespace ERP.Repository.Configuration.Validation
             var post = new InventoryWareHousePostViewModel
             {
                 Name = wareHouse.Name,
-                Address = wareHouse.Address,
-                Capicity = wareHouse.Capicity
+                Address = wareHouse.Address
             };
 
             InventoryWareHouseValidation(post);

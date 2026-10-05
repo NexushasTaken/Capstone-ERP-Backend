@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-10-05
+
+### Changed
+
+- **BREAKING:** `GET /api/Inventory/warehouse/all` is now paged and sortable. It takes `page`, `pageSize`, `name` (case-insensitive search on name or address) and `filter` (0 newest first, 1 Id, 2 name A - Z, 3 name Z - A), and returns `{ warehouses, pageCount, rows }`. Each warehouse includes `stocks` (active item count) and `created_At`. The "All Warehouse Record" total row is no longer returned.
+- **BREAKING:** `GET` dashboard inventory overview returns `totalStock` (total quantity of active inventory) instead of `totalWareHouseCapacity`.
+
+### Removed
+
+- **BREAKING:** Warehouse capacity. `POST /api/Inventory/warehouse/insert` and `PATCH /api/Inventory/warehouse/patch` no longer accept `capicity`, and the `Capacity` column is dropped from the database.
+- Adding or moving inventory into a warehouse is no longer rejected with "Warehouse is full".
+
 ## [1.1.0] - 2026-10-05
 
 ### Added
