@@ -23,9 +23,9 @@ namespace ERP.Repository.Services.Inventories
         public async Task<InventoryPageViewModel> GetInventories(int page, int pageSize, string name, int filter,int statusId, int wareHousePresent, CancellationToken cancellationToken)
         {
 
-            var inv = await _inventory.GetInventoriesWithoutTracking(page, pageSize, name.ToLower(), filter, statusId, wareHousePresent, cancellationToken);
+            var inv = await _inventory.GetInventoriesWithoutTracking(page, pageSize, name, filter, statusId, wareHousePresent, cancellationToken);
 
-            var totalCount = await _inventory.InventoryCount(name.ToLower(), filter, statusId, wareHousePresent);
+            var totalCount = await _inventory.InventoryCount(name, filter, statusId, wareHousePresent);
 
             var inventory = inv.Select(i => new InventoryViewModel
             {

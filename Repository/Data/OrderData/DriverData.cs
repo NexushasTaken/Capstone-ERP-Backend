@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Configuration.Enum;
+﻿using ERP.Repository.Configuration.Helper;
+using ERP.Repository.Configuration.Enum;
 using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Model.Orders;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,8 @@ namespace ERP.Repository.Data.OrderData
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
-                query = query.Where(d => d.FirstName.Contains(name.ToLower()) || d.LastName.Contains(name.ToLower()));
+                var pattern = SearchPattern.Contains(name);
+                query = query.Where(d => EF.Functions.ILike(d.FirstName, pattern) || EF.Functions.ILike(d.LastName, pattern));
             }
 
             if(Enum.IsDefined(typeof(DriverFilterEnum), filter)){

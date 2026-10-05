@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Configuration.Enum;
+﻿using ERP.Repository.Configuration.Helper;
+using ERP.Repository.Configuration.Enum;
 using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
@@ -14,7 +15,8 @@ namespace ERP.Repository.Data.OrderData
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
-                query = query.Where(o => o.Product.Name.Contains(name.ToLower()) || o.Order.CustomerName.Contains(name.ToLower()));
+                var pattern = SearchPattern.Contains(name);
+                query = query.Where(o => EF.Functions.ILike(o.Product.Name, pattern) || EF.Functions.ILike(o.Order.CustomerName, pattern));
             }
 
             if(statusId > 0)

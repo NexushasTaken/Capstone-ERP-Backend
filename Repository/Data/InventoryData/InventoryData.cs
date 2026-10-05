@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Configuration.Enum;
+﻿using ERP.Repository.Configuration.Helper;
+using ERP.Repository.Configuration.Enum;
 using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.ViewModel.Inventories;
@@ -17,7 +18,8 @@ namespace ERP.Repository.Data.InventoryData
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
-                query = query.Where(i => i.Name.Contains(name.ToLower()));
+                var pattern = SearchPattern.Contains(name);
+                query = query.Where(i => EF.Functions.ILike(i.Name, pattern));
             }
 
             if(statusId > 0)
