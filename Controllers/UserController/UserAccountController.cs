@@ -57,11 +57,16 @@ namespace ERP.Controllers.UserController
             return StatusCode(200, _response.Status(200, true, "Successfully Logout"));
         }
 
+        /// <summary>
+        /// Retrieves one page of accounts (owner only).
+        /// </summary>
+        /// <param name="name">case-insensitive search on first name, last name, email and role; a number also matches the Id</param>
+        /// <param name="filter">sort: 0 Id, 1 role A - Z, 2 first name A - Z, 3 first name Z - A</param>
         [Authorize(Roles = "owner")]
         [HttpGet("accounts")]
-        public async Task<IActionResult> GetAccounts(CancellationToken cancellation = default)
+        public async Task<IActionResult> GetAccounts([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "", [FromQuery] int filter = 0, CancellationToken cancellation = default)
         {
-            var accounts = await _userAccountService.GetAccounts(cancellation);
+            var accounts = await _userAccountService.GetAccounts(page, pageSize, name, filter, cancellation);
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", accounts));
         }
