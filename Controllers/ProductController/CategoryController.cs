@@ -9,10 +9,15 @@ namespace ERP.Controllers.ProductController
     [Route("api/Category")]
     public class CategoryController(IProductService _productService, ResponseHelper _response) : ControllerBase
     {
+        /// <summary>
+        /// Retrieves one page of categories.
+        /// </summary>
+        /// <param name="name">case-insensitive search on the category type</param>
+        /// <param name="filter">sort: 0 newest first, 1 Id, 2 type A - Z, 3 type Z - A</param>
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllCategory([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellation = default)
+        public async Task<IActionResult> GetAllCategory([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "", [FromQuery] int filter = 0, CancellationToken cancellation = default)
         {
-            var categories = await _productService.GetCategories(page, pageSize, cancellation);
+            var categories = await _productService.GetCategories(page, pageSize, name, filter, cancellation);
 
             return StatusCode(200, _response.Status(200, true, "Successfully Retrieved Category", categories));
         }

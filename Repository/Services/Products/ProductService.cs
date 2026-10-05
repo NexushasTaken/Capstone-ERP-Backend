@@ -15,10 +15,12 @@ namespace ERP.Repository.Services.Products
     {
 
         #region Category
-        public async Task<CategoryPageViewModel> GetCategories(int page, int pageSize, CancellationToken cancellation)
+        public async Task<CategoryPageViewModel> GetCategories(int page, int pageSize, string? name, int filter, CancellationToken cancellation)
         {
-            var categories = await _category.GetAllCategoriesWithoutTracking(page, pageSize, cancellation);
-            var count = await _category.CategoryTotalCount(cancellation);
+            GlobalValidation.PageValidation(page, pageSize);
+
+            var categories = await _category.GetAllCategoriesWithoutTracking(page, pageSize, name, filter, cancellation);
+            var count = await _category.CategoryTotalCount(name, cancellation);
 
              var final =  categories.Select(c => new CategoryViewModel
             {
@@ -121,13 +123,13 @@ namespace ERP.Repository.Services.Products
 
         #region Product
 
-        public async Task<ProductPageViewModel> GetProducts(int page, int pageSize, string? name, int categoryPresent)
+        public async Task<ProductPageViewModel> GetProducts(int page, int pageSize, string? name, int categoryPresent, int filter)
         {
             GlobalValidation.PageValidation(page, pageSize);
 
-            var products = await _product.GetAllProductWithoutTracking(page, pageSize, name.ToLower(), categoryPresent);
+            var products = await _product.GetAllProductWithoutTracking(page, pageSize, name, categoryPresent, filter);
 
-            var count = await _product.ProductTotalCountWithoutTracking(name.ToLower(), categoryPresent);
+            var count = await _product.ProductTotalCountWithoutTracking(name, categoryPresent);
 
             var product = products.Select(p => new ProductViewModel
                 {
