@@ -19,7 +19,13 @@ namespace ERP.Repository.Data.InventoryData
             if (!string.IsNullOrWhiteSpace(name))
             {
                 var pattern = SearchPattern.Contains(name);
-                query = query.Where(i => EF.Functions.ILike(i.Name, pattern));
+                var hasId = SearchPattern.TryParseId(name, "INV", out var id);
+
+                query = query.Where(i =>
+                    EF.Functions.ILike(i.Name, pattern) ||
+                    (i.Warehouse != null && EF.Functions.ILike(i.Warehouse.Name, pattern)) ||
+                    (i.InventoryStatus != null && EF.Functions.ILike(i.InventoryStatus.Status, pattern)) ||
+                    (hasId && i.Id == id));
             }
 
             if(statusId > 0)
@@ -137,7 +143,9 @@ namespace ERP.Repository.Data.InventoryData
             if (!string.IsNullOrWhiteSpace(name))
             {
                 var pattern = SearchPattern.Contains(name);
-                query = query.Where(w => EF.Functions.ILike(w.Name, pattern) || EF.Functions.ILike(w.Address, pattern));
+                var hasId = int.TryParse(name.Trim(), out var id);
+
+                query = query.Where(w => EF.Functions.ILike(w.Name, pattern) || EF.Functions.ILike(w.Address, pattern) || (hasId && w.Id == id));
             }
 
             return query;

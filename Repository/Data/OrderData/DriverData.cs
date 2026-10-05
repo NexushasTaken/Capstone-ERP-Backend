@@ -13,7 +13,9 @@ namespace ERP.Repository.Data.OrderData
             if (!string.IsNullOrWhiteSpace(name))
             {
                 var pattern = SearchPattern.Contains(name);
-                query = query.Where(d => EF.Functions.ILike(d.FirstName, pattern) || EF.Functions.ILike(d.LastName, pattern));
+                var hasId = int.TryParse(name.Trim(), out var id);
+
+                query = query.Where(d => EF.Functions.ILike(d.FirstName, pattern) || EF.Functions.ILike(d.LastName, pattern) || (hasId && d.Id == id));
             }
 
             if(Enum.IsDefined(typeof(DriverFilterEnum), filter)){

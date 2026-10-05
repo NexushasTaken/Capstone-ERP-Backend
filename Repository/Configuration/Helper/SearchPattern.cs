@@ -13,5 +13,21 @@ namespace ERP.Repository.Configuration.Helper
 
             return $"%{escaped}%";
         }
+
+        /// <summary>
+        /// Reads an id out of search text. Accepts a bare number ("12") or the prefixed form
+        /// shown in the list view ("PR-12"), case-insensitive.
+        /// </summary>
+        public static bool TryParseId(string text, string prefix, out int id)
+        {
+            var value = text.Trim();
+
+            if (value.StartsWith(prefix + "-", StringComparison.OrdinalIgnoreCase))
+            {
+                value = value[(prefix.Length + 1)..].Trim();
+            }
+
+            return int.TryParse(value, out id);
+        }
     }
 }

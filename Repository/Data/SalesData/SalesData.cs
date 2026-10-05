@@ -15,7 +15,13 @@ namespace ERP.Repository.Data.Sales
             if (!string.IsNullOrWhiteSpace(name))
             {
                 var pattern = SearchPattern.Contains(name);
-                query = query.Where(o => EF.Functions.ILike(o.Product.Name, pattern) || EF.Functions.ILike(o.Order.CustomerName, pattern));
+                var hasId = SearchPattern.TryParseId(name, "SAL", out var id);
+
+                query = query.Where(o =>
+                    EF.Functions.ILike(o.Product.Name, pattern) ||
+                    EF.Functions.ILike(o.Order.CustomerName, pattern) ||
+                    EF.Functions.ILike(o.Order.OrderType.Type, pattern) ||
+                    (hasId && o.OrderId == id));
             }
 
             if (orderTypeId > 0)

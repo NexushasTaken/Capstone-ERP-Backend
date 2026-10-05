@@ -17,7 +17,7 @@ namespace ERP.Controllers.InventoryController
         /// </summary>
         /// <param name="page">asdasd</param>
         /// <param name="pageSize"></param>
-        /// <param name="name">Search for Name</param>
+        /// <param name="name">case-insensitive search on name, warehouse, status; a number or INV-n also matches the Id</param>
         /// <param name="filter">Filtering Numbering works like this: 1: Name A - Z, 2: Name Z - A, 3: Quantity High - Low, 4: Quantity Low - High, 5: Reorder Point Ascending, 6: Warehouse Id Ascending</param>
         /// <param name="cancellation"></param>
         /// <param name="statusId"></param>
@@ -34,7 +34,7 @@ namespace ERP.Controllers.InventoryController
         /// <summary>
         /// Retrieves one page of warehouses.
         /// </summary>
-        /// <param name="name">case-insensitive search on the warehouse name or address</param>
+        /// <param name="name">case-insensitive search on the warehouse name or address; a number also matches the Id</param>
         /// <param name="filter">sort: 0 newest first, 1 Id, 2 name A - Z, 3 name Z - A</param>
         [HttpGet("warehouse/all")]
         public async Task<IActionResult> GetWareHouses([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "", [FromQuery] int filter = 0, CancellationToken cancellation = default)

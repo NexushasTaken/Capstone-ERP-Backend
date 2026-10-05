@@ -17,7 +17,7 @@ namespace ERP.Controllers.ProductController
         /// </summary>
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
-        /// <param name="name">case-insensitive search on the product name</param>
+        /// <param name="name">case-insensitive search on the product name or category; a number or PR-n also matches the Id</param>
         /// <param name="categoryPresent">0 to include only the products that has category otherwise 1</param>
         /// <param name="filter">sort: 0 newest first, 1 Id, 2 name A - Z, 3 name Z - A, 4 price low to high, 5 price high to low</param>
         /// <returns></returns>

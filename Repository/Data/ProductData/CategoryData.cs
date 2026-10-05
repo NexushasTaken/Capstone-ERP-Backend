@@ -15,7 +15,9 @@ namespace ERP.Repository.Data.ProductData
             if (!string.IsNullOrWhiteSpace(name))
             {
                 var pattern = SearchPattern.Contains(name);
-                query = query.Where(c => EF.Functions.ILike(c.Type, pattern));
+                var hasId = int.TryParse(name.Trim(), out var id);
+
+                query = query.Where(c => EF.Functions.ILike(c.Type, pattern) || (hasId && c.Id == id));
             }
 
             return query;
