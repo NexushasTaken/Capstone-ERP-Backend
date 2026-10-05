@@ -175,6 +175,35 @@ namespace ERP.Repository.Services.UserAccounts
             await _userAccountData.SaveChanges();
         }
 
+        // Soft delete: the account is deactivated, not removed.
+        public async Task DeleteAccount(int id)
+        {
+            AccountValidation.DeleteValidation(id, _auditLog.CurrentUserId);
+
+            var existingAccount = await _userAccountData.GetUserByIdWithTracking(id);
+
+            if (existingAccount == null)
+            {
+                throw new NotFound($"Account with ID {id} not found.");
+            }
+
+            var now = DateTime.UtcNow;
+
+            existingAccount.IsActive = false;
+            existingAccount.Deleted_By = _auditLog.CurrentUserId;
+            existingAccount.Deleted_At = now;
+
+            if (existingAccount.UserInformation != null)
+            {
+                existingAccount.UserInformation.IsActive = false;
+                existingAccount.UserInformation.Deleted_By = _auditLog.CurrentUserId;
+                existingAccount.UserInformation.Deleted_At = now;
+            }
+
+            _auditLog.Log(AuditModuleEnum.Account, AuditActionEnum.Delete, $"Deleted account '{existingAccount.Email}'", id, now);
+            await _userAccountData.SaveChanges();
+        }
+
         public async Task UpdateProfile(int userId, UpdateProfileViewModel profile)
         {
             AccountValidation.ProfileValidation(profile);

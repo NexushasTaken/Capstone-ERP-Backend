@@ -68,6 +68,19 @@ namespace ERP.Repository.Configuration.Validation.UserAccounts
             ValidRole(account.Role);
         }
 
+        public static void DeleteValidation(int id, int? currentUserId)
+        {
+            if (id == LockedAccountId)
+            {
+                throw new BadRequest("This account cannot be deleted.");
+            }
+
+            if (id == currentUserId)
+            {
+                throw new BadRequest("You cannot delete your own account.");
+            }
+        }
+
         public static void ProfileValidation(UpdateProfileViewModel profile)
         {
             if (string.IsNullOrWhiteSpace(profile.FirstName))

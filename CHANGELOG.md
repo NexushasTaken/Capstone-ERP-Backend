@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-10-05
+
+### Added
+
+- `DELETE /api/User/accounts/{id}` soft-deletes an account (owner only). The default administrator and the caller's own account cannot be deleted.
+
+### Changed
+
+- Deleted accounts no longer appear in `GET /api/User/accounts`, cannot log in, and lose their existing session on the next authorize check; their email can be reused for a new account. They still appear in the audit log user filter.
+
 ## [1.0.0] - 2026-10-05
 
 First versioned release of the ERP API.

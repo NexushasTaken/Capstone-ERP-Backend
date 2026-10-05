@@ -89,6 +89,18 @@ namespace ERP.Controllers.UserController
             return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
         }
 
+        /// <summary>
+        /// Soft-deletes an account (owner only). The first account and the caller's own account can't be deleted.
+        /// </summary>
+        [Authorize(Roles = "owner")]
+        [HttpDelete("accounts/{id}")]
+        public async Task<IActionResult> DeleteAccount(int id)
+        {
+            await _userAccountService.DeleteAccount(id);
+
+            return StatusCode(200, _response.Status(200, true, "Deleted Successfully", null));
+        }
+
         [Authorize]
         [HttpPatch("me/profile")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileViewModel profile)
