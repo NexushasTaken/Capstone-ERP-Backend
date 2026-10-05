@@ -18,9 +18,8 @@ namespace ERP.Repository.Interface.Data.InventoryData
         #endregion
 
         #region Warehouse
-        Task<int> GetIndividualWarehouseCurrentCapacityWithoutTracking(int id);
-        Task<List<Warehouse>> GetWarehousesWithoutTracking();
-        Task<int> GetIndividualWarehousesMaxCapacityWithoutTracking(int id);
+        Task<IEnumerable<InventoryWareHouseViewModel>> GetWarehousesWithoutTracking(int page, int pageSize, string? name, int filter, CancellationToken cancellation = default);
+        Task<int> WarehouseTotalCount(string? name, CancellationToken cancellation = default);
         Task<Warehouse> GetIndividualWareHouseWithTracking(int id);
         #endregion
 

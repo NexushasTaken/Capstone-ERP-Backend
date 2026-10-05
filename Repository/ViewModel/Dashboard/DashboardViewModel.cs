@@ -23,7 +23,7 @@
 
     public class InventoryOverViewModel
     {
-        public int TotalWareHouseCapacity { get; set; }
+        public int TotalStock { get; set; }
         public int Risk { get; set; }
         public IEnumerable<InventoryStatusTotalViewModel> InventoryStatus { get; set; } = [];
     }

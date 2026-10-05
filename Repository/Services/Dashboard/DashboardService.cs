@@ -44,13 +44,13 @@ namespace ERP.Repository.Services.Dashboard
 
         public async Task<InventoryOverViewModel> InventoryOverView()
         {
-            var warehouse = await _dashboard.WarehouseTotal();
+            var totalStock = await _dashboard.TotalStock();
 
             var inventoryStatus = await _dashboard.InventoryStatusOverView();
 
             return new InventoryOverViewModel
             {
-                TotalWareHouseCapacity = warehouse,
+                TotalStock = totalStock,
                 Risk = 0,
                 InventoryStatus = inventoryStatus
             };

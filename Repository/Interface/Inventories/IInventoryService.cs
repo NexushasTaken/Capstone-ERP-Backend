@@ -24,7 +24,7 @@ namespace ERP.Repository.Interface.Inventories
         Task UpdateInventory(InventoryUpdateViewModel inventory);
         Task MarkAsDamaged(InventoryDamagePostViewModel damaged);
         Task InventoryTransaction(InventoryTransactionPostViewModel transaction);
-        Task<IEnumerable<InventoryWareHouseViewModel>> GetWarehouses();
+        Task<WarehousePageViewModel> GetWarehouses(int page, int pageSize, string? name, int filter, CancellationToken cancellation);
         Task NewWareHouse(InventoryWareHousePostViewModel wareHouse);
         Task UpdateWareHouse(InventoryWareHouseUpdateViewModel wareHouse);
         Task DeleteWareHouse(int id);
