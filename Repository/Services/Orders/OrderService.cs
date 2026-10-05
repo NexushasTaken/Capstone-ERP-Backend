@@ -11,16 +11,26 @@ using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.Model.Sales;
 using ERP.Repository.ViewModel.Orders;
+using FluentValidation;
 
 namespace ERP.Repository.Services.Orders
 {
-    public class OrderService(IOrderData _orders, IInventoryData _inventory, IProductData _product, IDriverData _driver, IAuditLogService _auditLog) : IOrderService
+    public class OrderService(
+        IOrderData _orders,
+        IInventoryData _inventory,
+        IProductData _product,
+        IDriverData _driver,
+        IAuditLogService _auditLog,
+        IValidator<OrderPostViewModel> _orderPostValidator,
+        IValidator<OrderStatusPostViewModel> _orderStatusValidator,
+        IValidator<DeliveryDriverPostViewModel> _driverPostValidator,
+        IValidator<DeliveryDriverPatchViewModel> _driverPatchValidator) : IOrderService
     {
         #region Orders
 
         public async Task<OrderPageViewModel> GetOrders(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellationToken = default)
         {
-            GlobalValidation.PageValidation(page, pageSize);
+            PageQueryValidator.Ensure(page, pageSize);
 
             var result = await _orders.GetOrdersWithoutTracking(page, pageSize, name, filter, statusId, orderTypeId, cancellationToken);
             var totalCount = await _orders.OrdersCount(name, filter, statusId, orderTypeId);
@@ -79,7 +89,7 @@ namespace ERP.Repository.Services.Orders
 
         public async Task<List<string>?> InsertOrder(OrderPostViewModel order)
         {
-            OrderValidation.AddNewOrderValidation(order);
+            await _orderPostValidator.EnsureValidAsync(order);
 
             var message = new List<string> { };
 
@@ -210,7 +220,7 @@ namespace ERP.Repository.Services.Orders
         
         public async Task UpdateOrderStatus(OrderStatusPostViewModel status)
         {
-            OrderValidation.UpdateOrderStatusValidation(status);
+            await _orderStatusValidator.EnsureValidAsync(status);
 
             var order = await _orders.GetOrderLinesWithTracking(status.OrderId);
 
@@ -337,10 +347,7 @@ namespace ERP.Repository.Services.Orders
 
         public async Task AddDriver(DeliveryDriverPostViewModel driver)
         {
-            if (string.IsNullOrWhiteSpace(driver.FirstName))
-            {
-                throw new BadRequest("First Name is required");
-            }
+            await _driverPostValidator.EnsureValidAsync(driver);
 
             var now = DateTime.UtcNow;
 
@@ -363,10 +370,7 @@ namespace ERP.Repository.Services.Orders
 
         public async Task UpdateDriver(DeliveryDriverPatchViewModel driver)
         {
-            if (string.IsNullOrWhiteSpace(driver.FirstName))
-            {
-                throw new BadRequest("First Name is required");
-            }
+            await _driverPatchValidator.EnsureValidAsync(driver);
 
             var data = await _driver.GetSingleDriverWithTracking(driver.Id);
 
