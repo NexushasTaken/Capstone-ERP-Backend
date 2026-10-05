@@ -13,7 +13,7 @@ namespace ERP.Repository.Interface.Inventories
         /// <param name="name">Search for Name in the inventory</param>
         /// <param name="filter">filtering method, 1 - 7 value</param>
         /// <returns></returns>
-        Task<InventoryPageViewModel> GetInventories(int page, int pageSize, string name, int filter,int statusId, int wareHousePresent, CancellationToken cancellation);
+        Task<InventoryPageViewModel> GetInventories(int page, int pageSize, string name, int filter,int statusId, int wareHousePresent, InventoryListFilter listFilter, CancellationToken cancellation);
         /// <summary>
         /// Insert new item in inventory
         /// </summary>

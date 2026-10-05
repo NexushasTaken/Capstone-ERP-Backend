@@ -22,11 +22,19 @@ namespace ERP.Controllers.InventoryController
         /// <param name="cancellation"></param>
         /// <param name="statusId"></param>
         /// <param name="wareHousePresent">0 to include all items that has warehouse otherewise use 1</param>
+        /// <param name="warehouseId">only items in this warehouse; 0 for any</param>
+        /// <param name="categoryId">only items whose product is in this category; 0 for any</param>
+        /// <param name="minQuantity">minimum quantity, inclusive</param>
+        /// <param name="maxQuantity">maximum quantity, inclusive; 0 lists out-of-stock items</param>
+        /// <param name="dateFrom">date arrived on or after this day</param>
+        /// <param name="dateTo">date arrived on or before this day</param>
         /// <returns></returns>
         [HttpGet("all")]
-        public async Task<IActionResult> GetInventory([FromQuery] int page = 1, [FromQuery] int pageSize = 10,[FromQuery] string name = "", [FromQuery] int filter = 0, [FromQuery] int statusId = 0,[FromQuery] int wareHousePresent = 0, CancellationToken cancellation = default)
+        public async Task<IActionResult> GetInventory([FromQuery] int page = 1, [FromQuery] int pageSize = 10,[FromQuery] string name = "", [FromQuery] int filter = 0, [FromQuery] int statusId = 0,[FromQuery] int wareHousePresent = 0, [FromQuery] int warehouseId = 0, [FromQuery] int categoryId = 0, [FromQuery] int? minQuantity = null, [FromQuery] int? maxQuantity = null, [FromQuery] DateTime? dateFrom = null, [FromQuery] DateTime? dateTo = null, CancellationToken cancellation = default)
         {
-            var inventories = await _inventory.GetInventories(page,pageSize,name,filter,statusId,wareHousePresent,cancellation);
+            var listFilter = new InventoryListFilter(warehouseId, categoryId, minQuantity, maxQuantity, dateFrom, dateTo);
+
+            var inventories = await _inventory.GetInventories(page,pageSize,name,filter,statusId,wareHousePresent,listFilter,cancellation);
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", inventories));
         }

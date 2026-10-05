@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-10-05
+
+### Added
+
+- `GET /api/Inventory/all` supports `warehouseId`, `categoryId`, `minQuantity`, `maxQuantity`, `dateFrom` and `dateTo` filters, and each item includes `categoryName`.
+
+### Changed
+
+- The inventory list keeps a stable order when items tie on the sort field, so paging no longer repeats or skips rows.
+
+### Fixed
+
+- `GET /api/Inventory/all` rejects a `page` or `pageSize` below 1 with a 400 instead of an error.
+- `GET /api/Inventory/status/count` no longer counts deleted items.
+
 ## [2.2.0] - 2026-10-05
 
 ### Changed

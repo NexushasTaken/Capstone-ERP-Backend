@@ -199,6 +199,8 @@ namespace ERP.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DateArrived");
+
                     b.HasIndex("ProductId");
 
                     b.HasIndex("StatusId");
