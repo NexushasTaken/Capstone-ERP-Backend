@@ -1,5 +1,6 @@
 ﻿using ERP.Repository.Configuration.Enum;
 using ERP.Repository.Configuration.Exception_Extender;
+using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Configuration.Validation.UserAccounts;
 using ERP.Repository.Interface.AuditLogs;
 using ERP.Repository.Interface.Data.UserAccountData;
@@ -77,18 +78,26 @@ namespace ERP.Repository.Services.UserAccounts
             });
         }
 
-        public async Task<IEnumerable<AccountListItemViewModel>> GetAccounts(CancellationToken cancellation = default)
+        public async Task<AccountPageViewModel> GetAccounts(int page, int pageSize, string? name, int filter, CancellationToken cancellation = default)
         {
-            var accounts = await _userAccountData.GetAllAccountsWithoutTracking(cancellation);
+            GlobalValidation.PageValidation(page, pageSize);
 
-            return accounts.Select(a => new AccountListItemViewModel
+            var accounts = await _userAccountData.GetAccountsWithoutTracking(page, pageSize, name, filter, cancellation);
+            var count = await _userAccountData.AccountTotalCount(name, cancellation);
+
+            return new AccountPageViewModel
             {
-                Id = a.Id,
-                Role = a.UserRole?.Role,
-                FirstName = a.UserInformation?.FirstName,
-                LastName = a.UserInformation?.LastName,
-                Email = a.Email
-            });
+                Accounts = accounts.Select(a => new AccountListItemViewModel
+                {
+                    Id = a.Id,
+                    Role = a.UserRole?.Role,
+                    FirstName = a.UserInformation?.FirstName,
+                    LastName = a.UserInformation?.LastName,
+                    Email = a.Email
+                }),
+                PageCount = (int)Math.Ceiling(count / (double)pageSize),
+                Rows = count
+            };
         }
 
         public async Task CreateAccount(CreateAccountViewModel account)

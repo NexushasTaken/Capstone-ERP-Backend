@@ -46,6 +46,13 @@ namespace ERP.Repository.ViewModel.UserAccount
         public string? Email { get; set; }
     }
 
+    public class AccountPageViewModel
+    {
+        public IEnumerable<AccountListItemViewModel> Accounts { get; set; } = [];
+        public int PageCount { get; set; }
+        public int Rows { get; set; }
+    }
+
     public class CreateAccountViewModel
     {
         public string? FirstName { get; set; }

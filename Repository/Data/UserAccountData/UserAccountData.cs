@@ -1,4 +1,5 @@
-﻿using ERP.Repository.Interface.Data.UserAccountData;
+﻿using ERP.Repository.Configuration.Helper;
+using ERP.Repository.Interface.Data.UserAccountData;
 using ERP.Repository.Model.UserAccounts;
 using Microsoft.EntityFrameworkCore;
 
@@ -45,15 +46,56 @@ namespace ERP.Repository.Data.UserAccounts
             return users;
         }
 
-        public async Task<IEnumerable<UserAccount>> GetAllAccountsWithoutTracking(CancellationToken cancellation = default)
+        // Case-insensitive search over first name, last name, email and role. A number also matches the account Id.
+        private IQueryable<UserAccount> AccountFilteringQuery(string? name)
         {
-            var accounts = await BaseQuery<UserAccount>(false)
+            var query = BaseQuery<UserAccount>(false);
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                var pattern = SearchPattern.Contains(name);
+                var hasId = int.TryParse(name.Trim(), out var id);
+
+                query = query.Where(u =>
+                    EF.Functions.ILike(u.UserInformation!.FirstName!, pattern) ||
+                    EF.Functions.ILike(u.UserInformation!.LastName!, pattern) ||
+                    EF.Functions.ILike(u.Email!, pattern) ||
+                    EF.Functions.ILike(u.UserRole!.Role!, pattern) ||
+                    (hasId && u.Id == id));
+            }
+
+            return query;
+        }
+
+        // filter: 0 = Id, 1 = Role A-Z, 2 = First name A-Z, 3 = First name Z-A. Ties fall back to Id so paging stays stable.
+        private static IQueryable<UserAccount> AccountSortingQuery(IQueryable<UserAccount> query, int filter)
+        {
+            var sorted = filter switch
+            {
+                1 => query.OrderBy(u => u.UserRole!.Role),
+                2 => query.OrderBy(u => u.UserInformation!.FirstName),
+                3 => query.OrderByDescending(u => u.UserInformation!.FirstName),
+                _ => query.OrderBy(u => u.Id),
+            };
+
+            return sorted.ThenBy(u => u.Id);
+        }
+
+        public async Task<IEnumerable<UserAccount>> GetAccountsWithoutTracking(int page, int pageSize, string? name, int filter, CancellationToken cancellation = default)
+        {
+            var accounts = await AccountSortingQuery(AccountFilteringQuery(name), filter)
                 .Include(i => i.UserInformation)
                 .Include(r => r.UserRole)
-                .OrderBy(u => u.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(cancellation);
 
             return accounts;
+        }
+
+        public async Task<int> AccountTotalCount(string? name, CancellationToken cancellation = default)
+        {
+            return await AccountFilteringQuery(name).CountAsync(cancellation);
         }
 
         public async Task<UserRole> GetRoleByName(string roleName, CancellationToken cancellation = default)
