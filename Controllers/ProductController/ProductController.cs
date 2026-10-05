@@ -13,17 +13,18 @@ namespace ERP.Controllers.ProductController
     {
         
         /// <summary>
-        /// 
+        /// Retrieves one page of products.
         /// </summary>
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
-        /// <param name="name"></param>
+        /// <param name="name">case-insensitive search on the product name</param>
         /// <param name="categoryPresent">0 to include only the products that has category otherwise 1</param>
+        /// <param name="filter">sort: 0 newest first, 1 Id, 2 name A - Z, 3 name Z - A, 4 price low to high, 5 price high to low</param>
         /// <returns></returns>
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllProduct([FromQuery]int page = 1, [FromQuery]int pageSize = 10, [FromQuery]string? name = "", [FromQuery] int categoryPresent = 0)
+        public async Task<IActionResult> GetAllProduct([FromQuery]int page = 1, [FromQuery]int pageSize = 10, [FromQuery]string? name = "", [FromQuery] int categoryPresent = 0, [FromQuery] int filter = 0)
         {
-            var products = await _productService.GetProducts(page, pageSize, name, categoryPresent);
+            var products = await _productService.GetProducts(page, pageSize, name, categoryPresent, filter);
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", products));
         }
