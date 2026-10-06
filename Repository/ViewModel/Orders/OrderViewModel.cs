@@ -28,6 +28,7 @@
         public IEnumerable<OrderViewModel> Orders { get; set; } = [];
         public decimal Total { get; set; }
         public DateTime? Created_At { get; set; }
+        public DateTime? Updated_At { get; set; }
     }
 
     public class OrderPageViewModel

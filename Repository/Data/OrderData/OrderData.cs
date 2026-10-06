@@ -119,6 +119,7 @@ namespace ERP.Repository.Data.OrderData
                         .ToList(),
                     Total = o.Sum(g => g.Amount),
                     Created_At = o.First().Created_At,
+                    Updated_At = o.First().Order.Updated_At,
                 });
 
             var result = await groupedOrders
