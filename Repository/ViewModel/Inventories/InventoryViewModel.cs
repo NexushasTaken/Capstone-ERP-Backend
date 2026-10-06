@@ -1,6 +1,5 @@
 ﻿namespace ERP.Repository.ViewModel.Inventories
 {
-
     public enum InventoryFilter
     {
         ATOZ = 1,
@@ -8,7 +7,7 @@
         QHIGH = 3,
         QLOW = 4,
         RPOINT = 5,
-        WHOUSE = 6
+        WHOUSE = 6,
     }
 
     // Optional list filters; zero / null means "not filtered".
@@ -18,7 +17,8 @@
         int? MinQuantity = null,
         int? MaxQuantity = null,
         DateTime? DateFrom = null,
-        DateTime? DateTo = null);
+        DateTime? DateTo = null
+    );
 
     public class InventoryViewModel
     {
@@ -40,7 +40,6 @@
         public IEnumerable<InventoryViewModel> inventories { get; set; } = [];
         public int PageCount { get; set; }
         public int Rows { get; set; }
-
     }
 
     public class InventoryStatusViewModel()

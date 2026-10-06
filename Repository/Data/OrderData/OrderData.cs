@@ -1,5 +1,5 @@
-﻿using ERP.Repository.Configuration.Helper;
-using ERP.Repository.Configuration.Enum;
+﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
@@ -11,7 +11,13 @@ namespace ERP.Repository.Data.OrderData
 {
     public class OrderData(DatabaseContext _context) : BaseData(_context), IOrderData
     {
-        public IQueryable<OrderLine> FilteringQuery(IQueryable<OrderLine> query, string? name, int filter, int statusId, int orderTypeId)
+        public IQueryable<OrderLine> FilteringQuery(
+            IQueryable<OrderLine> query,
+            string? name,
+            int filter,
+            int statusId,
+            int orderTypeId
+        )
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -19,24 +25,25 @@ namespace ERP.Repository.Data.OrderData
                 var hasId = SearchPattern.TryParseId(name, "ORD", out var id);
 
                 query = query.Where(o =>
-                    EF.Functions.ILike(o.Product.Name, pattern) ||
-                    EF.Functions.ILike(o.Order.CustomerName, pattern) ||
-                    EF.Functions.ILike(o.Order.OrderType.Type, pattern) ||
-                    EF.Functions.ILike(o.Order.OrderStatus.Status, pattern) ||
-                    (hasId && o.OrderId == id));
+                    EF.Functions.ILike(o.Product.Name, pattern)
+                    || EF.Functions.ILike(o.Order.CustomerName, pattern)
+                    || EF.Functions.ILike(o.Order.OrderType.Type, pattern)
+                    || EF.Functions.ILike(o.Order.OrderStatus.Status, pattern)
+                    || (hasId && o.OrderId == id)
+                );
             }
 
-            if(statusId > 0)
+            if (statusId > 0)
             {
                 query = query.Where(o => o.Order.OrderStatusId == statusId);
             }
 
-            if(orderTypeId > 0)
+            if (orderTypeId > 0)
             {
                 query = query.Where(o => o.Order.OrderTypeId == orderTypeId);
             }
 
-            if(Enum.IsDefined(typeof(OrdersFilter), filter))
+            if (Enum.IsDefined(typeof(OrdersFilter), filter))
             {
                 var selectedFilter = (OrdersFilter)filter;
 
@@ -62,11 +69,20 @@ namespace ERP.Repository.Data.OrderData
             }
 
             return query;
-
         }
-        public async Task<IEnumerable<OrderTotalViewModel>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellation = default)
+
+        public async Task<IEnumerable<OrderTotalViewModel>> GetOrdersWithoutTracking(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            int statusId,
+            int orderTypeId,
+            CancellationToken cancellation = default
+        )
         {
-            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
+            var orders = BaseQuery<OrderLine>(false)
+                .Where(o => o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
 
             orders = FilteringQuery(orders, name, filter, statusId, orderTypeId);
 
@@ -81,8 +97,14 @@ namespace ERP.Repository.Data.OrderData
                     OrderId = o.Key,
                     OrderType = o.First().Order.OrderType.Type,
                     OrderStatus = o.First().Order.OrderStatus.Status,
-                    DriverName = o.First().Order.DeliveryDriver == null ? ""
-                        : string.Concat(o.First().Order.DeliveryDriver.FirstName, " ", o.First().Order.DeliveryDriver.LastName),
+                    DriverName =
+                        o.First().Order.DeliveryDriver == null
+                            ? ""
+                            : string.Concat(
+                                o.First().Order.DeliveryDriver.FirstName,
+                                " ",
+                                o.First().Order.DeliveryDriver.LastName
+                            ),
                     CustomerName = o.First().Order.CustomerName,
                     PickUpAddress = o.First().Order.PibkupAddress,
                     DeliveryAddress = o.First().Order.DeliveryAddress,
@@ -92,8 +114,9 @@ namespace ERP.Repository.Data.OrderData
                             ProductName = g.First().Product.Name,
                             Quantity = g.Sum(x => x.Quantity),
                             Price = g.First().Product.Price,
-                            TotalAmount = g.Sum(x => x.Amount)
-                        }).ToList(),
+                            TotalAmount = g.Sum(x => x.Amount),
+                        })
+                        .ToList(),
                     Total = o.Sum(g => g.Amount),
                     Created_At = o.First().Created_At,
                 });
@@ -107,12 +130,12 @@ namespace ERP.Repository.Data.OrderData
             return result;
         }
 
-
         public async Task<int> OrdersCount(string? name, int filter, int statusId, int orderTypeId)
         {
-            var orders = BaseQuery<OrderLine>(false).Where(o => o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
+            var orders = BaseQuery<OrderLine>(false)
+                .Where(o => o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
 
-            orders = FilteringQuery(orders,name,filter,statusId,orderTypeId);
+            orders = FilteringQuery(orders, name, filter, statusId, orderTypeId);
 
             var result = await orders.Distinct().GroupBy(o => o.OrderId).CountAsync();
 
@@ -142,27 +165,33 @@ namespace ERP.Repository.Data.OrderData
             var riders = await BaseQuery<DeliveryDriver>(false).Where(r => r.IsActive == true).ToListAsync();
             return riders;
         }
+
         public async Task<DeliveryDriver> ValidateDriverWithoutTracking(int? driverId)
         {
-            var driver = await BaseQuery<DeliveryDriver>(false).FirstOrDefaultAsync(d => d.IsActive == true && d.Id == driverId);
+            var driver = await BaseQuery<DeliveryDriver>(false)
+                .FirstOrDefaultAsync(d => d.IsActive == true && d.Id == driverId);
             return driver;
         }
 
         public async Task<IEnumerable<OrderLine>> GetOrderLinesWithTracking(int id)
         {
-            var order = await BaseQuery<OrderLine>(true).Where(o => o.OrderId == id).Include(o => o.Product).Include(o => o.Inventory).Include(o => o.Order).ToListAsync();
+            var order = await BaseQuery<OrderLine>(true)
+                .Where(o => o.OrderId == id)
+                .Include(o => o.Product)
+                .Include(o => o.Inventory)
+                .Include(o => o.Order)
+                .ToListAsync();
 
             return order;
         }
 
         public async Task<IEnumerable<OrderStatusCount>> StatusCount()
         {
-            var status = await BaseQuery<Order>(false).Where(o => o.OrderStatusId != (int)OrderStatusEnum.Completed).GroupBy(i => new { i.OrderStatusId, i.OrderStatus.Status }).Select(g => new OrderStatusCount
-            {
-                Status = g.Key.Status,
-                Count = g.Count()
-
-            }).ToListAsync();
+            var status = await BaseQuery<Order>(false)
+                .Where(o => o.OrderStatusId != (int)OrderStatusEnum.Completed)
+                .GroupBy(i => new { i.OrderStatusId, i.OrderStatus.Status })
+                .Select(g => new OrderStatusCount { Status = g.Key.Status, Count = g.Count() })
+                .ToListAsync();
 
             return status;
         }

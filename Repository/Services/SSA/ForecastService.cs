@@ -9,7 +9,6 @@ namespace ERP.Repository.Services.SSA
 {
     public class ForecastService(IForecastData _forecast, MLContext mLContext) : IForecastService
     {
-        
         public async Task<ForecastPageViewModel> GetLatestForecast(int page, int pageSize, bool forceForecast)
         {
             var lastForecast = await _forecast.GetSingleLatestForecast();
@@ -28,28 +27,28 @@ namespace ERP.Repository.Services.SSA
 
             var count = await _forecast.ForecastResultTotalCount();
 
-            var final =  data.Select(f => new FinalForecastViewModel
-            {
-                InventoryId  = f.InventoryId,
-                Name = f.Inventory.Name,
-                EarliestStockOutDay = f.EarliestStockOutDay
-            }).ToList();
+            var final = data.Select(f => new FinalForecastViewModel
+                {
+                    InventoryId = f.InventoryId,
+                    Name = f.Inventory.Name,
+                    EarliestStockOutDay = f.EarliestStockOutDay,
+                })
+                .ToList();
 
             return new ForecastPageViewModel
             {
                 ForecastResults = final,
                 PageCount = (int)Math.Ceiling(count / (double)pageSize),
-                Rows = count
+                Rows = count,
             };
         }
 
-
-        public async Task SsaModel() 
+        public async Task SsaModel()
         {
             var data = await _forecast.Movement();
 
             data = FillDaysGap(data);
-            
+
             var result = new List<FinalForecastViewModel>();
             DateTime today = DateTime.Today;
 
@@ -59,7 +58,7 @@ namespace ERP.Repository.Services.SSA
             {
                 var series = group.Select(x => new DemandData { EndDayStock = x.EndDayStock });
 
-                if(series.Count() <= 2 * windowSize)
+                if (series.Count() <= 2 * windowSize)
                 {
                     continue;
                 }
@@ -67,13 +66,13 @@ namespace ERP.Repository.Services.SSA
                 var view = mLContext.Data.LoadFromEnumerable(series);
 
                 var engine = mLContext.Forecasting.ForecastBySsa(
-                outputColumnName: "Forecast",
-                inputColumnName: "EndDayStock",
-                windowSize: windowSize,
-                seriesLength: Math.Min(series.Count(), 60),
-                trainSize: Math.Min(series.Count(), 365),
-                horizon: 30,
-                confidenceLevel: 0.95f
+                    outputColumnName: "Forecast",
+                    inputColumnName: "EndDayStock",
+                    windowSize: windowSize,
+                    seriesLength: Math.Min(series.Count(), 60),
+                    trainSize: Math.Min(series.Count(), 365),
+                    horizon: 30,
+                    confidenceLevel: 0.95f
                 );
 
                 var model = engine.Fit(view);
@@ -84,12 +83,15 @@ namespace ERP.Repository.Services.SSA
 
                 var lastDay = group.Max(x => x.Day) ?? DateTime.Today;
 
-                var stockTrajectory = forecast.Forecast.Select((predicted, index) =>
-                {
-                    return new { Day = lastDay.AddDays(index + 1), Stock = predicted };
-                })
-                  .Where(x => x.Day >= today)
-                  .ToList();
+                var stockTrajectory = forecast
+                    .Forecast.Select(
+                        (predicted, index) =>
+                        {
+                            return new { Day = lastDay.AddDays(index + 1), Stock = predicted };
+                        }
+                    )
+                    .Where(x => x.Day >= today)
+                    .ToList();
 
                 var earliest = stockTrajectory.FirstOrDefault(x => x.Stock <= 0);
 
@@ -98,23 +100,28 @@ namespace ERP.Repository.Services.SSA
 
                 if (earliest != null)
                 {
-                    result.Add(new FinalForecastViewModel
-                    {
-                        InventoryId = group.Key,
-                        EarliestStockOutDay = earliest?.Day,
-                        //ProbabilityNext30Days = probNext30Days,
-                        //Stock = stockTrajectory.Last().Stock
-                    });
+                    result.Add(
+                        new FinalForecastViewModel
+                        {
+                            InventoryId = group.Key,
+                            EarliestStockOutDay = earliest?.Day,
+                            //ProbabilityNext30Days = probNext30Days,
+                            //Stock = stockTrajectory.Last().Stock
+                        }
+                    );
                 }
             }
 
-            var forecastResults = result.Select(f => new ForecastResult
-            {
-                InventoryId = f.InventoryId,
-                EarliestStockOutDay = f.EarliestStockOutDay,
-                Created_At = DateTime.UtcNow,
-                IsActive = true
-            }).OrderBy(f => f.EarliestStockOutDay).ToList();
+            var forecastResults = result
+                .Select(f => new ForecastResult
+                {
+                    InventoryId = f.InventoryId,
+                    EarliestStockOutDay = f.EarliestStockOutDay,
+                    Created_At = DateTime.UtcNow,
+                    IsActive = true,
+                })
+                .OrderBy(f => f.EarliestStockOutDay)
+                .ToList();
 
             await _forecast.TruncateForecastTable();
 
@@ -125,22 +132,22 @@ namespace ERP.Repository.Services.SSA
 
         private IEnumerable<ForecastViewModel> FillDaysGap(IEnumerable<ForecastViewModel> data)
         {
-            return data
-                .GroupBy(x => x.InventoryId)
+            return data.GroupBy(x => x.InventoryId)
                 .SelectMany(group =>
                 {
                     var minDate = group.Min(x => x.Day);
                     var maxDate = group.Max(x => x.Day);
 
-                    var allDays = Enumerable.Range(0, (maxDate - minDate).Value.Days + 1)
-                    .Select(offset => minDate.Value.AddDays(offset));
+                    var allDays = Enumerable
+                        .Range(0, (maxDate - minDate).Value.Days + 1)
+                        .Select(offset => minDate.Value.AddDays(offset));
 
                     int lastKnownStock = group.First().EndDayStock;
 
                     return allDays.Select(day =>
                     {
                         var existing = group.FirstOrDefault(x => x.Day == day);
-                        if(existing != null)
+                        if (existing != null)
                         {
                             lastKnownStock = existing.EndDayStock;
                             return existing;
@@ -151,7 +158,7 @@ namespace ERP.Repository.Services.SSA
                             InventoryId = group.Key,
                             Day = day,
                             NetChange = 0,
-                            EndDayStock = lastKnownStock
+                            EndDayStock = lastKnownStock,
                         };
                     });
                 });

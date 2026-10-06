@@ -7,7 +7,13 @@ namespace ERP.Repository.Interface.UserAccounts
         Task<UserLoginSuccess> Login(UserAccountViewModel user);
         Task<UserLoginSuccess> GetCurrentUser(int userId);
         Task<IEnumerable<UserListViewModel>> GetUsers(CancellationToken cancellation = default);
-        Task<AccountPageViewModel> GetAccounts(int page, int pageSize, string? name, int filter, CancellationToken cancellation = default);
+        Task<AccountPageViewModel> GetAccounts(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            CancellationToken cancellation = default
+        );
         Task CreateAccount(CreateAccountViewModel account);
         Task UpdateAccountRole(int id, UpdateAccountRoleViewModel account);
         Task DeleteAccount(int id);

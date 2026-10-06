@@ -7,30 +7,48 @@ namespace ERP.Repository.Data.UserAccounts
 {
     public class UserAccountData(DatabaseContext _context) : BaseData(_context), IUserAccountData
     {
-        public async Task<UserAccount> GetUserByEmailWithoutTracking(string email, CancellationToken cancellation = default)
+        public async Task<UserAccount> GetUserByEmailWithoutTracking(
+            string email,
+            CancellationToken cancellation = default
+        )
         {
-            var user = await BaseQuery<UserAccount>(false).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Email == email && x.IsActive == true, cancellation);
+            var user = await BaseQuery<UserAccount>(false)
+                .Include(i => i.UserInformation)
+                .Include(r => r.UserRole)
+                .FirstOrDefaultAsync(x => x.Email == email && x.IsActive == true, cancellation);
 
             return user;
         }
 
-        public async Task<UserAccount> GetUserByEmailWithTracking(string email, CancellationToken cancellation = default)
+        public async Task<UserAccount> GetUserByEmailWithTracking(
+            string email,
+            CancellationToken cancellation = default
+        )
         {
-            var user = await BaseQuery<UserAccount>(true).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Email == email && x.IsActive == true, cancellation);
+            var user = await BaseQuery<UserAccount>(true)
+                .Include(i => i.UserInformation)
+                .Include(r => r.UserRole)
+                .FirstOrDefaultAsync(x => x.Email == email && x.IsActive == true, cancellation);
 
             return user;
         }
 
         public async Task<UserAccount> GetUserByIdWithoutTracking(int userId, CancellationToken cancellation = default)
         {
-            var user = await BaseQuery<UserAccount>(false).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Id == userId && x.IsActive == true, cancellation);
+            var user = await BaseQuery<UserAccount>(false)
+                .Include(i => i.UserInformation)
+                .Include(r => r.UserRole)
+                .FirstOrDefaultAsync(x => x.Id == userId && x.IsActive == true, cancellation);
 
             return user;
         }
 
         public async Task<UserAccount> GetUserByIdWithTracking(int userId, CancellationToken cancellation = default)
         {
-            var user = await BaseQuery<UserAccount>(true).Include(i => i.UserInformation).Include(r => r.UserRole).FirstOrDefaultAsync(x => x.Id == userId && x.IsActive == true, cancellation);
+            var user = await BaseQuery<UserAccount>(true)
+                .Include(i => i.UserInformation)
+                .Include(r => r.UserRole)
+                .FirstOrDefaultAsync(x => x.Id == userId && x.IsActive == true, cancellation);
 
             return user;
         }
@@ -57,11 +75,12 @@ namespace ERP.Repository.Data.UserAccounts
                 var hasId = SearchPattern.TryParseId(name, "ACC", out var id);
 
                 query = query.Where(u =>
-                    EF.Functions.ILike(u.UserInformation!.FirstName!, pattern) ||
-                    EF.Functions.ILike(u.UserInformation!.LastName!, pattern) ||
-                    EF.Functions.ILike(u.Email!, pattern) ||
-                    EF.Functions.ILike(u.UserRole!.Role!, pattern) ||
-                    (hasId && u.Id == id));
+                    EF.Functions.ILike(u.UserInformation!.FirstName!, pattern)
+                    || EF.Functions.ILike(u.UserInformation!.LastName!, pattern)
+                    || EF.Functions.ILike(u.Email!, pattern)
+                    || EF.Functions.ILike(u.UserRole!.Role!, pattern)
+                    || (hasId && u.Id == id)
+                );
             }
 
             return query;
@@ -81,7 +100,13 @@ namespace ERP.Repository.Data.UserAccounts
             return sorted.ThenBy(u => u.Id);
         }
 
-        public async Task<IEnumerable<UserAccount>> GetAccountsWithoutTracking(int page, int pageSize, string? name, int filter, CancellationToken cancellation = default)
+        public async Task<IEnumerable<UserAccount>> GetAccountsWithoutTracking(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            CancellationToken cancellation = default
+        )
         {
             var accounts = await AccountSortingQuery(AccountFilteringQuery(name), filter)
                 .Include(i => i.UserInformation)
@@ -100,7 +125,8 @@ namespace ERP.Repository.Data.UserAccounts
 
         public async Task<UserRole> GetRoleByName(string roleName, CancellationToken cancellation = default)
         {
-            var role = await BaseQuery<UserRole>(false).FirstOrDefaultAsync(r => r.Role!.ToLower() == roleName.ToLower(), cancellation);
+            var role = await BaseQuery<UserRole>(false)
+                .FirstOrDefaultAsync(r => r.Role!.ToLower() == roleName.ToLower(), cancellation);
 
             return role;
         }

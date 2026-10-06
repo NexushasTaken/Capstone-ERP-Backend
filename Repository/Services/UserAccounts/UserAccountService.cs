@@ -20,7 +20,8 @@ namespace ERP.Repository.Services.UserAccounts
         IValidator<CreateAccountViewModel> _createValidator,
         IValidator<UpdateAccountRoleViewModel> _roleValidator,
         IValidator<UpdateProfileViewModel> _profileValidator,
-        IValidator<UpdateCredentialsViewModel> _credentialsValidator) : IUserAccountService
+        IValidator<UpdateCredentialsViewModel> _credentialsValidator
+    ) : IUserAccountService
     {
         private const int LockedAccountId = 1;
 
@@ -30,21 +31,20 @@ namespace ERP.Repository.Services.UserAccounts
 
             //var pass = _tokenManagerService.Hashed(user.Password, salt);
 
-
             // Implement your login logic here
 
             await _loginValidator.EnsureValidAsync(user);
 
             var existingUser = await _userAccountData.GetUserByEmailWithoutTracking(user.Email);
 
-            if(existingUser == null)
+            if (existingUser == null)
             {
                 throw new UnauthorizedAccessException("Invalid email or password");
             }
 
             string password = _tokenManagerService.Hashed(user.Password, existingUser.Salt);
 
-            if(password != existingUser.Password)
+            if (password != existingUser.Password)
             {
                 throw new UnauthorizedAccessException("Invalid email or password");
             }
@@ -82,15 +82,27 @@ namespace ERP.Repository.Services.UserAccounts
             {
                 Id = u.Id,
                 FullName = $"{u.UserInformation?.FirstName} {u.UserInformation?.LastName}".Trim(),
-                IsActive = u.IsActive == true
+                IsActive = u.IsActive == true,
             });
         }
 
-        public async Task<AccountPageViewModel> GetAccounts(int page, int pageSize, string? name, int filter, CancellationToken cancellation = default)
+        public async Task<AccountPageViewModel> GetAccounts(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            CancellationToken cancellation = default
+        )
         {
             PageQueryValidator.Ensure(page, pageSize);
 
-            var accounts = await _userAccountData.GetAccountsWithoutTracking(page, pageSize, name, filter, cancellation);
+            var accounts = await _userAccountData.GetAccountsWithoutTracking(
+                page,
+                pageSize,
+                name,
+                filter,
+                cancellation
+            );
             var count = await _userAccountData.AccountTotalCount(name, cancellation);
 
             return new AccountPageViewModel
@@ -101,10 +113,10 @@ namespace ERP.Repository.Services.UserAccounts
                     Role = a.UserRole?.Role,
                     FirstName = a.UserInformation?.FirstName,
                     LastName = a.UserInformation?.LastName,
-                    Email = a.Email
+                    Email = a.Email,
                 }),
                 PageCount = (int)Math.Ceiling(count / (double)pageSize),
-                Rows = count
+                Rows = count,
             };
         }
 
@@ -145,13 +157,19 @@ namespace ERP.Repository.Services.UserAccounts
                     LastName = account.LastName,
                     Created_By = _auditLog.CurrentUserId,
                     Created_At = now,
-                    IsActive = true
-                }
+                    IsActive = true,
+                },
             };
 
             await _userAccountData.Save(newAccount);
 
-            _auditLog.Log(AuditModuleEnum.Account, AuditActionEnum.Create, $"Created account for '{account.Email}'", newAccount.Id, now);
+            _auditLog.Log(
+                AuditModuleEnum.Account,
+                AuditActionEnum.Create,
+                $"Created account for '{account.Email}'",
+                newAccount.Id,
+                now
+            );
             await _userAccountData.SaveChanges();
         }
 
@@ -184,7 +202,13 @@ namespace ERP.Repository.Services.UserAccounts
             existingAccount.Updated_By = _auditLog.CurrentUserId;
             existingAccount.Updated_At = now;
 
-            _auditLog.Log(AuditModuleEnum.Account, AuditActionEnum.Update, $"Updated role for account {id} to '{role.Role}'", id, now);
+            _auditLog.Log(
+                AuditModuleEnum.Account,
+                AuditActionEnum.Update,
+                $"Updated role for account {id} to '{role.Role}'",
+                id,
+                now
+            );
             await _userAccountData.SaveChanges();
         }
 
@@ -221,7 +245,13 @@ namespace ERP.Repository.Services.UserAccounts
                 existingAccount.UserInformation.Deleted_At = now;
             }
 
-            _auditLog.Log(AuditModuleEnum.Account, AuditActionEnum.Delete, $"Deleted account '{existingAccount.Email}'", id, now);
+            _auditLog.Log(
+                AuditModuleEnum.Account,
+                AuditActionEnum.Delete,
+                $"Deleted account '{existingAccount.Email}'",
+                id,
+                now
+            );
             await _userAccountData.SaveChanges();
         }
 
@@ -309,7 +339,7 @@ namespace ERP.Repository.Services.UserAccounts
                 FirstName = user.UserInformation?.FirstName,
                 LastName = user.UserInformation?.LastName,
                 Role = user.UserRole?.Role,
-                Token = token
+                Token = token,
             };
         }
     }

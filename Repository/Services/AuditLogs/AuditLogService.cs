@@ -16,20 +16,36 @@ namespace ERP.Repository.Services.AuditLogs
         /// <summary>
         /// Queues an audit log entry. It is saved together with the caller's next SaveChanges.
         /// </summary>
-        public void Log(AuditModuleEnum module, AuditActionEnum action, string message, int? entityId, DateTime timestamp)
+        public void Log(
+            AuditModuleEnum module,
+            AuditActionEnum action,
+            string message,
+            int? entityId,
+            DateTime timestamp
+        )
         {
-            _auditLog.Add(new AuditLog
-            {
-                UserAccountId = _currentUser.UserId,
-                Module = module,
-                Action = action,
-                EntityId = entityId,
-                Message = message,
-                Created_At = timestamp
-            });
+            _auditLog.Add(
+                new AuditLog
+                {
+                    UserAccountId = _currentUser.UserId,
+                    Module = module,
+                    Action = action,
+                    EntityId = entityId,
+                    Message = message,
+                    Created_At = timestamp,
+                }
+            );
         }
 
-        public async Task<AuditLogPageViewModel> GetLogs(int page, int pageSize, int userId, int action, int module, string? role, CancellationToken cancellation = default)
+        public async Task<AuditLogPageViewModel> GetLogs(
+            int page,
+            int pageSize,
+            int userId,
+            int action,
+            int module,
+            string? role,
+            CancellationToken cancellation = default
+        )
         {
             PageQueryValidator.Ensure(page, pageSize);
 
@@ -43,7 +59,15 @@ namespace ERP.Repository.Services.AuditLogs
                 throw new BadRequest("Invalid module filter");
             }
 
-            var logs = await _auditLog.GetAuditLogsWithoutTracking(page, pageSize, userId, action, module, role, cancellation);
+            var logs = await _auditLog.GetAuditLogsWithoutTracking(
+                page,
+                pageSize,
+                userId,
+                action,
+                module,
+                role,
+                cancellation
+            );
             var count = await _auditLog.AuditLogCount(userId, action, module, role, cancellation);
 
             var final = logs.Select(l => new AuditLogViewModel
@@ -54,18 +78,19 @@ namespace ERP.Repository.Services.AuditLogs
                 Message = l.Message,
                 EntityId = l.EntityId,
                 UserAccountId = l.UserAccountId,
-                UserFullName = l.UserAccount?.UserInformation == null
-                    ? "Unknown"
-                    : $"{l.UserAccount.UserInformation.FirstName} {l.UserAccount.UserInformation.LastName}".Trim(),
+                UserFullName =
+                    l.UserAccount?.UserInformation == null
+                        ? "Unknown"
+                        : $"{l.UserAccount.UserInformation.FirstName} {l.UserAccount.UserInformation.LastName}".Trim(),
                 UserRole = l.UserAccount?.UserRole?.Role,
-                Created_At = l.Created_At
+                Created_At = l.Created_At,
             });
 
             return new AuditLogPageViewModel
             {
                 Logs = final,
                 PageCount = (int)Math.Ceiling(count / (double)pageSize),
-                Rows = count
+                Rows = count,
             };
         }
     }

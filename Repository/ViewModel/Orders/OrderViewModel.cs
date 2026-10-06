@@ -1,6 +1,5 @@
 ﻿namespace ERP.Repository.ViewModel.Orders
 {
-
     public enum OrdersFilter
     {
         PRDATOZ = 1,
@@ -8,6 +7,7 @@
         QLOW = 3,
         QHIGH = 4,
     }
+
     public class OrderViewModel
     {
         public string? ProductName { get; set; }
@@ -43,9 +43,8 @@
         public int Count { get; set; }
     }
 
-    public class  OrderLineViewModel
+    public class OrderLineViewModel
     {
-
         public int ProductId { get; set; }
         public int Quantity { get; set; }
     }

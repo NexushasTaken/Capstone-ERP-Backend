@@ -1,4 +1,7 @@
-﻿using ERP.Middleware;
+﻿using System.Reflection;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using ERP.Middleware;
 using ERP.Repository;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
@@ -47,9 +50,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.ML;
-using System.Reflection;
-using System.Security.Claims;
-using System.Security.Cryptography;
 
 namespace ERP
 {
@@ -63,13 +63,17 @@ namespace ERP
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("FrontEnd", policy =>
-                {
-                    policy.WithOrigins("http://localhost:3000", "http://localhost:4200")
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
-                });
+                options.AddPolicy(
+                    "FrontEnd",
+                    policy =>
+                    {
+                        policy
+                            .WithOrigins("http://localhost:3000", "http://localhost:4200")
+                            .AllowAnyMethod()
+                            .AllowAnyHeader()
+                            .AllowCredentials();
+                    }
+                );
             });
 
             // Add services to the container.
@@ -110,64 +114,71 @@ namespace ERP
 
             #region Singleton Services
 
-            builder.Services.AddSingleton<ITokenManagerService,TokenManagerService>();
+            builder.Services.AddSingleton<ITokenManagerService, TokenManagerService>();
             builder.Services.AddSingleton<ResponseHelper>();
             builder.Services.AddSingleton<MLContext>();
 
             #endregion
 
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
+            builder
+                .Services.AddAuthentication(options =>
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-                    RoleClaimType = ClaimTypes.Role
-                };
-
-
-                options.Events = new JwtBearerEvents
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
                 {
-                    OnMessageReceived = context =>
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        var accessToken = context.HttpContext.Request.Cookies["AccessToken"];
-                        if (!string.IsNullOrEmpty(accessToken))
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+                        ),
+                        RoleClaimType = ClaimTypes.Role,
+                    };
+
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
                         {
-                            context.Token = accessToken;
-                        }
-                        return Task.CompletedTask;
-                    }
-                };
-            });
+                            var accessToken = context.HttpContext.Request.Cookies["AccessToken"];
+                            if (!string.IsNullOrEmpty(accessToken))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        },
+                    };
+                });
 
-
-            builder.Services.AddDbContext<DatabaseContext>(context => context.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-            builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
-            {
-                // Model-binding failures (missing query params, malformed JSON) use the same 400 envelope as ValidationFailed.
-                options.InvalidModelStateResponseFactory = context =>
+            builder.Services.AddDbContext<DatabaseContext>(context =>
+                context.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+            );
+            builder
+                .Services.AddControllers()
+                .ConfigureApiBehaviorOptions(options =>
                 {
-                    var errors = context.ModelState
-                        .Where(entry => entry.Value?.Errors.Count > 0)
-                        .ToDictionary(
-                            entry => ValidatorExtensions.ToFieldPath(entry.Key),
-                            entry => entry.Value!.Errors.Select(e => e.ErrorMessage).ToArray());
-                    var response = context.HttpContext.RequestServices.GetRequiredService<ResponseHelper>();
-                    var message = errors.Values.SelectMany(e => e).FirstOrDefault() ?? "Invalid request";
+                    // Model-binding failures (missing query params, malformed JSON) use the same 400 envelope as ValidationFailed.
+                    options.InvalidModelStateResponseFactory = context =>
+                    {
+                        var errors = context
+                            .ModelState.Where(entry => entry.Value?.Errors.Count > 0)
+                            .ToDictionary(
+                                entry => ValidatorExtensions.ToFieldPath(entry.Key),
+                                entry => entry.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                            );
+                        var response = context.HttpContext.RequestServices.GetRequiredService<ResponseHelper>();
+                        var message = errors.Values.SelectMany(e => e).FirstOrDefault() ?? "Invalid request";
 
-                    return new BadRequestObjectResult(response.Status(400, false, message, null, errors));
-                };
-            });
+                        return new BadRequestObjectResult(response.Status(400, false, message, null, errors));
+                    };
+                });
             builder.Services.AddSwaggerGen(c =>
             {
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

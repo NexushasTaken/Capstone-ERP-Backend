@@ -12,7 +12,6 @@ namespace ERP.Controllers.ProductController
     [Route("api/Product")]
     public class ProductController(IProductService _productService, ResponseHelper _response) : ControllerBase
     {
-        
         /// <summary>
         /// Retrieves one page of products.
         /// </summary>
@@ -23,7 +22,13 @@ namespace ERP.Controllers.ProductController
         /// <param name="filter">sort: 0 newest first, 1 Id, 2 name A - Z, 3 name Z - A, 4 price low to high, 5 price high to low</param>
         /// <returns></returns>
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllProduct([FromQuery]int page = 1, [FromQuery]int pageSize = 10, [FromQuery]string? name = "", [FromQuery] int categoryPresent = 0, [FromQuery] int filter = 0)
+        public async Task<IActionResult> GetAllProduct(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? name = "",
+            [FromQuery] int categoryPresent = 0,
+            [FromQuery] int filter = 0
+        )
         {
             var products = await _productService.GetProducts(page, pageSize, name, categoryPresent, filter);
 
@@ -47,7 +52,6 @@ namespace ERP.Controllers.ProductController
 
             return StatusCode(200, _response.Status(200, true, "Updated ", null));
         }
-
 
         [Authorize(Roles = "owner")]
         [HttpDelete("delete")]

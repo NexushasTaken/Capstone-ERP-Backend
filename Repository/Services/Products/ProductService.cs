@@ -1,14 +1,14 @@
-﻿using ERP.Repository.Configuration.Enum;
+﻿using System.ComponentModel;
+using ERP.Repository.Configuration.Enum;
 using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
-using FluentValidation;
 using ERP.Repository.Interface.AuditLogs;
 using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Products;
 using ERP.Repository.Model.Products;
 using ERP.Repository.ViewModel.Products;
-using System.ComponentModel;
+using FluentValidation;
 
 namespace ERP.Repository.Services.Products
 {
@@ -18,29 +18,41 @@ namespace ERP.Repository.Services.Products
         IAuditLogService _auditLog,
         IValidator<CategoryUpdateViewModel> _categoryUpdateValidator,
         IValidator<ProductPostViewModel> _productPostValidator,
-        IValidator<ProductUpdateViewModel> _productUpdateValidator) : IProductService
+        IValidator<ProductUpdateViewModel> _productUpdateValidator
+    ) : IProductService
     {
-
         #region Category
-        public async Task<CategoryPageViewModel> GetCategories(int page, int pageSize, string? name, int filter, CancellationToken cancellation)
+        public async Task<CategoryPageViewModel> GetCategories(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            CancellationToken cancellation
+        )
         {
             PageQueryValidator.Ensure(page, pageSize);
 
-            var categories = await _category.GetAllCategoriesWithoutTracking(page, pageSize, name, filter, cancellation);
+            var categories = await _category.GetAllCategoriesWithoutTracking(
+                page,
+                pageSize,
+                name,
+                filter,
+                cancellation
+            );
             var count = await _category.CategoryTotalCount(name, cancellation);
 
-             var final =  categories.Select(c => new CategoryViewModel
+            var final = categories.Select(c => new CategoryViewModel
             {
                 Id = c.Id,
                 Type = c.Type,
-                Created_At = c.Created_At
+                Created_At = c.Created_At,
             });
 
             return new CategoryPageViewModel
             {
                 Categories = final,
                 PageCount = (int)Math.Ceiling(count / (double)pageSize),
-                Rows = count
+                Rows = count,
             };
         }
 
@@ -59,18 +71,23 @@ namespace ERP.Repository.Services.Products
                 Type = categoryName.ToLower(),
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
-                IsActive = true
+                IsActive = true,
             };
 
             await _category.Save(category);
 
-            _auditLog.Log(AuditModuleEnum.Category, AuditActionEnum.Create, $"Added category '{category.Type}'", category.Id, now);
+            _auditLog.Log(
+                AuditModuleEnum.Category,
+                AuditActionEnum.Create,
+                $"Added category '{category.Type}'",
+                category.Id,
+                now
+            );
             await _category.SaveChanges();
         }
 
         public async Task DeleteCategory(int id)
         {
-
             if (id <= 0)
             {
                 throw new BadRequest("Category ID is required");
@@ -99,9 +116,10 @@ namespace ERP.Repository.Services.Products
             }
 
             var uncategorized = categoryReferences.Count();
-            var message = uncategorized > 0
-                ? $"Deleted category '{category.Type}' ({uncategorized} product(s) set to uncategorized)"
-                : $"Deleted category '{category.Type}'";
+            var message =
+                uncategorized > 0
+                    ? $"Deleted category '{category.Type}' ({uncategorized} product(s) set to uncategorized)"
+                    : $"Deleted category '{category.Type}'";
 
             _auditLog.Log(AuditModuleEnum.Category, AuditActionEnum.Delete, message, category.Id, now);
 
@@ -114,7 +132,7 @@ namespace ERP.Repository.Services.Products
 
             var ct = await _category.GetCategoryByIdWithTracking(category.Id);
 
-            if(ct == null)
+            if (ct == null)
             {
                 throw new NotFound("Category not found");
             }
@@ -126,7 +144,13 @@ namespace ERP.Repository.Services.Products
             ct.Updated_By = _auditLog.CurrentUserId;
             ct.Updated_At = now;
 
-            _auditLog.Log(AuditModuleEnum.Category, AuditActionEnum.Update, $"Renamed category '{oldType}' to '{ct.Type}'", ct.Id, now);
+            _auditLog.Log(
+                AuditModuleEnum.Category,
+                AuditActionEnum.Update,
+                $"Renamed category '{oldType}' to '{ct.Type}'",
+                ct.Id,
+                now
+            );
 
             await _category.SaveChanges();
 
@@ -137,7 +161,13 @@ namespace ERP.Repository.Services.Products
 
         #region Product
 
-        public async Task<ProductPageViewModel> GetProducts(int page, int pageSize, string? name, int categoryPresent, int filter)
+        public async Task<ProductPageViewModel> GetProducts(
+            int page,
+            int pageSize,
+            string? name,
+            int categoryPresent,
+            int filter
+        )
         {
             PageQueryValidator.Ensure(page, pageSize);
 
@@ -146,20 +176,20 @@ namespace ERP.Repository.Services.Products
             var count = await _product.ProductTotalCountWithoutTracking(name, categoryPresent);
 
             var product = products.Select(p => new ProductViewModel
-                {
-                    Id = p.Id,
-                    CategoryId = p.CategoryId,
-                    Name = p.Name,
-                    Price = p.Price,
-                    CategoryName = p.Category?.Type,
-                    Created_At = DateConverter.ConvertToPH(p.Created_At)
-                });
+            {
+                Id = p.Id,
+                CategoryId = p.CategoryId,
+                Name = p.Name,
+                Price = p.Price,
+                CategoryName = p.Category?.Type,
+                Created_At = DateConverter.ConvertToPH(p.Created_At),
+            });
 
             var final = new ProductPageViewModel
             {
                 Products = product,
                 PageCount = (int)Math.Ceiling(count / (double)pageSize),
-                Rows = count
+                Rows = count,
             };
 
             return final;
@@ -183,7 +213,13 @@ namespace ERP.Repository.Services.Products
 
             await _product.Save(pr);
 
-            _auditLog.Log(AuditModuleEnum.Product, AuditActionEnum.Create, $"Added product '{pr.Name}' (₱{pr.Price:N2})", pr.Id, now);
+            _auditLog.Log(
+                AuditModuleEnum.Product,
+                AuditActionEnum.Create,
+                $"Added product '{pr.Name}' (₱{pr.Price:N2})",
+                pr.Id,
+                now
+            );
             await _product.SaveChanges();
         }
 
@@ -191,7 +227,7 @@ namespace ERP.Repository.Services.Products
         {
             var product = await _product.GetProductByIdWithTracking(id);
 
-            if(product == null)
+            if (product == null)
             {
                 throw new NotFound($"Product not found");
             }
@@ -202,7 +238,13 @@ namespace ERP.Repository.Services.Products
             product.Deleted_By = _auditLog.CurrentUserId;
             product.Deleted_At = now;
 
-            _auditLog.Log(AuditModuleEnum.Product, AuditActionEnum.Delete, $"Deleted product '{product.Name}'", product.Id, now);
+            _auditLog.Log(
+                AuditModuleEnum.Product,
+                AuditActionEnum.Delete,
+                $"Deleted product '{product.Name}'",
+                product.Id,
+                now
+            );
 
             await _product.SaveChanges();
 
@@ -248,9 +290,10 @@ namespace ERP.Repository.Services.Products
             pr.Updated_By = _auditLog.CurrentUserId;
             pr.Updated_At = now;
 
-            var message = changes.Count > 0
-                ? $"Updated product '{oldName}': {string.Join(", ", changes)}"
-                : $"Updated product '{oldName}' (no changes)";
+            var message =
+                changes.Count > 0
+                    ? $"Updated product '{oldName}': {string.Join(", ", changes)}"
+                    : $"Updated product '{oldName}' (no changes)";
 
             _auditLog.Log(AuditModuleEnum.Product, AuditActionEnum.Update, message, pr.Id, now);
 

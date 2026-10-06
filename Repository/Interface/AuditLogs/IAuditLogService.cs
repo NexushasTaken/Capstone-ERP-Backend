@@ -7,6 +7,14 @@ namespace ERP.Repository.Interface.AuditLogs
     {
         int? CurrentUserId { get; }
         void Log(AuditModuleEnum module, AuditActionEnum action, string message, int? entityId, DateTime timestamp);
-        Task<AuditLogPageViewModel> GetLogs(int page, int pageSize, int userId, int action, int module, string? role, CancellationToken cancellation = default);
+        Task<AuditLogPageViewModel> GetLogs(
+            int page,
+            int pageSize,
+            int userId,
+            int action,
+            int module,
+            string? role,
+            CancellationToken cancellation = default
+        );
     }
 }

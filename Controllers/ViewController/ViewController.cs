@@ -1,8 +1,8 @@
-﻿using ERP.Repository.Configuration.Helper;
+﻿using System.Security.Claims;
+using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.UserAccounts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace ERP.Controllers.ViewController
 {
@@ -29,6 +29,5 @@ namespace ERP.Controllers.ViewController
 
             return StatusCode(200, _response.Status(200, true, "Authorize", currentUser));
         }
-
     }
 }

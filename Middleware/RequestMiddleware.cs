@@ -8,7 +8,6 @@ namespace ERP.Middleware
         //private readonly RequestDelegate _next = next;
         //private readonly ResponseHelper _response = responseHelper;
 
-
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -27,20 +26,27 @@ namespace ERP.Middleware
             {
                 await Response(context, 400, "application/json", ex.Message);
             }
-            catch(UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException ex)
             {
                 await Response(context, 401, "application/json", ex.Message);
             }
-            catch(NotFound ex)
+            catch (NotFound ex)
             {
                 await Response(context, 404, "application/json", ex.Message);
             }
-            catch (Exception ex) { 
+            catch (Exception ex)
+            {
                 await Response(context, 500, "application/json", ex.Message);
             }
         }
 
-        public async Task<HttpContext> Response(HttpContext context, int statusCode, string contentType, string error, IDictionary<string, string[]>? errors = null)
+        public async Task<HttpContext> Response(
+            HttpContext context,
+            int statusCode,
+            string contentType,
+            string error,
+            IDictionary<string, string[]>? errors = null
+        )
         {
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = contentType;

@@ -4,7 +4,13 @@ namespace ERP.Repository.Configuration.Helper
 {
     public class ResponseHelper
     {
-        public object Status(int status, bool success, string? message, object? content = null, IDictionary<string, string[]>? errors = null)
+        public object Status(
+            int status,
+            bool success,
+            string? message,
+            object? content = null,
+            IDictionary<string, string[]>? errors = null
+        )
         {
             return new ResponseHelperViewModel
             {
@@ -12,7 +18,7 @@ namespace ERP.Repository.Configuration.Helper
                 Success = success,
                 Message = message,
                 Content = content,
-                Errors = errors
+                Errors = errors,
             };
         }
     }

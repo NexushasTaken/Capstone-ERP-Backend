@@ -11,13 +11,12 @@ namespace ERP.Repository.Services.Dashboard
     {
         public async Task<DashboardViewModel> SalesOverView(DateTime from, DateTime to, CancellationToken cancellation)
         {
-
-            var data = await _dashboard.OverView(from,to,cancellation);
+            var data = await _dashboard.OverView(from, to, cancellation);
 
             var prevMonths = await _dashboard.PrevMonths(from, to, cancellation);
 
             var latest = data.Sum(x => x.Data);
-             decimal prev = prevMonths.Sum(x => x.Data);
+            decimal prev = prevMonths.Sum(x => x.Data);
 
             decimal growth = 0;
             string error = "";
@@ -36,7 +35,7 @@ namespace ERP.Repository.Services.Dashboard
                 Data = data,
                 TotalSales = latest,
                 GrowthPercentage = growth,
-                GrowthErrorMessage = error
+                GrowthErrorMessage = error,
             };
 
             return result;
@@ -52,7 +51,7 @@ namespace ERP.Repository.Services.Dashboard
             {
                 TotalStock = totalStock,
                 Risk = 0,
-                InventoryStatus = inventoryStatus
+                InventoryStatus = inventoryStatus,
             };
         }
 

@@ -1,5 +1,5 @@
-﻿using ERP.Repository.Configuration.Helper;
-using ERP.Repository.Configuration.Enum;
+﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Model.Orders;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +15,15 @@ namespace ERP.Repository.Data.OrderData
                 var pattern = SearchPattern.Contains(name);
                 var hasId = int.TryParse(name.Trim(), out var id);
 
-                query = query.Where(d => EF.Functions.ILike(d.FirstName, pattern) || EF.Functions.ILike(d.LastName, pattern) || (hasId && d.Id == id));
+                query = query.Where(d =>
+                    EF.Functions.ILike(d.FirstName, pattern)
+                    || EF.Functions.ILike(d.LastName, pattern)
+                    || (hasId && d.Id == id)
+                );
             }
 
-            if(Enum.IsDefined(typeof(DriverFilterEnum), filter)){
+            if (Enum.IsDefined(typeof(DriverFilterEnum), filter))
+            {
                 var filterEnum = (DriverFilterEnum)filter;
 
                 switch (filterEnum)
@@ -28,7 +33,7 @@ namespace ERP.Repository.Data.OrderData
                         break;
                     case DriverFilterEnum.ZTOA:
                         query = query.OrderByDescending(d => d.FirstName).ThenByDescending(d => d.LastName);
-                        break;  
+                        break;
                 }
             }
             else
@@ -38,7 +43,14 @@ namespace ERP.Repository.Data.OrderData
 
             return query;
         }
-        public async Task<IEnumerable<DeliveryDriver>> GetDriversWithoutTracking(int page, int pageSize, string? name, int filter, CancellationToken cancellation)
+
+        public async Task<IEnumerable<DeliveryDriver>> GetDriversWithoutTracking(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            CancellationToken cancellation
+        )
         {
             var driver = BaseQuery<DeliveryDriver>(false).Where(d => d.IsActive == true);
 
@@ -62,7 +74,9 @@ namespace ERP.Repository.Data.OrderData
 
         public async Task<DeliveryDriver> GetSingleDriverWithTracking(int id)
         {
-            var driver = await BaseQuery<DeliveryDriver>(true).Where(d => d.Id == id && d.IsActive == true).FirstOrDefaultAsync();
+            var driver = await BaseQuery<DeliveryDriver>(true)
+                .Where(d => d.Id == id && d.IsActive == true)
+                .FirstOrDefaultAsync();
 
             return driver;
         }

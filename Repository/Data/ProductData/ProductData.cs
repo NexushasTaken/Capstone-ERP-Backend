@@ -7,7 +7,6 @@ namespace ERP.Repository.Data.ProductData
 {
     public class ProductData(DatabaseContext _context) : BaseData(_context), IProductData
     {
-
         // categoryPresent: 0 = only products with a category, 1 = only products without one.
         public IQueryable<Product> FilteringQuery(IQueryable<Product> query, string? name, int categoryPresent)
         {
@@ -19,14 +18,14 @@ namespace ERP.Repository.Data.ProductData
                 var hasId = SearchPattern.TryParseId(name, "PR", out var id);
 
                 query = query.Where(p =>
-                    EF.Functions.ILike(p.Name, pattern) ||
-                    (p.Category != null && EF.Functions.ILike(p.Category.Type, pattern)) ||
-                    (hasId && p.Id == id));
+                    EF.Functions.ILike(p.Name, pattern)
+                    || (p.Category != null && EF.Functions.ILike(p.Category.Type, pattern))
+                    || (hasId && p.Id == id)
+                );
             }
 
-            query = categoryPresent == 1
-                ? query.Where(p => p.CategoryId == null)
-                : query.Where(p => p.CategoryId != null);
+            query =
+                categoryPresent == 1 ? query.Where(p => p.CategoryId == null) : query.Where(p => p.CategoryId != null);
 
             return query;
         }
@@ -48,7 +47,13 @@ namespace ERP.Repository.Data.ProductData
             return sorted.ThenBy(p => p.Id);
         }
 
-        public async Task<IEnumerable<Product>> GetAllProductWithoutTracking(int page, int pageSize, string? name, int categoryPresent, int filter)
+        public async Task<IEnumerable<Product>> GetAllProductWithoutTracking(
+            int page,
+            int pageSize,
+            string? name,
+            int categoryPresent,
+            int filter
+        )
         {
             var products = FilteringQuery(BaseQuery<Product>(false).Include(p => p.Category), name, categoryPresent);
 
@@ -60,7 +65,10 @@ namespace ERP.Repository.Data.ProductData
 
         public async Task<ICollection<Product>> GetAllProductReferenceByCategoryWithTracking(int categoryId)
         {
-            var products = await BaseQuery<Product>(true).Where(p => p.CategoryId == categoryId && p.IsActive == true).OrderByDescending(p => p.Id).ToListAsync();
+            var products = await BaseQuery<Product>(true)
+                .Where(p => p.CategoryId == categoryId && p.IsActive == true)
+                .OrderByDescending(p => p.Id)
+                .ToListAsync();
 
             return products;
         }
@@ -71,6 +79,7 @@ namespace ERP.Repository.Data.ProductData
 
             return product;
         }
+
         public async Task<Product> GetProductByIdWithoutTracking(int id)
         {
             var product = await BaseQuery<Product>(false).FirstOrDefaultAsync(p => p.Id == id && p.IsActive == true);

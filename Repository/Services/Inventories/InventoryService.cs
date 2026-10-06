@@ -1,4 +1,5 @@
-﻿using ERP.Controllers.InventoryController;
+﻿using System.Runtime.ConstrainedExecution;
+using ERP.Controllers.InventoryController;
 using ERP.Repository.Configuration.Enum;
 using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Helper;
@@ -13,7 +14,6 @@ using ERP.Repository.ViewModel.Inventories;
 using ERP.Repository.ViewModel.Products;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime.ConstrainedExecution;
 
 namespace ERP.Repository.Services.Inventories
 {
@@ -26,15 +26,33 @@ namespace ERP.Repository.Services.Inventories
         IValidator<InventoryDamagePostViewModel> _damageValidator,
         IValidator<InventoryTransactionPostViewModel> _transactionValidator,
         IValidator<InventoryWareHousePostViewModel> _warehousePostValidator,
-        IValidator<InventoryWareHouseUpdateViewModel> _warehouseUpdateValidator) : IInventoryService
+        IValidator<InventoryWareHouseUpdateViewModel> _warehouseUpdateValidator
+    ) : IInventoryService
     {
-
         #region Inventory
-        public async Task<InventoryPageViewModel> GetInventories(int page, int pageSize, string name, int filter,int statusId, int wareHousePresent, InventoryListFilter listFilter, CancellationToken cancellationToken)
+        public async Task<InventoryPageViewModel> GetInventories(
+            int page,
+            int pageSize,
+            string name,
+            int filter,
+            int statusId,
+            int wareHousePresent,
+            InventoryListFilter listFilter,
+            CancellationToken cancellationToken
+        )
         {
             PageQueryValidator.Ensure(page, pageSize);
 
-            var inv = await _inventory.GetInventoriesWithoutTracking(page, pageSize, name, filter, statusId, wareHousePresent, listFilter, cancellationToken);
+            var inv = await _inventory.GetInventoriesWithoutTracking(
+                page,
+                pageSize,
+                name,
+                filter,
+                statusId,
+                wareHousePresent,
+                listFilter,
+                cancellationToken
+            );
 
             var totalCount = await _inventory.InventoryCount(name, filter, statusId, wareHousePresent, listFilter);
 
@@ -50,14 +68,14 @@ namespace ERP.Repository.Services.Inventories
                 Status = i.InventoryStatus.Status,
                 CategoryName = i.Product?.Category?.Type ?? "No Category",
                 DateArrived = i.DateArrived,
-                Created_At = i.Created_At
+                Created_At = i.Created_At,
             });
 
             var result = new InventoryPageViewModel
             {
                 inventories = inventory,
                 PageCount = (int)Math.Ceiling(totalCount / (double)pageSize),
-                Rows = totalCount
+                Rows = totalCount,
             };
 
             return result;
@@ -67,20 +85,21 @@ namespace ERP.Repository.Services.Inventories
         {
             var product = await _product.GetAllProductForInventoryInsert();
 
-            return product.Select( p => new ProductViewModel
-            {
-                Id = p.Id,
-                CategoryId = p.CategoryId,
-                Name = p.Name,
-                Price = p.Price,
-                CategoryName = p.Category == null ? "No Category" : p.Category.Type,
-                Created_At = p.Created_At
-            }).ToList();
+            return product
+                .Select(p => new ProductViewModel
+                {
+                    Id = p.Id,
+                    CategoryId = p.CategoryId,
+                    Name = p.Name,
+                    Price = p.Price,
+                    CategoryName = p.Category == null ? "No Category" : p.Category.Type,
+                    Created_At = p.Created_At,
+                })
+                .ToList();
         }
 
         public async Task InsertItem(InventoryPostViewModel inventory)
         {
-
             await _inventoryPostValidator.EnsureValidAsync(inventory);
 
             var duplicate = await _inventory.CheckExistingInventory(inventory.Name.ToLower(), inventory.WarehouseId);
@@ -114,8 +133,13 @@ namespace ERP.Repository.Services.Inventories
 
             var warehouse = await _inventory.GetIndividualWareHouseWithTracking(inventory.WarehouseId);
 
-            _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.Create,
-                $"Added {inv.Quantity} '{inv.Name}' to {warehouse?.Name ?? "no warehouse"}", inv.Id, now);
+            _auditLog.Log(
+                AuditModuleEnum.Inventory,
+                AuditActionEnum.Create,
+                $"Added {inv.Quantity} '{inv.Name}' to {warehouse?.Name ?? "no warehouse"}",
+                inv.Id,
+                now
+            );
             await _inventory.SaveChanges();
 
             return;
@@ -123,7 +147,6 @@ namespace ERP.Repository.Services.Inventories
 
         public async Task Restock(InventoryRestockViewModel inventory)
         {
-
             var existing = await _inventory.GetInventoryWithTracking(inventory.Id);
 
             if (existing == null)
@@ -141,13 +164,23 @@ namespace ERP.Repository.Services.Inventories
 
             if (inventory.RestockType == 1)
             {
-                _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.IncreaseStock,
-                    $"Increased stock of '{existing.Name}' by {inventory.Quantity}", existing.Id, now);
+                _auditLog.Log(
+                    AuditModuleEnum.Inventory,
+                    AuditActionEnum.IncreaseStock,
+                    $"Increased stock of '{existing.Name}' by {inventory.Quantity}",
+                    existing.Id,
+                    now
+                );
             }
             else
             {
-                _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.ReturnStock,
-                    $"Returned {inventory.Quantity} '{existing.Name}' to stock", existing.Id, now);
+                _auditLog.Log(
+                    AuditModuleEnum.Inventory,
+                    AuditActionEnum.ReturnStock,
+                    $"Returned {inventory.Quantity} '{existing.Name}' to stock",
+                    existing.Id,
+                    now
+                );
             }
 
             await _inventory.SaveChanges();
@@ -160,7 +193,7 @@ namespace ERP.Repository.Services.Inventories
                 {
                     Id = existing.Id,
                     Quantity = +inventory.Quantity,
-                    Label = (int)InventoryLabelEnum.Restock
+                    Label = (int)InventoryLabelEnum.Restock,
                 };
             }
             else
@@ -169,7 +202,7 @@ namespace ERP.Repository.Services.Inventories
                 {
                     Id = existing.Id,
                     Quantity = +inventory.Quantity,
-                    Label = (int)InventoryLabelEnum.Return
+                    Label = (int)InventoryLabelEnum.Return,
                 };
             }
 
@@ -180,7 +213,7 @@ namespace ERP.Repository.Services.Inventories
 
         public async Task DeleteItem(int id)
         {
-            if(id <= 0)
+            if (id <= 0)
             {
                 throw new BadRequest("Id is required");
             }
@@ -198,7 +231,13 @@ namespace ERP.Repository.Services.Inventories
             inventory.Deleted_By = _auditLog.CurrentUserId;
             inventory.Deleted_At = now;
 
-            _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.Delete, $"Deleted inventory '{inventory.Name}'", inventory.Id, now);
+            _auditLog.Log(
+                AuditModuleEnum.Inventory,
+                AuditActionEnum.Delete,
+                $"Deleted inventory '{inventory.Name}'",
+                inventory.Id,
+                now
+            );
 
             await _inventory.SaveChanges();
         }
@@ -249,9 +288,10 @@ namespace ERP.Repository.Services.Inventories
 
             existing.StatusId = ReorderRatio.Ratio(existing.Quantity, existing.ReorderPoint);
 
-            var message = changes.Count > 0
-                ? $"Updated inventory '{oldName}': {string.Join(", ", changes)}"
-                : $"Updated inventory '{oldName}' (no changes)";
+            var message =
+                changes.Count > 0
+                    ? $"Updated inventory '{oldName}': {string.Join(", ", changes)}"
+                    : $"Updated inventory '{oldName}' (no changes)";
 
             _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.Update, message, existing.Id, now);
 
@@ -295,18 +335,28 @@ namespace ERP.Repository.Services.Inventories
                 Quantity = damaged.Quantity,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
-                IsActive = true
+                IsActive = true,
             };
 
             if (damaged.DamagedType == 1)
             {
-                _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.CurrentItemDamage,
-                    $"Marked {damaged.Quantity} '{inventory.Name}' as damaged (Current Item): {damn.Reason}", inventory.Id, now);
+                _auditLog.Log(
+                    AuditModuleEnum.Inventory,
+                    AuditActionEnum.CurrentItemDamage,
+                    $"Marked {damaged.Quantity} '{inventory.Name}' as damaged (Current Item): {damn.Reason}",
+                    inventory.Id,
+                    now
+                );
             }
             else
             {
-                _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.ReturnItemDamage,
-                    $"Recorded {damaged.Quantity} returned '{inventory.Name}' as damaged (Return Item): {damn.Reason}", inventory.Id, now);
+                _auditLog.Log(
+                    AuditModuleEnum.Inventory,
+                    AuditActionEnum.ReturnItemDamage,
+                    $"Recorded {damaged.Quantity} returned '{inventory.Name}' as damaged (Return Item): {damn.Reason}",
+                    inventory.Id,
+                    now
+                );
             }
 
             await _inventory.Save(damn);
@@ -315,7 +365,7 @@ namespace ERP.Repository.Services.Inventories
             {
                 Id = inventory.Id,
                 Quantity = -damaged.Quantity,
-                Label = damaged.DamagedType == 1 ? (int)InventoryLabelEnum.Damage : (int)InventoryLabelEnum.Return
+                Label = damaged.DamagedType == 1 ? (int)InventoryLabelEnum.Damage : (int)InventoryLabelEnum.Return,
             };
 
             await InventoryTransaction(transaction);
@@ -334,7 +384,7 @@ namespace ERP.Repository.Services.Inventories
                 InventoryLabelId = transaction.Label,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = DateTime.UtcNow,
-                IsActive = true 
+                IsActive = true,
             };
 
             await _inventory.Save(transac);
@@ -352,7 +402,13 @@ namespace ERP.Repository.Services.Inventories
         #endregion
 
         #region Warehouse
-        public async Task<WarehousePageViewModel> GetWarehouses(int page, int pageSize, string? name, int filter, CancellationToken cancellation)
+        public async Task<WarehousePageViewModel> GetWarehouses(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            CancellationToken cancellation
+        )
         {
             PageQueryValidator.Ensure(page, pageSize);
 
@@ -363,7 +419,7 @@ namespace ERP.Repository.Services.Inventories
             {
                 Warehouses = wareHouses,
                 PageCount = (int)Math.Ceiling(count / (double)pageSize),
-                Rows = count
+                Rows = count,
             };
         }
 
@@ -379,12 +435,18 @@ namespace ERP.Repository.Services.Inventories
                 Address = wareHouse.Address.ToLower(),
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
-                IsActive = true
+                IsActive = true,
             };
 
             await _inventory.Save(wh);
 
-            _auditLog.Log(AuditModuleEnum.Warehouse, AuditActionEnum.Create, $"Added warehouse '{wh.Name}'", wh.Id, now);
+            _auditLog.Log(
+                AuditModuleEnum.Warehouse,
+                AuditActionEnum.Create,
+                $"Added warehouse '{wh.Name}'",
+                wh.Id,
+                now
+            );
             await _inventory.SaveChanges();
 
             return;
@@ -396,7 +458,7 @@ namespace ERP.Repository.Services.Inventories
 
             var wh = await _inventory.GetIndividualWareHouseWithTracking(wareHouse.Id);
 
-            if(wh == null)
+            if (wh == null)
             {
                 throw new NotFound("Warehouse not found");
             }
@@ -423,9 +485,10 @@ namespace ERP.Repository.Services.Inventories
             wh.Updated_By = _auditLog.CurrentUserId;
             wh.Updated_At = now;
 
-            var message = changes.Count > 0
-                ? $"Updated warehouse '{oldName}': {string.Join(", ", changes)}"
-                : $"Updated warehouse '{oldName}' (no changes)";
+            var message =
+                changes.Count > 0
+                    ? $"Updated warehouse '{oldName}': {string.Join(", ", changes)}"
+                    : $"Updated warehouse '{oldName}' (no changes)";
 
             _auditLog.Log(AuditModuleEnum.Warehouse, AuditActionEnum.Update, message, wh.Id, now);
 
@@ -463,9 +526,10 @@ namespace ERP.Repository.Services.Inventories
                 inv.Updated_At = now;
             }
 
-            var message = inventories.Count > 0
-                ? $"Deleted warehouse '{wareHouse.Name}' ({inventories.Count} inventory item(s) unassigned)"
-                : $"Deleted warehouse '{wareHouse.Name}'";
+            var message =
+                inventories.Count > 0
+                    ? $"Deleted warehouse '{wareHouse.Name}' ({inventories.Count} inventory item(s) unassigned)"
+                    : $"Deleted warehouse '{wareHouse.Name}'";
 
             _auditLog.Log(AuditModuleEnum.Warehouse, AuditActionEnum.Delete, message, wareHouse.Id, now);
 
@@ -480,11 +544,7 @@ namespace ERP.Repository.Services.Inventories
         {
             var label = await _inventory.GetLabelForInsert();
 
-            var final = label.Select(i => new InventoryLabelViewModel
-            {
-                Id = i.Id,
-                Type = i.Type
-            });
+            var final = label.Select(i => new InventoryLabelViewModel { Id = i.Id, Type = i.Type });
 
             return final;
         }
@@ -493,7 +553,7 @@ namespace ERP.Repository.Services.Inventories
         #region Damage Inventory
         public async Task<IEnumerable<InventoryDamageViewModel>> GetDamageInventory(int id)
         {
-            if(id <= 0)
+            if (id <= 0)
             {
                 throw new BadRequest("Inventory item is required");
             }
@@ -520,8 +580,7 @@ namespace ERP.Repository.Services.Inventories
             {
                 Quantity = t.QuantityChanged,
                 Label = t.InventoryLabel.Type,
-                Created_At = t.Created_At
-
+                Created_At = t.Created_At,
             });
 
             return final;
@@ -530,12 +589,15 @@ namespace ERP.Repository.Services.Inventories
 
         #region Movements Velocity
 
-        public async Task<InventoryMovementVelocityPageViewModel> GetMovementVelocity(int cutOffDate, int page, int pageSize)
+        public async Task<InventoryMovementVelocityPageViewModel> GetMovementVelocity(
+            int cutOffDate,
+            int page,
+            int pageSize
+        )
         {
             var inventory = await _inventory.GetMovementVelocityWithoutTracking(cutOffDate, page, pageSize);
 
             var total = await _inventory.GetMovementVelocityCount(cutOffDate);
-
 
             var result = new InventoryMovementVelocityPageViewModel
             {
@@ -545,10 +607,10 @@ namespace ERP.Repository.Services.Inventories
                     Name = i.Name,
                     Classification = i.Classification,
                     VelocityMetric = i.VelocityMetric,
-                    Warehouse = i.Warehouse
+                    Warehouse = i.Warehouse,
                 }),
                 PageCount = (int)Math.Ceiling(total / (double)pageSize),
-                Rows = total
+                Rows = total,
             };
 
             return result;

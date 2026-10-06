@@ -6,9 +6,31 @@ namespace ERP.Repository.Interface.Data.InventoryData
     public interface IInventoryData : IBaseData
     {
         #region Inventory
-        Task<IEnumerable<Inventory>> GetInventoriesWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int wareHousePresent, InventoryListFilter listFilter, CancellationToken cancellation);
-        IQueryable<Inventory> FilteringQuery(IQueryable<Inventory> query, string? name, int filter, int statusId, int wareHousePresent, InventoryListFilter listFilter);
-        Task<int> InventoryCount(string? name, int filter, int statusId, int wareHousePresent, InventoryListFilter listFilter);
+        Task<IEnumerable<Inventory>> GetInventoriesWithoutTracking(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            int statusId,
+            int wareHousePresent,
+            InventoryListFilter listFilter,
+            CancellationToken cancellation
+        );
+        IQueryable<Inventory> FilteringQuery(
+            IQueryable<Inventory> query,
+            string? name,
+            int filter,
+            int statusId,
+            int wareHousePresent,
+            InventoryListFilter listFilter
+        );
+        Task<int> InventoryCount(
+            string? name,
+            int filter,
+            int statusId,
+            int wareHousePresent,
+            InventoryListFilter listFilter
+        );
         Task<Inventory> GetInventoryWithTracking(int id);
         Task<ICollection<Inventory>> GetInventoryWithWareHouseId(int id);
         Task<IEnumerable<Inventory>> GetProductInventoryWithTracking(int productId);
@@ -18,7 +40,13 @@ namespace ERP.Repository.Interface.Data.InventoryData
         #endregion
 
         #region Warehouse
-        Task<IEnumerable<InventoryWareHouseViewModel>> GetWarehousesWithoutTracking(int page, int pageSize, string? name, int filter, CancellationToken cancellation = default);
+        Task<IEnumerable<InventoryWareHouseViewModel>> GetWarehousesWithoutTracking(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            CancellationToken cancellation = default
+        );
         Task<int> WarehouseTotalCount(string? name, CancellationToken cancellation = default);
         Task<Warehouse> GetIndividualWareHouseWithTracking(int id);
         #endregion
@@ -37,7 +65,11 @@ namespace ERP.Repository.Interface.Data.InventoryData
         #endregion
 
         #region Movement Velocity
-        Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocityWithoutTracking(int cutOffDate, int page, int pageSize);
+        Task<IEnumerable<InventoryMovementVelocityViewModel>> GetMovementVelocityWithoutTracking(
+            int cutOffDate,
+            int page,
+            int pageSize
+        );
         Task<int> GetMovementVelocityCount(int cutoffDate);
         #endregion
     }

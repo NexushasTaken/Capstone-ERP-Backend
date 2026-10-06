@@ -13,18 +13,34 @@ namespace ERP.Repository.Interface.Inventories
         /// <param name="name">Search for Name in the inventory</param>
         /// <param name="filter">filtering method, 1 - 7 value</param>
         /// <returns></returns>
-        Task<InventoryPageViewModel> GetInventories(int page, int pageSize, string name, int filter,int statusId, int wareHousePresent, InventoryListFilter listFilter, CancellationToken cancellation);
+        Task<InventoryPageViewModel> GetInventories(
+            int page,
+            int pageSize,
+            string name,
+            int filter,
+            int statusId,
+            int wareHousePresent,
+            InventoryListFilter listFilter,
+            CancellationToken cancellation
+        );
+
         /// <summary>
         /// Insert new item in inventory
         /// </summary>
-        /// <param name="inventory">Required field for inventory</param>  
+        /// <param name="inventory">Required field for inventory</param>
         /// <returns></returns>
         Task InsertItem(InventoryPostViewModel inventory);
         Task DeleteItem(int id);
         Task UpdateInventory(InventoryUpdateViewModel inventory);
         Task MarkAsDamaged(InventoryDamagePostViewModel damaged);
         Task InventoryTransaction(InventoryTransactionPostViewModel transaction);
-        Task<WarehousePageViewModel> GetWarehouses(int page, int pageSize, string? name, int filter, CancellationToken cancellation);
+        Task<WarehousePageViewModel> GetWarehouses(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            CancellationToken cancellation
+        );
         Task NewWareHouse(InventoryWareHousePostViewModel wareHouse);
         Task UpdateWareHouse(InventoryWareHouseUpdateViewModel wareHouse);
         Task DeleteWareHouse(int id);
