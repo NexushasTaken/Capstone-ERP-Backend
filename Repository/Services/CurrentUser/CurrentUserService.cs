@@ -1,5 +1,5 @@
-using ERP.Repository.Interface.CurrentUser;
 using System.Security.Claims;
+using ERP.Repository.Interface.CurrentUser;
 
 namespace ERP.Repository.Services.CurrentUser
 {

@@ -2,8 +2,6 @@
 
 namespace ERP.Repository.ViewModel.Sales
 {
-
-
     public class SaleTotalViewModel
     {
         public int Id { get; set; }

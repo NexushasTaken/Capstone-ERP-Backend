@@ -1,11 +1,11 @@
-﻿using ERP.Repository.Configuration;
-using ERP.Repository.Interface.TokenManager;
-using ERP.Repository.ViewModel.UserAccount;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using ERP.Repository.Configuration;
+using ERP.Repository.Interface.TokenManager;
+using ERP.Repository.ViewModel.UserAccount;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ERP.Repository.Services.TokenManager
 {
@@ -19,10 +19,10 @@ namespace ERP.Repository.Services.TokenManager
 
             var claims = new List<Claim>
             {
-                new (JwtRegisteredClaimNames.Sub, role.Id.ToString()),
-                new (JwtRegisteredClaimNames.Name, role.FirstName!),
-                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new (ClaimTypes.Role, role.Role!)
+                new(JwtRegisteredClaimNames.Sub, role.Id.ToString()),
+                new(JwtRegisteredClaimNames.Name, role.FirstName!),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(ClaimTypes.Role, role.Role!),
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSetting.Key));
@@ -36,23 +36,28 @@ namespace ERP.Repository.Services.TokenManager
                 signingCredentials: creds
             );
 
-
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-
-        public HttpContext SetAccessTokenCookie(string token, HttpContextSetting httpContextSetting, HttpContext context)
+        public HttpContext SetAccessTokenCookie(
+            string token,
+            HttpContextSetting httpContextSetting,
+            HttpContext context
+        )
         {
-            context.Response.Cookies.Append("AccessToken", token, new CookieOptions
-            {
-                HttpOnly = httpContextSetting.IsHttpOnly,
-                SameSite = httpContextSetting.SameSite == "Lax" ? SameSiteMode.Lax : SameSiteMode.Strict,
-                Secure = false,
-                Expires = DateTime.UtcNow.AddDays(httpContextSetting.ExpireInDays)
-            });
+            context.Response.Cookies.Append(
+                "AccessToken",
+                token,
+                new CookieOptions
+                {
+                    HttpOnly = httpContextSetting.IsHttpOnly,
+                    SameSite = httpContextSetting.SameSite == "Lax" ? SameSiteMode.Lax : SameSiteMode.Strict,
+                    Secure = false,
+                    Expires = DateTime.UtcNow.AddDays(httpContextSetting.ExpireInDays),
+                }
+            );
             return context;
         }
-
 
         public string Hashed(string value, string salt)
         {

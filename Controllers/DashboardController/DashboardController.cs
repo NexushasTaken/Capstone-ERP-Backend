@@ -9,12 +9,17 @@ namespace ERP.Controllers.DashboardController
     [ApiController]
     [Authorize]
     [Route("api/Dashboard")]
-    public class DashboardController(IDashboardService _dashboard, ResponseHelper _response, IForecastService _forecast) : ControllerBase
+    public class DashboardController(IDashboardService _dashboard, ResponseHelper _response, IForecastService _forecast)
+        : ControllerBase
     {
         [HttpGet("sales")]
-        public async Task<IActionResult> SalesOverView(DateTime from, DateTime to, CancellationToken cancellation = default)
+        public async Task<IActionResult> SalesOverView(
+            DateTime from,
+            DateTime to,
+            CancellationToken cancellation = default
+        )
         {
-            var data = await _dashboard.SalesOverView(from,to,cancellation);
+            var data = await _dashboard.SalesOverView(from, to, cancellation);
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
         }
@@ -28,7 +33,11 @@ namespace ERP.Controllers.DashboardController
         }
 
         [HttpGet("inventory/forecast")]
-        public async Task<IActionResult> Forecast([FromQuery] int page = 1,[FromQuery] int pageSize = 10, [FromQuery] bool forceForecast = false)
+        public async Task<IActionResult> Forecast(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] bool forceForecast = false
+        )
         {
             var data = await _forecast.GetLatestForecast(page, pageSize, forceForecast);
 

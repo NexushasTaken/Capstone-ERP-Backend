@@ -5,10 +5,23 @@ namespace ERP.Repository.Interface.Data.OrderData
 {
     public interface IOrderData : IBaseData
     {
-
         #region Orders
-        IQueryable<OrderLine> FilteringQuery(IQueryable<OrderLine> query, string? name, int filter, int statusId, int orderTypeId);
-        Task<IEnumerable<OrderTotalViewModel>> GetOrdersWithoutTracking(int page, int pageSize, string? name, int filter, int statusId, int orderTypeId, CancellationToken cancellationToken = default);
+        IQueryable<OrderLine> FilteringQuery(
+            IQueryable<OrderLine> query,
+            string? name,
+            int filter,
+            int statusId,
+            int orderTypeId
+        );
+        Task<IEnumerable<OrderTotalViewModel>> GetOrdersWithoutTracking(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            int statusId,
+            int orderTypeId,
+            CancellationToken cancellationToken = default
+        );
         Task<int> OrdersCount(string? name, int filter, int statusId, int orderTypeId);
         Task<IEnumerable<OrderType>> GetOrderTypesWithoutTracking();
         Task<IEnumerable<OrderStatus>> GetOrderStatusesWithoutTracking();

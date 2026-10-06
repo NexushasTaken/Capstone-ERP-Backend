@@ -10,8 +10,10 @@ namespace ERP.Repository.Configuration.Validation.UserAccounts
         public static readonly string[] AllowedRoles = ["owner", "secretary"];
 
         public static IRuleBuilderOptions<T, string?> ValidEmail<T>(this IRuleBuilder<T, string?> rule) =>
-            rule.NotEmpty().WithMessage("Email cannot be null or empty.")
-                .Matches(EmailPattern).WithMessage("Email is invalid");
+            rule.NotEmpty()
+                .WithMessage("Email cannot be null or empty.")
+                .Matches(EmailPattern)
+                .WithMessage("Email is invalid");
 
         public static IRuleBuilderOptions<T, string?> ValidPassword<T>(this IRuleBuilder<T, string?> rule) =>
             rule.Must(p => !string.IsNullOrWhiteSpace(p) && p.Length >= MinPasswordLength)

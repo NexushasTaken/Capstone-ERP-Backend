@@ -1,7 +1,6 @@
 ﻿namespace ERP.Repository.ViewModel.Dashboard
 {
-
-   public class MonthsDataViewModel
+    public class MonthsDataViewModel
     {
         public string? Month { get; set; }
         public decimal Data { get; set; }

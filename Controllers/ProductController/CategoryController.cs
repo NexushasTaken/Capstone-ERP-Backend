@@ -17,13 +17,18 @@ namespace ERP.Controllers.ProductController
         /// <param name="name">case-insensitive search on the category type; a number also matches the Id</param>
         /// <param name="filter">sort: 0 newest first, 1 Id, 2 type A - Z, 3 type Z - A</param>
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllCategory([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "", [FromQuery] int filter = 0, CancellationToken cancellation = default)
+        public async Task<IActionResult> GetAllCategory(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? name = "",
+            [FromQuery] int filter = 0,
+            CancellationToken cancellation = default
+        )
         {
             var categories = await _productService.GetCategories(page, pageSize, name, filter, cancellation);
 
             return StatusCode(200, _response.Status(200, true, "Successfully Retrieved Category", categories));
         }
-
 
         [Authorize(Roles = "owner")]
         [HttpPost("insert")]
@@ -42,7 +47,6 @@ namespace ERP.Controllers.ProductController
 
             return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
         }
-
 
         [Authorize(Roles = "owner")]
         [HttpDelete("delete")]

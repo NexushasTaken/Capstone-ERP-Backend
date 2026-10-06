@@ -1,10 +1,10 @@
-﻿using ERP.Repository.Configuration.Helper;
+﻿using System.Reflection.Emit;
+using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Inventories;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.ViewModel.Inventories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection.Emit;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ERP.Controllers.InventoryController
@@ -32,11 +32,41 @@ namespace ERP.Controllers.InventoryController
         /// <param name="dateTo">date arrived on or before this day</param>
         /// <returns></returns>
         [HttpGet("all")]
-        public async Task<IActionResult> GetInventory([FromQuery] int page = 1, [FromQuery] int pageSize = 10,[FromQuery] string name = "", [FromQuery] int filter = 0, [FromQuery] int statusId = 0,[FromQuery] int wareHousePresent = 0, [FromQuery] int warehouseId = 0, [FromQuery] int categoryId = 0, [FromQuery] int? minQuantity = null, [FromQuery] int? maxQuantity = null, [FromQuery] DateTime? dateFrom = null, [FromQuery] DateTime? dateTo = null, CancellationToken cancellation = default)
+        public async Task<IActionResult> GetInventory(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string name = "",
+            [FromQuery] int filter = 0,
+            [FromQuery] int statusId = 0,
+            [FromQuery] int wareHousePresent = 0,
+            [FromQuery] int warehouseId = 0,
+            [FromQuery] int categoryId = 0,
+            [FromQuery] int? minQuantity = null,
+            [FromQuery] int? maxQuantity = null,
+            [FromQuery] DateTime? dateFrom = null,
+            [FromQuery] DateTime? dateTo = null,
+            CancellationToken cancellation = default
+        )
         {
-            var listFilter = new InventoryListFilter(warehouseId, categoryId, minQuantity, maxQuantity, dateFrom, dateTo);
+            var listFilter = new InventoryListFilter(
+                warehouseId,
+                categoryId,
+                minQuantity,
+                maxQuantity,
+                dateFrom,
+                dateTo
+            );
 
-            var inventories = await _inventory.GetInventories(page,pageSize,name,filter,statusId,wareHousePresent,listFilter,cancellation);
+            var inventories = await _inventory.GetInventories(
+                page,
+                pageSize,
+                name,
+                filter,
+                statusId,
+                wareHousePresent,
+                listFilter,
+                cancellation
+            );
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", inventories));
         }
@@ -47,7 +77,13 @@ namespace ERP.Controllers.InventoryController
         /// <param name="name">case-insensitive search on the warehouse name or address; a number also matches the Id</param>
         /// <param name="filter">sort: 0 newest first, 1 Id, 2 name A - Z, 3 name Z - A</param>
         [HttpGet("warehouse/all")]
-        public async Task<IActionResult> GetWareHouses([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "", [FromQuery] int filter = 0, CancellationToken cancellation = default)
+        public async Task<IActionResult> GetWareHouses(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? name = "",
+            [FromQuery] int filter = 0,
+            CancellationToken cancellation = default
+        )
         {
             var wareHouse = await _inventory.GetWarehouses(page, pageSize, name, filter, cancellation);
 
@@ -79,7 +115,11 @@ namespace ERP.Controllers.InventoryController
         }
 
         [HttpGet("movement/velocity")]
-        public async Task<IActionResult> GetMovementVelocity([FromQuery] int cutOffDate = 7, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetMovementVelocity(
+            [FromQuery] int cutOffDate = 7,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10
+        )
         {
             var inventory = await _inventory.GetMovementVelocity(cutOffDate, page, pageSize);
 
@@ -126,7 +166,6 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Added Successfully", null));
         }
 
-
         [Authorize(Roles = "owner")]
         [HttpPatch("patch")]
         public async Task<IActionResult> UpdateInventory([FromBody] InventoryUpdateViewModel inventory)
@@ -138,7 +177,7 @@ namespace ERP.Controllers.InventoryController
 
         [Authorize(Roles = "owner")]
         [HttpPatch("markasdamage")]
-        public async Task<IActionResult> MarkAsDamaged([FromBody]InventoryDamagePostViewModel damaged)
+        public async Task<IActionResult> MarkAsDamaged([FromBody] InventoryDamagePostViewModel damaged)
         {
             await _inventory.MarkAsDamaged(damaged);
 
@@ -147,7 +186,7 @@ namespace ERP.Controllers.InventoryController
 
         [Authorize(Roles = "owner")]
         [HttpPatch("warehouse/patch")]
-        public async Task<IActionResult> UpdateWareHouse([FromBody]InventoryWareHouseUpdateViewModel wareHouse)
+        public async Task<IActionResult> UpdateWareHouse([FromBody] InventoryWareHouseUpdateViewModel wareHouse)
         {
             await _inventory.UpdateWareHouse(wareHouse);
 

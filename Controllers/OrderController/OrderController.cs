@@ -14,11 +14,27 @@ namespace ERP.Controllers.OrderController
     public class OrderController(IOrderService _orderService, ResponseHelper _response) : ControllerBase
     {
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllOrders(int page = 1, int pageSize = 10, string? name = "", int filter = 0, int statusId = 0, int orderTypeId = 0, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetAllOrders(
+            int page = 1,
+            int pageSize = 10,
+            string? name = "",
+            int filter = 0,
+            int statusId = 0,
+            int orderTypeId = 0,
+            CancellationToken cancellationToken = default
+        )
         {
-            var orders = await _orderService.GetOrders(page,pageSize,name,filter,statusId,orderTypeId,cancellationToken);
+            var orders = await _orderService.GetOrders(
+                page,
+                pageSize,
+                name,
+                filter,
+                statusId,
+                orderTypeId,
+                cancellationToken
+            );
 
-            return StatusCode(200, _response.Status(200,true,"Retrieved Successfully", orders));
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", orders));
         }
 
         [HttpGet("types")]
@@ -52,7 +68,7 @@ namespace ERP.Controllers.OrderController
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
@@ -61,14 +77,20 @@ namespace ERP.Controllers.OrderController
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("driver/all")]
-        public async Task<IActionResult> GetDrivers([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "", [FromQuery] int filter = 0, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetDrivers(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? name = "",
+            [FromQuery] int filter = 0,
+            CancellationToken cancellationToken = default
+        )
         {
             var drivers = await _orderService.GetDrivers(page, pageSize, name, filter, cancellationToken);
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", drivers));
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="order">Make sure to put List of orders even tho you only have a single order</param>
         /// <returns></returns>

@@ -37,9 +37,18 @@ namespace ERP.Repository.Data.ProductData
             return sorted.ThenBy(c => c.Id);
         }
 
-        public async Task<IEnumerable<Category>> GetAllCategoriesWithoutTracking(int page, int pageSize, string? name, int filter, CancellationToken cancellation = default)
+        public async Task<IEnumerable<Category>> GetAllCategoriesWithoutTracking(
+            int page,
+            int pageSize,
+            string? name,
+            int filter,
+            CancellationToken cancellation = default
+        )
         {
-            var categories = await SortingQuery(FilteringQuery(name), filter).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellation);
+            var categories = await SortingQuery(FilteringQuery(name), filter)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellation);
 
             return categories;
         }
@@ -51,8 +60,9 @@ namespace ERP.Repository.Data.ProductData
 
         public async Task<Category> GetCategoryByIdWithTracking(int id, CancellationToken cancellation = default)
         {
-            var category = await BaseQuery<Category>(true).FirstOrDefaultAsync(c => c.Id == id && c.IsActive == true, cancellation);
+            var category = await BaseQuery<Category>(true)
+                .FirstOrDefaultAsync(c => c.Id == id && c.IsActive == true, cancellation);
             return category;
         }
     }
-}   
+}

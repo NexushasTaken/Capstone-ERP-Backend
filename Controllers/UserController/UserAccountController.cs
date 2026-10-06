@@ -1,16 +1,20 @@
-﻿using ERP.Repository.Configuration.Helper;
+﻿using System.Security.Claims;
+using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.TokenManager;
 using ERP.Repository.Interface.UserAccounts;
 using ERP.Repository.ViewModel.UserAccount;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace ERP.Controllers.UserController
 {
     [ApiController]
     [Route("api/User")]
-    public class UserAccountController(IUserAccountService _userAccountService, ITokenManagerService _tokenManagerService, ResponseHelper _response) : ControllerBase
+    public class UserAccountController(
+        IUserAccountService _userAccountService,
+        ITokenManagerService _tokenManagerService,
+        ResponseHelper _response
+    ) : ControllerBase
     {
         private int CurrentUserId()
         {
@@ -64,7 +68,13 @@ namespace ERP.Controllers.UserController
         /// <param name="filter">sort: 0 Id, 1 role A - Z, 2 first name A - Z, 3 first name Z - A</param>
         [Authorize(Roles = "owner")]
         [HttpGet("accounts")]
-        public async Task<IActionResult> GetAccounts([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? name = "", [FromQuery] int filter = 0, CancellationToken cancellation = default)
+        public async Task<IActionResult> GetAccounts(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? name = "",
+            [FromQuery] int filter = 0,
+            CancellationToken cancellation = default
+        )
         {
             var accounts = await _userAccountService.GetAccounts(page, pageSize, name, filter, cancellation);
 

@@ -22,7 +22,15 @@ namespace ERP.Controllers.AuditLogController
         /// <param name="cancellation"></param>
         /// <returns></returns>
         [HttpGet("all")]
-        public async Task<IActionResult> GetAuditLogs([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] int userId = 0, [FromQuery] int action = 0, [FromQuery] int module = 0, [FromQuery] string? role = null, CancellationToken cancellation = default)
+        public async Task<IActionResult> GetAuditLogs(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] int userId = 0,
+            [FromQuery] int action = 0,
+            [FromQuery] int module = 0,
+            [FromQuery] string? role = null,
+            CancellationToken cancellation = default
+        )
         {
             var logs = await _auditLog.GetLogs(page, pageSize, userId, action, module, role, cancellation);
 

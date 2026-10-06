@@ -8,8 +8,6 @@ namespace ERP.Repository.Configuration.Exception_Extender
         public IDictionary<string, string[]> Errors { get; } = errors;
 
         public ValidationFailed(string field, string message)
-            : this(new Dictionary<string, string[]> { [field] = [message] })
-        {
-        }
+            : this(new Dictionary<string, string[]> { [field] = [message] }) { }
     }
 }
