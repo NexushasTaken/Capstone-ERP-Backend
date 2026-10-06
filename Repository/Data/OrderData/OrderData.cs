@@ -117,7 +117,8 @@ namespace ERP.Repository.Data.OrderData
                             TotalAmount = g.Sum(x => x.Amount),
                         })
                         .ToList(),
-                    Total = o.Sum(g => g.Amount),
+                    Subtotal = o.Sum(g => g.Amount),
+                    DiscountPercent = o.First().Order.DiscountPercent,
                     Created_At = o.First().Created_At,
                     Updated_At = o.First().Order.Updated_At,
                 });
@@ -127,6 +128,12 @@ namespace ERP.Repository.Data.OrderData
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellation);
+
+            foreach (var order in result)
+            {
+                order.DiscountAmount = OrderMath.DiscountAmount(order.Subtotal, order.DiscountPercent);
+                order.Total = order.Subtotal - order.DiscountAmount;
+            }
 
             return result;
         }

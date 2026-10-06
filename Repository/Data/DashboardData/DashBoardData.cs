@@ -31,7 +31,7 @@ namespace ERP.Repository.Data.DashboardData
                 .Select(g => new MonthsDataViewModel
                 {
                     Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM yyyy"),
-                    Data = g.Sum(x => x.Amount),
+                    Data = g.Sum(x => x.Amount * (1 - x.Order.DiscountPercent / 100m)),
                 });
 
             return result;
@@ -53,6 +53,7 @@ namespace ERP.Repository.Data.DashboardData
             var end = new DateTime(to.Year, to.Month, to.Day, 0, 0, 0, DateTimeKind.Utc);
 
             var data = await BaseQuery<OrderLine>(false)
+                .Include(o => o.Order)
                 .Where(s => s.Created_At >= start && s.Created_At < end)
                 .ToListAsync(cancellation);
 
@@ -61,7 +62,7 @@ namespace ERP.Repository.Data.DashboardData
                 .Select(g => new MonthsDataViewModel
                 {
                     Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM yyyy"),
-                    Data = g.Sum(x => x.Amount),
+                    Data = g.Sum(x => x.Amount * (1 - x.Order.DiscountPercent / 100m)),
                 });
 
             return result;

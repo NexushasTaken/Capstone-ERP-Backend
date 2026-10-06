@@ -496,6 +496,9 @@ namespace ERP.Migrations
                     b.Property<int?>("DeliveryDriverId")
                         .HasColumnType("integer");
 
+                    b.Property<decimal>("DiscountPercent")
+                        .HasColumnType("numeric");
+
                     b.Property<bool?>("IsActive")
                         .HasColumnType("boolean");
 

@@ -121,6 +121,7 @@ namespace ERP.Repository.Services.Orders
                 CustomerName = order.CustomerName.ToLower(),
                 PibkupAddress = order.PickUpAddress.ToLower(),
                 DeliveryAddress = order.DeliveryAddress.ToLower(),
+                DiscountPercent = order.DiscountPercent,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
                 IsActive = true,
