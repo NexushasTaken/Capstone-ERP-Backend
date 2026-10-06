@@ -19,5 +19,6 @@ namespace ERP.Repository.Interface.Data.UserAccountData
         );
         Task<int> AccountTotalCount(string? name, CancellationToken cancellation = default);
         Task<UserRole> GetRoleByName(string roleName, CancellationToken cancellation = default);
+        Task<Dictionary<int, string>> GetFullNamesByIds(IEnumerable<int> ids, CancellationToken cancellation = default);
     }
 }

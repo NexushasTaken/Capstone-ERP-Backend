@@ -5,6 +5,7 @@ using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Interface.AuditLogs;
 using ERP.Repository.Interface.Data.ProductData;
+using ERP.Repository.Interface.Data.UserAccountData;
 using ERP.Repository.Interface.Products;
 using ERP.Repository.Model.Products;
 using ERP.Repository.ViewModel.Products;
@@ -15,6 +16,7 @@ namespace ERP.Repository.Services.Products
     public class ProductService(
         ICategoryData _category,
         IProductData _product,
+        IUserAccountData _userAccount,
         IAuditLogService _auditLog,
         IValidator<CategoryUpdateViewModel> _categoryUpdateValidator,
         IValidator<ProductPostViewModel> _productPostValidator,
@@ -175,6 +177,12 @@ namespace ERP.Repository.Services.Products
 
             var count = await _product.ProductTotalCountWithoutTracking(name, categoryPresent);
 
+            var userIds = products
+                .SelectMany(p => new[] { p.Created_By, p.Updated_By })
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value);
+            var names = await _userAccount.GetFullNamesByIds(userIds);
+
             var product = products.Select(p => new ProductViewModel
             {
                 Id = p.Id,
@@ -183,6 +191,9 @@ namespace ERP.Repository.Services.Products
                 Price = p.Price,
                 CategoryName = p.Category?.Type,
                 Created_At = DateConverter.ConvertToPH(p.Created_At),
+                CreatedByName = p.Created_By is int c ? names.GetValueOrDefault(c) : null,
+                Updated_At = DateConverter.ConvertToPH(p.Updated_At),
+                UpdatedByName = p.Updated_By is int u ? names.GetValueOrDefault(u) : null,
             });
 
             var final = new ProductPageViewModel
