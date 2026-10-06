@@ -1,11 +1,13 @@
 ﻿using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Dashboard;
 using ERP.Repository.Interface.SSA;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.Controllers.DashboardController
 {
     [ApiController]
+    [Authorize]
     [Route("api/Dashboard")]
     public class DashboardController(IDashboardService _dashboard, ResponseHelper _response, IForecastService _forecast) : ControllerBase
     {

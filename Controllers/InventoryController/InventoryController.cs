@@ -2,6 +2,7 @@
 using ERP.Repository.Interface.Inventories;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.ViewModel.Inventories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection.Emit;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -9,6 +10,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace ERP.Controllers.InventoryController
 {
     [ApiController]
+    [Authorize]
     [Route("api/Inventory")]
     public class InventoryController(IInventoryService _inventory, ResponseHelper _response) : ControllerBase
     {
@@ -106,6 +108,7 @@ namespace ERP.Controllers.InventoryController
         /// <param name="inventory"></param>
         /// <param name="id">Inventory Id, if you pass any, means we will just add the quantity to the existing item. This required only the quantity to be filled in payload :)</param>
         /// <returns></returns>
+        [Authorize(Roles = "owner")]
         [HttpPost("insert")]
         public async Task<IActionResult> Insert([FromBody] InventoryPostViewModel inventory)
         {
@@ -114,6 +117,7 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Added Successfully", null));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpPost("warehouse/insert")]
         public async Task<IActionResult> InsertWareHouse([FromBody] InventoryWareHousePostViewModel wareHouse)
         {
@@ -123,6 +127,7 @@ namespace ERP.Controllers.InventoryController
         }
 
 
+        [Authorize(Roles = "owner")]
         [HttpPatch("patch")]
         public async Task<IActionResult> UpdateInventory([FromBody] InventoryUpdateViewModel inventory)
         {
@@ -131,6 +136,7 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpPatch("markasdamage")]
         public async Task<IActionResult> MarkAsDamaged([FromBody]InventoryDamagePostViewModel damaged)
         {
@@ -139,6 +145,7 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpPatch("warehouse/patch")]
         public async Task<IActionResult> UpdateWareHouse([FromBody]InventoryWareHouseUpdateViewModel wareHouse)
         {
@@ -147,6 +154,7 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpPatch("restock")]
         public async Task<IActionResult> RestockInventory(InventoryRestockViewModel inventory)
         {
@@ -155,6 +163,7 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Restocked Successfully", null));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpDelete("delete")]
         public async Task<IActionResult> Delete([FromQuery] int id)
         {
@@ -163,6 +172,7 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Deleted Successfully", null));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpDelete("warehouse/delete")]
         public async Task<IActionResult> DeleteWareHouse([FromQuery] int id)
         {
