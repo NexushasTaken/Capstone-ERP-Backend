@@ -8,6 +8,9 @@
         public decimal Price { get; set; }
         public string? CategoryName { get; set; }
         public DateTime? Created_At { get; set; }
+        public string? CreatedByName { get; set; }
+        public DateTime? Updated_At { get; set; }
+        public string? UpdatedByName { get; set; }
     }
 
     public class ProductPageViewModel()

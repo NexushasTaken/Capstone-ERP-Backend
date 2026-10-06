@@ -130,5 +130,29 @@ namespace ERP.Repository.Data.UserAccounts
 
             return role;
         }
+
+        // Includes inactive accounts, so history still names users whose account was deleted.
+        public async Task<Dictionary<int, string>> GetFullNamesByIds(
+            IEnumerable<int> ids,
+            CancellationToken cancellation = default
+        )
+        {
+            var idList = ids.Distinct().ToList();
+
+            if (idList.Count == 0)
+            {
+                return [];
+            }
+
+            var users = await BaseQuery<UserAccount>(false)
+                .Include(u => u.UserInformation)
+                .Where(u => idList.Contains(u.Id) && u.UserInformation != null)
+                .ToListAsync(cancellation);
+
+            return users.ToDictionary(
+                u => u.Id,
+                u => $"{u.UserInformation!.FirstName} {u.UserInformation.LastName}".Trim()
+            );
+        }
     }
 }
