@@ -279,6 +279,15 @@ namespace ERP.Repository.Services.Orders
             var header = order.First().Order;
             var oldStatusId = header.OrderStatusId;
 
+            // Validate the status is defined
+            if (!Enum.IsDefined(typeof(OrderStatusEnum), status.OrderStatusId))
+            {
+                throw new BadRequest("Invalid Order Status");
+            }
+
+            // Validate the transition is allowed
+            ValidateStatusTransition(oldStatusId, status.OrderStatusId, header.OrderTypeId);
+
             header.OrderStatusId = status.OrderStatusId;
             header.Updated_By = _auditLog.CurrentUserId;
             header.Updated_At = now;
@@ -296,25 +305,18 @@ namespace ERP.Repository.Services.Orders
                 now
             );
 
-            if (Enum.IsDefined(typeof(OrderStatusEnum), status.OrderStatusId))
-            {
-                var stat = (OrderStatusEnum)status.OrderStatusId;
+            var stat = (OrderStatusEnum)status.OrderStatusId;
 
-                var inventory = order.Select(o => (o.InventoryId, o.Quantity)).ToList();
+            var inventory = order.Select(o => (o.InventoryId, o.Quantity)).ToList();
 
-                switch (stat)
-                {
-                    case OrderStatusEnum.Completed:
-                        await CommitInventoryTransaction(inventory);
-                        break;
-                    case OrderStatusEnum.Cancelled:
-                        await RevertInventoryTransaction(inventory);
-                        break;
-                }
-            }
-            else
+            switch (stat)
             {
-                throw new BadRequest("Invalid Order Status");
+                case OrderStatusEnum.Completed:
+                    await CommitInventoryTransaction(inventory);
+                    break;
+                case OrderStatusEnum.Cancelled:
+                    await RevertInventoryTransaction(inventory);
+                    break;
             }
 
             await _orders.SaveChanges();
@@ -333,6 +335,42 @@ namespace ERP.Repository.Services.Orders
             }
 
             return;
+        }
+
+        private static void ValidateStatusTransition(int currentStatusId, int targetStatusId, int orderTypeId)
+        {
+            var currentStatus = (OrderStatusEnum)currentStatusId;
+            var targetStatus = (OrderStatusEnum)targetStatusId;
+            var orderType = (OrderTypeEnum)orderTypeId;
+
+            // Same status is not allowed
+            if (currentStatus == targetStatus)
+            {
+                throw new BadRequest($"Order is already in {targetStatus} status");
+            }
+
+            // Completed and Cancelled are terminal states
+            if (currentStatus == OrderStatusEnum.Completed)
+            {
+                throw new BadRequest("A completed order can no longer be changed");
+            }
+
+            if (currentStatus == OrderStatusEnum.Cancelled)
+            {
+                throw new BadRequest("A cancelled order can no longer be changed");
+            }
+
+            // Shipped is only for Delivery orders
+            if (targetStatus == OrderStatusEnum.Shipped && orderType != OrderTypeEnum.Delivery)
+            {
+                throw new BadRequest("Only delivery orders can be shipped");
+            }
+
+            // Shipped cannot go back to Processing
+            if (currentStatus == OrderStatusEnum.Shipped && targetStatus == OrderStatusEnum.Processing)
+            {
+                throw new BadRequest("A shipped order cannot go back to processing");
+            }
         }
 
         private async Task CommitInventoryTransaction(List<(int inventoryId, int quantity)> inventory)
