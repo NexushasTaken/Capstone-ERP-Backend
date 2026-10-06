@@ -26,6 +26,9 @@
         public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
         public IEnumerable<OrderViewModel> Orders { get; set; } = [];
+        public decimal Subtotal { get; set; }
+        public decimal DiscountPercent { get; set; }
+        public decimal DiscountAmount { get; set; }
         public decimal Total { get; set; }
         public DateTime? Created_At { get; set; }
         public DateTime? Updated_At { get; set; }
@@ -57,6 +60,7 @@
         public string? CustomerName { get; set; }
         public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
+        public decimal DiscountPercent { get; set; }
         public ICollection<OrderLineViewModel> OrderLines { get; set; } = [];
     }
 
