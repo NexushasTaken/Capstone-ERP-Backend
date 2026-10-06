@@ -42,6 +42,7 @@ namespace ERP.Controllers.UserController
         /// Retrieves all users including deactivated ones, used for the Audit Logs user filter.
         /// </summary>
         [HttpGet("all")]
+        [Authorize]
         public async Task<IActionResult> GetUsers(CancellationToken cancellation = default)
         {
             var users = await _userAccountService.GetUsers(cancellation);
