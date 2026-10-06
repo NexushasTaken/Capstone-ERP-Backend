@@ -1,11 +1,13 @@
 ﻿using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Products;
 using ERP.Repository.ViewModel.Products;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.Controllers.ProductController
 {
     [ApiController]
+    [Authorize]
     [Route("api/Category")]
     public class CategoryController(IProductService _productService, ResponseHelper _response) : ControllerBase
     {
@@ -23,6 +25,7 @@ namespace ERP.Controllers.ProductController
         }
 
 
+        [Authorize(Roles = "owner")]
         [HttpPost("insert")]
         public async Task<IActionResult> InsertNewCategory(string categoryName)
         {
@@ -31,6 +34,7 @@ namespace ERP.Controllers.ProductController
             return StatusCode(200, _response.Status(200, true, "Insert Successfully", null));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpPatch("patch")]
         public async Task<IActionResult> UpdateCategory([FromBody] CategoryUpdateViewModel category)
         {
@@ -40,6 +44,7 @@ namespace ERP.Controllers.ProductController
         }
 
 
+        [Authorize(Roles = "owner")]
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteCategory(int id)
         {

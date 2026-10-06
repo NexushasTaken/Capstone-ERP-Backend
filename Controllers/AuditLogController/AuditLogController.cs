@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ERP.Controllers.AuditLogController
 {
     [ApiController]
+    [Authorize]
     [Route("api/AuditLog")]
     public class AuditLogController(IAuditLogService _auditLog, ResponseHelper _response) : ControllerBase
     {

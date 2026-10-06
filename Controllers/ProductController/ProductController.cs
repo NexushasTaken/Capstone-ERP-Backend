@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ERP.Controllers.ProductController
 {
     [ApiController]
+    [Authorize]
     [Route("api/Product")]
     public class ProductController(IProductService _productService, ResponseHelper _response) : ControllerBase
     {
@@ -29,6 +30,7 @@ namespace ERP.Controllers.ProductController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", products));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpPost("insert")]
         public async Task<IActionResult> InsertProduct([FromBody] ProductPostViewModel product)
         {
@@ -37,6 +39,7 @@ namespace ERP.Controllers.ProductController
             return StatusCode(200, _response.Status(200, true, "Added Successfully", null));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpPatch("patch")]
         public async Task<IActionResult> UpdateProduct([FromBody] ProductUpdateViewModel product)
         {
@@ -46,6 +49,7 @@ namespace ERP.Controllers.ProductController
         }
 
 
+        [Authorize(Roles = "owner")]
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteProduct([FromQuery] int id)
         {

@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2026-10-06
+
+### Security
+
+- The Product, Category, Inventory, Order, Audit Log and Dashboard endpoints now require a signed-in user; requests without a valid `AccessToken` get 401.
+- `/api/Sale/*` is limited to the `owner` role, as are creating, editing and deleting products, categories, inventory items, warehouses and delivery drivers, restocking and marking items as damaged. A `secretary` gets 403 on those.
+
 ## [2.3.0] - 2026-10-05
 
 ### Added

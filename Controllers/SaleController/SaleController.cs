@@ -1,9 +1,11 @@
 ﻿using ERP.Repository.Interface.Sales;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.Controllers.SaleController
 {
     [ApiController]
+    [Authorize(Roles = "owner")]
     [Route("api/Sale")]
     public class SaleController(ISaleService _sales) : ControllerBase
     {

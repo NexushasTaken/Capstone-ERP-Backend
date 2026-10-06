@@ -3,11 +3,13 @@ using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Interface.Orders;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.ViewModel.Orders;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.Controllers.OrderController
 {
     [ApiController]
+    [Authorize]
     [Route("api/Order")]
     public class OrderController(IOrderService _orderService, ResponseHelper _response) : ControllerBase
     {
@@ -78,6 +80,7 @@ namespace ERP.Controllers.OrderController
             return StatusCode(200, _response.Status(200, true, "Orders Added Successfully", message));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpPost("driver/insert")]
         public async Task<IActionResult> AddNewDriver([FromBody] DeliveryDriverPostViewModel driver)
         {
@@ -94,6 +97,7 @@ namespace ERP.Controllers.OrderController
             return StatusCode(200, _response.Status(200, true, "Order Status Updated Successfully", null));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpPut("driver/put")]
         public async Task<IActionResult> PatchDriver([FromBody] DeliveryDriverPatchViewModel driver)
         {
@@ -102,6 +106,7 @@ namespace ERP.Controllers.OrderController
             return StatusCode(200, _response.Status(200, true, "Driver Updated Successfully", null));
         }
 
+        [Authorize(Roles = "owner")]
         [HttpDelete("driver/delete")]
         public async Task<IActionResult> DeleteDriver([FromQuery] int id)
         {
