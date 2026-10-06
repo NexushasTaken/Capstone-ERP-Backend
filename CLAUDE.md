@@ -34,4 +34,4 @@ Every service and data class has an interface under `Repository/Interface/`. Vie
 
 - `dotnet build`; `dotnet ef migrations add <name>`. Ask before `dotnet ef database update`.
 - `../scripts/main.py` seeds Postgres directly (not through EF).
-- Before any commit, load the `Backend:changelog` skill (CHANGELOG entry, SemVer bump in `ERP.csproj`, Conventional Commit, tag).
+- **Before any commit:** run `dotnet csharpier format . && dotnet build`, then load the `Backend:changelog` skill (CHANGELOG entry, SemVer bump in `ERP.csproj`, Conventional Commit, tag).

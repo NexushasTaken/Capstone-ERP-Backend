@@ -83,7 +83,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 5. Procedure (every commit)
 
-1. Finish the change (and, in the Frontend, run the repo's format → `tsc` → lint → build checks).
+1. Finish the change. Run formatting checks:
+   - **Backend**: `dotnet csharpier format . && dotnet build`.
+   - **Frontend**: `npm run format && npx tsc --noEmit && npm run lint && npm run build`.
 2. Pick the commit type and scope (section 1) and the bump (section 2).
 3. If the type has no bump: commit with the Conventional message. Done.
 4. Otherwise compute the new version from the version file, then:
