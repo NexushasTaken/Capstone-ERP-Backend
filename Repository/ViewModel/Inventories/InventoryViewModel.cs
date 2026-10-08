@@ -15,9 +15,7 @@
         int WarehouseId = 0,
         int CategoryId = 0,
         int? MinQuantity = null,
-        int? MaxQuantity = null,
-        DateTime? DateFrom = null,
-        DateTime? DateTo = null
+        int? MaxQuantity = null
     );
 
     public class InventoryViewModel
@@ -31,7 +29,6 @@
         public string? WarehouseName { get; set; }
         public string? Status { get; set; }
         public string? CategoryName { get; set; }
-        public DateTime DateArrived { get; set; }
         public DateTime? Created_At { get; set; }
     }
 
@@ -50,11 +47,9 @@
 
     public class InventoryPostViewModel
     {
-        public string? Name { get; set; }
         public int Quantity { get; set; }
         public int ProductId { get; set; }
         public int WarehouseId { get; set; }
-        public string? DateArrived { get; set; }
         public int ReorderPoint { get; set; }
     }
 
@@ -68,9 +63,6 @@
     public class InventoryUpdateViewModel
     {
         public int Id { get; set; }
-        public string? Name { get; set; }
-        public int ProductId { get; set; }
-        public int WarehouseId { get; set; }
         public int ReorderPoint { get; set; }
     }
 
@@ -99,6 +91,9 @@
         public int Id { get; set; }
         public int Quantity { get; set; }
         public int Label { get; set; }
+
+        // stock on hand after this movement; the forecast reads it
+        public int StockLevel { get; set; }
     }
 
     public class InventoryWareHousePostViewModel

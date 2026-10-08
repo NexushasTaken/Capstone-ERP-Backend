@@ -127,7 +127,12 @@ namespace ERP.Repository
                 .WithMany(w => w.Inventory)
                 .HasForeignKey(i => i.ProductId);
 
-            modelBuilder.Entity<Inventory>().HasIndex(i => i.DateArrived);
+            // One stock record per product per warehouse; deleted rows don't block re-adding.
+            modelBuilder
+                .Entity<Inventory>()
+                .HasIndex(i => new { i.ProductId, i.WarehouseId })
+                .IsUnique()
+                .HasFilter("\"IsActive\" = true");
 
             modelBuilder
                 .Entity<InventoryTransaction>()

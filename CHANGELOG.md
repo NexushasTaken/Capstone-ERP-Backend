@@ -5,6 +5,26 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-10-08
+
+### Changed
+
+- **BREAKING:** An inventory item is now a stock record: one per product per warehouse. `POST /api/Inventory/insert` rejects a product that is already stocked in the chosen warehouse.
+- **BREAKING:** `POST /api/Inventory/insert` takes `productId`, `warehouseId`, `quantity` and `reorderPoint`. `name` and `dateArrived` are gone.
+- **BREAKING:** `PATCH /api/Inventory/patch` takes only `id` and `reorderPoint`. The product and warehouse of an item can no longer be changed.
+- `name` in `GET /api/Inventory/all`, movement velocity and the stock-out forecast is now the product name. Search and the A–Z / Z–A sorts use the product name.
+- Inventory audit log messages name the item as "product at warehouse".
+
+### Removed
+
+- **BREAKING:** `dateArrived` in `GET /api/Inventory/all`, and its `dateFrom` / `dateTo` filters.
+
+### Fixed
+
+- Adding an inventory item now logs its opening stock in the movement history.
+- Movement history rows now record the stock level after the change, so the forecast no longer reads them as zero stock.
+- `PATCH /api/Inventory/patch` rejects a reorder point of 0.
+
 ## [2.6.0] - 2026-10-06
 
 ### Added

@@ -161,9 +161,6 @@ namespace ERP.Migrations
                     b.Property<int?>("Created_By")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("DateArrived")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<DateTime?>("Deleted_At")
                         .HasColumnType("timestamp with time zone");
 
@@ -172,9 +169,6 @@ namespace ERP.Migrations
 
                     b.Property<bool?>("IsActive")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("integer");
@@ -199,13 +193,13 @@ namespace ERP.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DateArrived");
-
-                    b.HasIndex("ProductId");
-
                     b.HasIndex("StatusId");
 
                     b.HasIndex("WarehouseId");
+
+                    b.HasIndex("ProductId", "WarehouseId")
+                        .IsUnique()
+                        .HasFilter("\"IsActive\" = true");
 
                     b.ToTable("Inventories");
                 });

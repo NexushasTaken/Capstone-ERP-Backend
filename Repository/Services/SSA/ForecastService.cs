@@ -30,7 +30,7 @@ namespace ERP.Repository.Services.SSA
             var final = data.Select(f => new FinalForecastViewModel
                 {
                     InventoryId = f.InventoryId,
-                    Name = f.Inventory.Name,
+                    Name = f.Inventory.Product?.Name,
                     EarliestStockOutDay = f.EarliestStockOutDay,
                 })
                 .ToList();

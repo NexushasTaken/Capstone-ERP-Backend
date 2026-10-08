@@ -46,6 +46,7 @@ namespace ERP.Repository.Data.ForecastData
 
             var data = await BaseQuery<ForecastResult>(false)
                 .Include(f => f.Inventory)
+                    .ThenInclude(i => i.Product)
                 .OrderBy(f => f.EarliestStockOutDay)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)

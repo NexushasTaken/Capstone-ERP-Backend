@@ -28,7 +28,7 @@ namespace ERP.Repository.Data.InventoryData
                 var hasId = SearchPattern.TryParseId(name, "INV", out var id);
 
                 query = query.Where(i =>
-                    EF.Functions.ILike(i.Name, pattern)
+                    (i.Product != null && EF.Functions.ILike(i.Product.Name, pattern))
                     || (i.Warehouse != null && EF.Functions.ILike(i.Warehouse.Name, pattern))
                     || (i.InventoryStatus != null && EF.Functions.ILike(i.InventoryStatus.Status, pattern))
                     || (hasId && i.Id == id)
@@ -65,19 +65,6 @@ namespace ERP.Repository.Data.InventoryData
                 query = query.Where(i => i.Quantity <= listFilter.MaxQuantity.Value);
             }
 
-            if (listFilter.DateFrom.HasValue)
-            {
-                var from = DateTime.SpecifyKind(listFilter.DateFrom.Value.Date, DateTimeKind.Utc);
-                query = query.Where(i => i.DateArrived >= from);
-            }
-
-            if (listFilter.DateTo.HasValue)
-            {
-                // exclusive upper bound so the whole "to" day is included
-                var to = DateTime.SpecifyKind(listFilter.DateTo.Value.Date.AddDays(1), DateTimeKind.Utc);
-                query = query.Where(i => i.DateArrived < to);
-            }
-
             if (Enum.IsDefined(typeof(InventoryFilter), filter))
             {
                 var selectedFilter = (InventoryFilter)filter;
@@ -85,10 +72,10 @@ namespace ERP.Repository.Data.InventoryData
                 switch (selectedFilter)
                 {
                     case InventoryFilter.ATOZ:
-                        query = query.OrderBy(i => i.Name);
+                        query = query.OrderBy(i => i.Product.Name);
                         break;
                     case InventoryFilter.ZTOA:
-                        query = query.OrderByDescending(i => i.Name);
+                        query = query.OrderByDescending(i => i.Product.Name);
                         break;
                     case InventoryFilter.QHIGH:
                         query = query.OrderByDescending(i => i.Quantity);
@@ -159,7 +146,10 @@ namespace ERP.Repository.Data.InventoryData
 
         public async Task<Inventory> GetInventoryWithTracking(int id)
         {
-            var inventory = await BaseQuery<Inventory>(true).FirstOrDefaultAsync(i => i.Id == id && i.IsActive == true);
+            var inventory = await BaseQuery<Inventory>(true)
+                .Include(i => i.Product)
+                .Include(i => i.Warehouse)
+                .FirstOrDefaultAsync(i => i.Id == id && i.IsActive == true);
 
             return inventory;
         }
@@ -192,11 +182,10 @@ namespace ERP.Repository.Data.InventoryData
             return inventory;
         }
 
-        public async Task<bool> CheckExistingInventory(string name, int warehouseId)
+        public async Task<bool> CheckExistingInventory(int productId, int warehouseId)
         {
-            var inventory = await BaseQuery<Inventory>(false)
-                .FirstOrDefaultAsync(i => i.Name == name && i.WarehouseId == warehouseId && i.IsActive == true);
-            return inventory != null;
+            return await BaseQuery<Inventory>(false)
+                .AnyAsync(i => i.ProductId == productId && i.WarehouseId == warehouseId && i.IsActive == true);
         }
 
         #endregion
@@ -342,7 +331,7 @@ namespace ERP.Repository.Data.InventoryData
                     ItemId = t.Key,
                     FirstDate = t.Min(t => t.Created_At),
                     LastDate = t.Max(t => t.Created_At),
-                    Name = t.First().Inventory.Name,
+                    Name = t.First().Inventory.Product.Name,
                     NetMovement = t.Sum(g =>
                         g.InventoryLabelId == (int)InventoryLabelEnum.Purchase
                         || g.InventoryLabelId == (int)InventoryLabelEnum.Return
