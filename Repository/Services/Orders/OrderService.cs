@@ -376,10 +376,16 @@ namespace ERP.Repository.Services.Orders
 
         private async Task CommitInventoryTransaction(List<(int inventoryId, int quantity)> inventory)
         {
+            // stock was already deducted when the order was created, so the current quantity is the level after this sale
+            var stock = (
+                await _inventory.GetInventoriesWithTracking(inventory.Select(i => i.inventoryId).ToList())
+            ).ToDictionary(i => i.Id, i => i.Quantity);
+
             var transaction = inventory.Select(i => new InventoryTransaction
             {
                 InventoryId = i.inventoryId,
                 QuantityChanged = -i.quantity,
+                StockLevel = stock.GetValueOrDefault(i.inventoryId),
                 InventoryLabelId = (int)InventoryLabelEnum.Purchase,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = DateTime.UtcNow,

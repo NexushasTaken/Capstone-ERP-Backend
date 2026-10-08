@@ -60,14 +60,13 @@ namespace ERP.Repository.Services.Inventories
             {
                 Id = i.Id,
                 ProductId = i.ProductId,
-                Name = i.Name,
+                Name = i.Product?.Name,
                 Quantity = i.Quantity,
                 ReorderPoint = i.ReorderPoint,
                 WarehouseId = i.WarehouseId ?? 0,
                 WarehouseName = i.Warehouse?.Name ?? "No Warehouse",
                 Status = i.InventoryStatus.Status,
                 CategoryName = i.Product?.Category?.Type ?? "No Category",
-                DateArrived = i.DateArrived,
                 Created_At = i.Created_At,
             });
 
@@ -102,27 +101,28 @@ namespace ERP.Repository.Services.Inventories
         {
             await _inventoryPostValidator.EnsureValidAsync(inventory);
 
-            var duplicate = await _inventory.CheckExistingInventory(inventory.Name.ToLower(), inventory.WarehouseId);
+            var duplicate = await _inventory.CheckExistingInventory(inventory.ProductId, inventory.WarehouseId);
 
             if (duplicate)
             {
-                throw new BadRequest("Inventory item already exists in the warehouse.");
+                throw new BadRequest("This product is already stocked in this warehouse.");
             }
 
-            DateTime.TryParse(inventory.DateArrived, out DateTime parsedDate);
+            var product = await _product.GetProductByIdWithoutTracking(inventory.ProductId);
 
-            parsedDate = parsedDate.ToUniversalTime();
+            if (product == null)
+            {
+                throw new NotFound("Product not found");
+            }
 
             var now = DateTime.UtcNow;
 
             var inv = new Inventory
             {
-                Name = inventory.Name.ToLower(),
                 Quantity = inventory.Quantity,
                 WarehouseId = inventory.WarehouseId,
                 ProductId = inventory.ProductId,
                 ReorderPoint = inventory.ReorderPoint,
-                DateArrived = parsedDate,
                 StatusId = ReorderRatio.Ratio(inventory.Quantity, inventory.ReorderPoint),
                 IsActive = true,
                 Created_By = _auditLog.CurrentUserId,
@@ -136,11 +136,22 @@ namespace ERP.Repository.Services.Inventories
             _auditLog.Log(
                 AuditModuleEnum.Inventory,
                 AuditActionEnum.Create,
-                $"Added {inv.Quantity} '{inv.Name}' to {warehouse?.Name ?? "no warehouse"}",
+                $"Added {inv.Quantity} '{product.Name}' to {warehouse?.Name ?? "no warehouse"}",
                 inv.Id,
                 now
             );
             await _inventory.SaveChanges();
+
+            // log the opening stock so the movement history starts from the real quantity
+            await InventoryTransaction(
+                new InventoryTransactionPostViewModel
+                {
+                    Id = inv.Id,
+                    Quantity = inv.Quantity,
+                    Label = (int)InventoryLabelEnum.Restock,
+                    StockLevel = inv.Quantity,
+                }
+            );
 
             return;
         }
@@ -167,7 +178,7 @@ namespace ERP.Repository.Services.Inventories
                 _auditLog.Log(
                     AuditModuleEnum.Inventory,
                     AuditActionEnum.IncreaseStock,
-                    $"Increased stock of '{existing.Name}' by {inventory.Quantity}",
+                    $"Received {inventory.Quantity} '{ItemLabel(existing)}'",
                     existing.Id,
                     now
                 );
@@ -177,7 +188,7 @@ namespace ERP.Repository.Services.Inventories
                 _auditLog.Log(
                     AuditModuleEnum.Inventory,
                     AuditActionEnum.ReturnStock,
-                    $"Returned {inventory.Quantity} '{existing.Name}' to stock",
+                    $"Returned {inventory.Quantity} '{ItemLabel(existing)}' to stock",
                     existing.Id,
                     now
                 );
@@ -194,6 +205,7 @@ namespace ERP.Repository.Services.Inventories
                     Id = existing.Id,
                     Quantity = +inventory.Quantity,
                     Label = (int)InventoryLabelEnum.Restock,
+                    StockLevel = existing.Quantity,
                 };
             }
             else
@@ -203,6 +215,7 @@ namespace ERP.Repository.Services.Inventories
                     Id = existing.Id,
                     Quantity = +inventory.Quantity,
                     Label = (int)InventoryLabelEnum.Return,
+                    StockLevel = existing.Quantity,
                 };
             }
 
@@ -234,7 +247,7 @@ namespace ERP.Repository.Services.Inventories
             _auditLog.Log(
                 AuditModuleEnum.Inventory,
                 AuditActionEnum.Delete,
-                $"Deleted inventory '{inventory.Name}'",
+                $"Deleted inventory '{ItemLabel(inventory)}'",
                 inventory.Id,
                 now
             );
@@ -254,44 +267,18 @@ namespace ERP.Repository.Services.Inventories
             }
 
             var now = DateTime.UtcNow;
-            var oldName = existing.Name;
-            var changes = new List<string>();
 
-            var newName = inventory.Name.ToLower();
+            // product and warehouse are fixed; stock only moves between warehouses through a transfer
+            var message =
+                existing.ReorderPoint != inventory.ReorderPoint
+                    ? $"Updated inventory '{ItemLabel(existing)}': reorder point {existing.ReorderPoint} → {inventory.ReorderPoint}"
+                    : $"Updated inventory '{ItemLabel(existing)}' (no changes)";
 
-            if (existing.Name != newName)
-            {
-                changes.Add($"name '{existing.Name}' → '{newName}'");
-            }
-
-            if (existing.ProductId != inventory.ProductId)
-            {
-                changes.Add("product changed");
-            }
-
-            if (existing.WarehouseId != inventory.WarehouseId)
-            {
-                changes.Add("warehouse changed");
-            }
-
-            if (existing.ReorderPoint != inventory.ReorderPoint)
-            {
-                changes.Add($"reorder point {existing.ReorderPoint} → {inventory.ReorderPoint}");
-            }
-
-            existing.Name = newName;
-            existing.ProductId = inventory.ProductId;
-            existing.WarehouseId = inventory.WarehouseId;
             existing.ReorderPoint = inventory.ReorderPoint;
             existing.Updated_By = _auditLog.CurrentUserId;
             existing.Updated_At = now;
 
             existing.StatusId = ReorderRatio.Ratio(existing.Quantity, existing.ReorderPoint);
-
-            var message =
-                changes.Count > 0
-                    ? $"Updated inventory '{oldName}': {string.Join(", ", changes)}"
-                    : $"Updated inventory '{oldName}' (no changes)";
 
             _auditLog.Log(AuditModuleEnum.Inventory, AuditActionEnum.Update, message, existing.Id, now);
 
@@ -343,7 +330,7 @@ namespace ERP.Repository.Services.Inventories
                 _auditLog.Log(
                     AuditModuleEnum.Inventory,
                     AuditActionEnum.CurrentItemDamage,
-                    $"Marked {damaged.Quantity} '{inventory.Name}' as damaged (Current Item): {damn.Reason}",
+                    $"Marked {damaged.Quantity} '{ItemLabel(inventory)}' as damaged (Current Item): {damn.Reason}",
                     inventory.Id,
                     now
                 );
@@ -353,7 +340,7 @@ namespace ERP.Repository.Services.Inventories
                 _auditLog.Log(
                     AuditModuleEnum.Inventory,
                     AuditActionEnum.ReturnItemDamage,
-                    $"Recorded {damaged.Quantity} returned '{inventory.Name}' as damaged (Return Item): {damn.Reason}",
+                    $"Recorded {damaged.Quantity} returned '{ItemLabel(inventory)}' as damaged (Return Item): {damn.Reason}",
                     inventory.Id,
                     now
                 );
@@ -366,11 +353,18 @@ namespace ERP.Repository.Services.Inventories
                 Id = inventory.Id,
                 Quantity = -damaged.Quantity,
                 Label = damaged.DamagedType == 1 ? (int)InventoryLabelEnum.Damage : (int)InventoryLabelEnum.Return,
+                StockLevel = inventory.Quantity,
             };
 
             await InventoryTransaction(transaction);
 
             return;
+        }
+
+        // "Nails at Main Warehouse" — a stock record is named by its product and warehouse
+        private static string ItemLabel(Inventory inventory)
+        {
+            return $"{inventory.Product?.Name ?? "unknown product"} at {inventory.Warehouse?.Name ?? "no warehouse"}";
         }
 
         public async Task InventoryTransaction(InventoryTransactionPostViewModel transaction)
@@ -381,6 +375,7 @@ namespace ERP.Repository.Services.Inventories
             {
                 InventoryId = transaction.Id,
                 QuantityChanged = transaction.Quantity,
+                StockLevel = transaction.StockLevel,
                 InventoryLabelId = transaction.Label,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = DateTime.UtcNow,

@@ -7,12 +7,10 @@ namespace ERP.Repository.Configuration.Validation.Inventories
     {
         public InventoryPostValidator()
         {
-            RuleFor(i => i.Name).NotEmpty().WithMessage("Item name is required");
             RuleFor(i => i.Quantity).GreaterThan(0).WithMessage("Quantity should be higher than 0");
             RuleFor(i => i.WarehouseId).GreaterThan(0).WithMessage("Invalid Warehouse ID");
             RuleFor(i => i.ProductId).GreaterThan(0).WithMessage("Invalid Product ID");
             RuleFor(i => i.ReorderPoint).GreaterThan(0).WithMessage("Reorder Point should be higher than 0");
-            RuleFor(i => i.DateArrived).Must(d => DateTime.TryParse(d, out _)).WithMessage("Invalid Date");
         }
     }
 
@@ -20,10 +18,8 @@ namespace ERP.Repository.Configuration.Validation.Inventories
     {
         public InventoryUpdateValidator()
         {
-            RuleFor(i => i.Name).NotEmpty().WithMessage("Inventory Item name is required");
-            RuleFor(i => i.ProductId).GreaterThan(0).WithMessage("Product is required");
-            RuleFor(i => i.WarehouseId).GreaterThan(0).WithMessage("Warehouse is required");
             RuleFor(i => i.Id).GreaterThan(0).WithMessage("Inventory Item is required");
+            RuleFor(i => i.ReorderPoint).GreaterThan(0).WithMessage("Reorder Point should be higher than 0");
         }
     }
 

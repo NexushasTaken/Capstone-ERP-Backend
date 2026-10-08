@@ -19,8 +19,8 @@ namespace ERP.Controllers.InventoryController
         /// </summary>
         /// <param name="page">asdasd</param>
         /// <param name="pageSize"></param>
-        /// <param name="name">case-insensitive search on name, warehouse, status; a number or INV-n also matches the Id</param>
-        /// <param name="filter">Filtering Numbering works like this: 1: Name A - Z, 2: Name Z - A, 3: Quantity High - Low, 4: Quantity Low - High, 5: Reorder Point Ascending, 6: Warehouse Id Ascending</param>
+        /// <param name="name">case-insensitive search on product name, warehouse, status; a number or INV-n also matches the Id</param>
+        /// <param name="filter">Filtering Numbering works like this: 1: Product Name A - Z, 2: Product Name Z - A, 3: Quantity High - Low, 4: Quantity Low - High, 5: Reorder Point Ascending, 6: Warehouse Id Ascending</param>
         /// <param name="cancellation"></param>
         /// <param name="statusId"></param>
         /// <param name="wareHousePresent">0 to include all items that has warehouse otherewise use 1</param>
@@ -28,8 +28,6 @@ namespace ERP.Controllers.InventoryController
         /// <param name="categoryId">only items whose product is in this category; 0 for any</param>
         /// <param name="minQuantity">minimum quantity, inclusive</param>
         /// <param name="maxQuantity">maximum quantity, inclusive; 0 lists out-of-stock items</param>
-        /// <param name="dateFrom">date arrived on or after this day</param>
-        /// <param name="dateTo">date arrived on or before this day</param>
         /// <returns></returns>
         [HttpGet("all")]
         public async Task<IActionResult> GetInventory(
@@ -43,19 +41,10 @@ namespace ERP.Controllers.InventoryController
             [FromQuery] int categoryId = 0,
             [FromQuery] int? minQuantity = null,
             [FromQuery] int? maxQuantity = null,
-            [FromQuery] DateTime? dateFrom = null,
-            [FromQuery] DateTime? dateTo = null,
             CancellationToken cancellation = default
         )
         {
-            var listFilter = new InventoryListFilter(
-                warehouseId,
-                categoryId,
-                minQuantity,
-                maxQuantity,
-                dateFrom,
-                dateTo
-            );
+            var listFilter = new InventoryListFilter(warehouseId, categoryId, minQuantity, maxQuantity);
 
             var inventories = await _inventory.GetInventories(
                 page,
