@@ -1,4 +1,5 @@
 using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Data.Forecast;
 using ERP.Repository.Model.Forecast;
 using ERP.Repository.Model.Inventories;
@@ -72,12 +73,35 @@ namespace ERP.Repository.Data.ForecastData
             await transaction.CommitAsync();
         }
 
-        // Soonest to run out first; products not expected to run out last
-        public async Task<List<ForecastResult>> GetForecastPage(int page, int pageSize)
+        // Search by product name; optionally only the products with a suggested order
+        private IQueryable<ForecastResult> FilteringQuery(string? search, bool needOrderOnly)
         {
-            return await BaseQuery<ForecastResult>(false)
+            var query = BaseQuery<ForecastResult>(false).Where(f => f.IsActive == true);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var pattern = SearchPattern.Contains(search);
+                query = query.Where(f => f.Product != null && EF.Functions.ILike(f.Product.Name, pattern));
+            }
+
+            if (needOrderOnly)
+            {
+                query = query.Where(f => f.SuggestedOrder > 0);
+            }
+
+            return query;
+        }
+
+        // Soonest to run out first; products not expected to run out last
+        public async Task<List<ForecastResult>> GetForecastPage(
+            int page,
+            int pageSize,
+            string? search,
+            bool needOrderOnly
+        )
+        {
+            return await FilteringQuery(search, needOrderOnly)
                 .Include(f => f.Product)
-                .Where(f => f.IsActive == true)
                 .OrderBy(f => f.RunsOutAround == null)
                 .ThenBy(f => f.RunsOutAround)
                 .ThenByDescending(f => f.SuggestedOrder)
@@ -87,9 +111,9 @@ namespace ERP.Repository.Data.ForecastData
                 .ToListAsync();
         }
 
-        public async Task<int> ForecastCount()
+        public async Task<int> ForecastCount(string? search, bool needOrderOnly)
         {
-            return await BaseQuery<ForecastResult>(false).Where(f => f.IsActive == true).CountAsync();
+            return await FilteringQuery(search, needOrderOnly).CountAsync();
         }
 
         public async Task<int> NeedOrderCount()
