@@ -1,6 +1,8 @@
-﻿using ERP.Repository.Interface.Data.Forecast;
+using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Interface.Data.Forecast;
 using ERP.Repository.Model.Forecast;
 using ERP.Repository.Model.Inventories;
+using ERP.Repository.Model.Products;
 using ERP.Repository.ViewModel.Forecast;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,68 +10,129 @@ namespace ERP.Repository.Data.ForecastData
 {
     public class ForecastData(DatabaseContext _context) : BaseData(_context), IForecastData
     {
-        public async Task<IEnumerable<ForecastViewModel>> Movement()
+        // Demand = units sold - units returned. Sales are Purchase entries (-quantity, written when an
+        // order is completed); every Return entry counts as returned, whatever its sign
+        // (Return Stock writes +quantity, Mark as Damaged -> Return Item writes -quantity).
+        // Restocks and damage are not demand.
+        public async Task<List<DemandEntryViewModel>> DemandEntries(int? productId = null)
         {
-            var data = await BaseQuery<InventoryTransaction>(false)
-                .Include(t => t.Inventory)
-                .GroupBy(t => new
+            var purchase = (int)InventoryLabelEnum.Purchase;
+            var returned = (int)InventoryLabelEnum.Return;
+
+            var query = BaseQuery<InventoryTransaction>(false)
+                .Where(t => t.IsActive == true && t.Created_At != null)
+                .Where(t => t.InventoryLabelId == purchase || t.InventoryLabelId == returned);
+
+            if (productId > 0)
+            {
+                query = query.Where(t => t.Inventory!.ProductId == productId);
+            }
+
+            return await query
+                .Select(t => new DemandEntryViewModel
                 {
-                    t.InventoryId,
-                    Day = t.Created_At.HasValue ? t.Created_At.Value.Date : DateTime.MinValue,
+                    ProductId = t.Inventory!.ProductId,
+                    CreatedAt = t.Created_At!.Value,
+                    Units = t.InventoryLabelId == purchase ? -t.QuantityChanged : -Math.Abs(t.QuantityChanged),
                 })
-                .Select(g => new ForecastViewModel
-                {
-                    InventoryId = g.Key.InventoryId,
-                    Day = g.Key.Day,
-                    NetChange = g.Sum(x => x.QuantityChanged),
-                    EndDayStock = g.OrderBy(x => x.Created_At).Last().StockLevel,
-                })
-                .OrderBy(x => x.Day)
                 .ToListAsync();
-
-            return data;
         }
 
-        public async Task<ForecastResult> GetSingleLatestForecast()
+        // Active products with their stock in every warehouse added together
+        public async Task<List<ForecastProductViewModel>> ForecastProducts()
         {
-            var data = await BaseQuery<ForecastResult>(false)
-                .OrderByDescending(x => x.Created_At)
-                .FirstOrDefaultAsync();
-
-            return data;
+            return await BaseQuery<Product>(false)
+                .Where(p => p.IsActive == true)
+                .Select(p => new ForecastProductViewModel
+                {
+                    ProductId = p.Id,
+                    Name = p.Name,
+                    FirstStocked = p.Inventory.Min(i => i.Created_At),
+                    StockOnHand = p.Inventory.Where(i => i.IsActive == true).Sum(i => i.Quantity),
+                })
+                .ToListAsync();
         }
 
-        public async Task<IEnumerable<ForecastResult>> GetThirtyDaysForecast(int page, int pageSize)
+        public async Task<DateTime?> LatestForecastTime()
         {
-            var start = DateTime.UtcNow;
-            var end = DateTime.UtcNow.AddDays(30);
+            return await BaseQuery<ForecastResult>(false).Where(f => f.IsActive == true).MaxAsync(f => f.Created_At);
+        }
 
-            var data = await BaseQuery<ForecastResult>(false)
-                .Include(f => f.Inventory)
-                    .ThenInclude(i => i.Product)
-                .OrderBy(f => f.EarliestStockOutDay)
+        // Every run replaces the previous results
+        public async Task ReplaceForecast(IEnumerable<ForecastResult> results)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            await _context.ForecastWeeks.ExecuteDeleteAsync();
+            await _context.ForecastResults.ExecuteDeleteAsync();
+
+            _context.AddRange(results);
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+
+        // Soonest to run out first; products not expected to run out last
+        public async Task<List<ForecastResult>> GetForecastPage(int page, int pageSize)
+        {
+            return await BaseQuery<ForecastResult>(false)
+                .Include(f => f.Product)
+                .Where(f => f.IsActive == true)
+                .OrderBy(f => f.RunsOutAround == null)
+                .ThenBy(f => f.RunsOutAround)
+                .ThenByDescending(f => f.SuggestedOrder)
+                .ThenBy(f => f.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-
-            return data;
         }
 
-        public async Task<int> ForecastResultTotalCount()
+        public async Task<int> ForecastCount()
         {
-            var start = DateTime.UtcNow;
-            var end = DateTime.UtcNow.AddDays(30);
-
-            var total = await BaseQuery<ForecastResult>(false).CountAsync();
-
-            return total;
+            return await BaseQuery<ForecastResult>(false).Where(f => f.IsActive == true).CountAsync();
         }
 
-        public async Task TruncateForecastTable()
+        public async Task<int> NeedOrderCount()
         {
-            var oldRecords = await BaseQuery<ForecastResult>(false).ToListAsync();
-            _context.RemoveRange(oldRecords);
-            await _context.SaveChangesAsync();
+            return await BaseQuery<ForecastResult>(false)
+                .Where(f => f.IsActive == true && f.SuggestedOrder > 0)
+                .CountAsync();
+        }
+
+        public async Task<ForecastAccuracyViewModel?> Accuracy()
+        {
+            var totals = await BaseQuery<ForecastResult>(false)
+                .Where(f => f.IsActive == true && f.BacktestSold != null)
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Sold = g.Sum(f => f.BacktestSold!.Value),
+                    Ai = g.Sum(f => f.AiAbsError!.Value),
+                    Baseline = g.Sum(f => f.BaselineAbsError!.Value),
+                    Count = g.Count(),
+                })
+                .FirstOrDefaultAsync();
+
+            if (totals == null || totals.Sold <= 0)
+            {
+                return null;
+            }
+
+            return new ForecastAccuracyViewModel
+            {
+                AiErrorPercent = totals.Ai / totals.Sold * 100,
+                BaselineErrorPercent = totals.Baseline / totals.Sold * 100,
+                ProductsTested = totals.Count,
+            };
+        }
+
+        public async Task<ForecastResult?> GetProductForecast(int productId)
+        {
+            return await BaseQuery<ForecastResult>(false)
+                .Include(f => f.Product)
+                .Include(f => f.Weeks.Where(w => w.IsActive == true).OrderBy(w => w.WeekStart))
+                .Where(f => f.IsActive == true && f.ProductId == productId)
+                .FirstOrDefaultAsync();
         }
     }
 }

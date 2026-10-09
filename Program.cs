@@ -49,7 +49,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.ML;
 
 namespace ERP
 {
@@ -116,7 +115,6 @@ namespace ERP
 
             builder.Services.AddSingleton<ITokenManagerService, TokenManagerService>();
             builder.Services.AddSingleton<ResponseHelper>();
-            builder.Services.AddSingleton<MLContext>();
 
             #endregion
 

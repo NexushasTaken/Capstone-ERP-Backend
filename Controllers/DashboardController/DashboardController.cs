@@ -43,5 +43,14 @@ namespace ERP.Controllers.DashboardController
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
         }
+
+        // One product's weekly demand history and forecast, for the demand chart
+        [HttpGet("inventory/forecast/{productId:int}")]
+        public async Task<IActionResult> DemandChart(int productId)
+        {
+            var data = await _forecast.GetDemandChart(productId);
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
+        }
     }
 }

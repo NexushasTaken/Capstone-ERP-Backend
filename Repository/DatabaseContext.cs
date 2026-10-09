@@ -39,6 +39,7 @@ namespace ERP.Repository
         public DbSet<DeliveryDriver> DeliveryDrivers { get; set; }
         public DbSet<OrderLine> OrderLines { get; set; }
         public DbSet<ForecastResult> ForecastResults { get; set; }
+        public DbSet<ForecastWeek> ForecastWeeks { get; set; }
         #endregion
 
         #region Sales
@@ -86,6 +87,7 @@ namespace ERP.Repository
             #endregion
 
             modelBuilder.Entity<ForecastResult>().HasKey(k => k.Id);
+            modelBuilder.Entity<ForecastWeek>().HasKey(k => k.Id);
 
             modelBuilder.Entity<AuditLog>().HasKey(k => k.Id);
             #endregion
@@ -196,9 +198,16 @@ namespace ERP.Repository
 
             modelBuilder
                 .Entity<ForecastResult>()
-                .HasOne(f => f.Inventory)
-                .WithMany(f => f.ForecastResults)
-                .HasForeignKey(f => f.InventoryId);
+                .HasOne(f => f.Product)
+                .WithMany(p => p.ForecastResults)
+                .HasForeignKey(f => f.ProductId);
+
+            modelBuilder
+                .Entity<ForecastWeek>()
+                .HasOne(w => w.ForecastResult)
+                .WithMany(f => f.Weeks)
+                .HasForeignKey(w => w.ForecastResultId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             #region AuditLogs
             modelBuilder
