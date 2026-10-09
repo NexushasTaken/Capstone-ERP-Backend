@@ -36,19 +36,21 @@ namespace ERP.Controllers.DashboardController
         public async Task<IActionResult> Forecast(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
-            [FromQuery] bool forceForecast = false
+            [FromQuery] bool forceForecast = false,
+            [FromQuery] string? search = null,
+            [FromQuery] bool needOrderOnly = false
         )
         {
-            var data = await _forecast.GetLatestForecast(page, pageSize, forceForecast);
+            var data = await _forecast.GetLatestForecast(page, pageSize, forceForecast, search, needOrderOnly);
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
         }
 
         // One product's weekly demand history and forecast, for the demand chart
         [HttpGet("inventory/forecast/{productId:int}")]
-        public async Task<IActionResult> DemandChart(int productId)
+        public async Task<IActionResult> DemandChart(int productId, [FromQuery] int weeks = 26)
         {
-            var data = await _forecast.GetDemandChart(productId);
+            var data = await _forecast.GetDemandChart(productId, weeks);
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
         }

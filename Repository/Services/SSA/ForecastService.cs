@@ -18,7 +18,7 @@ namespace ERP.Repository.Services.SSA
         private const int Horizon = 4; // weeks to predict, a normal restock cycle
         private const int BacktestWeeks = 12; // weeks hidden from the model in the backtest
         private const int BaselineWeeks = 4; // the simple guess averages this many weeks
-        private const int ChartWeeks = 26; // demand history shown on the chart
+        private const int WeeksPerYear = 52; // "same weeks last year" on the chart
 
         // How many repeating shapes SSA keeps: the trend plus the yearly wave and its sharper
         // parts. Rank 5 tested best (docs/ssa-design/forecast-design.typ).
@@ -36,27 +36,35 @@ namespace ERP.Repository.Services.SSA
         // Dashboard widgets load in parallel; only one of them should run the forecast
         private static readonly SemaphoreSlim RunLock = new(1, 1);
 
-        public async Task<ForecastPageViewModel> GetLatestForecast(int page, int pageSize, bool forceForecast)
+        public async Task<ForecastPageViewModel> GetLatestForecast(
+            int page,
+            int pageSize,
+            bool forceForecast,
+            string? search,
+            bool needOrderOnly
+        )
         {
             PageQueryValidator.Ensure(page, pageSize);
 
             await EnsureFresh(forceForecast);
 
-            var rows = await _forecast.GetForecastPage(page, pageSize);
-            var count = await _forecast.ForecastCount();
+            var rows = await _forecast.GetForecastPage(page, pageSize, search, needOrderOnly);
+            var count = await _forecast.ForecastCount(search, needOrderOnly);
 
             return new ForecastPageViewModel
             {
                 ForecastResults = rows.Select(ToViewModel).ToList(),
                 PageCount = (int)Math.Ceiling(count / (double)pageSize),
                 Rows = count,
+                // The count and the accuracy describe the whole shop, not the filtered rows
                 NeedOrderCount = await _forecast.NeedOrderCount(),
                 Accuracy = await _forecast.Accuracy(),
                 GeneratedAt = await _forecast.LatestForecastTime(),
             };
         }
 
-        public async Task<DemandChartViewModel> GetDemandChart(int productId)
+        // weeks: how much demand history to show; 0 or more than the product has shows it all
+        public async Task<DemandChartViewModel> GetDemandChart(int productId, int weeks)
         {
             await EnsureFresh(false);
 
@@ -66,8 +74,17 @@ namespace ERP.Repository.Services.SSA
 
             var currentWeek = DemandWeek.StartOf(DemandWeek.PhToday());
             var entries = await _forecast.DemandEntries(productId);
-            var firstWeek = currentWeek.AddDays(-7 * Math.Min(ChartWeeks, result.HistoryWeeks));
+            var shownWeeks = weeks > 0 ? Math.Min(weeks, result.HistoryWeeks) : result.HistoryWeeks;
+            var firstWeek = currentWeek.AddDays(-7 * shownWeeks);
             var history = WeeklySeries(firstWeek, currentWeek, entries);
+
+            // The same weeks one year earlier, for the shown history and the forecast weeks.
+            // Null before the product's history starts.
+            var historyStart = currentWeek.AddDays(-7 * result.HistoryWeeks);
+            var lastYearFirst = firstWeek.AddDays(-7 * WeeksPerYear);
+            var lastYear = WeeklySeries(lastYearFirst, lastYearFirst.AddDays(7 * (shownWeeks + Horizon)), entries)
+                .Select((demand, i) => lastYearFirst.AddDays(7 * i) < historyStart ? (double?)null : demand)
+                .ToList();
 
             return new DemandChartViewModel
             {
@@ -87,6 +104,7 @@ namespace ERP.Repository.Services.SSA
                         BusyCase = w.BusyCase,
                     })
                     .ToList(),
+                LastYear = lastYear,
             };
         }
 

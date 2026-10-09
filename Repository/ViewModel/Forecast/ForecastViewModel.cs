@@ -74,5 +74,8 @@ namespace ERP.Repository.ViewModel.Forecast
         public DemandForecastViewModel Product { get; set; } = new();
         public ICollection<DemandHistoryPointViewModel> History { get; set; } = [];
         public ICollection<DemandForecastPointViewModel> Forecast { get; set; } = [];
+
+        // Demand 52 weeks before each history and forecast week; null before the product's history
+        public ICollection<double?> LastYear { get; set; } = [];
     }
 }
