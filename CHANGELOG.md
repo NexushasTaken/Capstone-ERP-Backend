@@ -5,6 +5,28 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2026-10-09
+
+### Added
+
+- `GET /api/Dashboard/inventory/forecast/{productId}` returns one product's last 26 weeks of demand and its 4 forecast weeks, for the demand chart.
+
+### Changed
+
+- **BREAKING:** `GET /api/Dashboard/inventory/forecast` forecasts demand per product instead of a stock-out date per inventory item. Each row has `productId`, `name`, `expectedDemand`, `lowDemand` and `busyDemand` (next 4 weeks, 95% range), `stockOnHand` across all warehouses, `weeksLeft`, `runsOutAround`, `suggestedOrder`, `method`, `historyWeeks` and the product's backtest error percents. The page also returns `needOrderCount`, `accuracy` (AI vs. a simple 4-week average over the last 12 weeks) and `generatedAt`. Rows are ordered by the earliest run-out date.
+- The forecast uses our own Singular Spectrum Analysis (SSA) with a yearly window for products with 116+ weeks of sales, and a 4-week average for newer products. In testing it was off by about ±25% against ±30% for the simple average.
+- The forecast refreshes when it is more than a day old, and only one refresh runs at a time.
+
+### Removed
+
+- **BREAKING:** `inventoryId` and `earliestStockOutDay` in the forecast response. The `forecast per product` migration deletes the old forecast rows.
+- The ML.NET packages.
+
+### Fixed
+
+- A forced forecast (`forceForecast=true`) no longer fails with a 500.
+- A stale forecast is now regenerated; before, the age check was reversed.
+
 ## [3.0.0] - 2026-10-08
 
 ### Changed

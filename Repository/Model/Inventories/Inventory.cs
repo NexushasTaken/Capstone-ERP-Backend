@@ -1,5 +1,4 @@
 ﻿using ERP.Repository.Model;
-using ERP.Repository.Model.Forecast;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.Model.Products;
 
@@ -18,6 +17,5 @@ namespace ERP.Repository.Model.Inventories
         public ICollection<InventoryTransaction> InventoryTransactions { get; set; } = [];
         public ICollection<DamagedInventory> DamagedInventories { get; set; } = [];
         public ICollection<OrderLine> OrderLines { get; set; } = [];
-        public ICollection<ForecastResult> ForecastResults { get; set; } = [];
     }
 }

@@ -68,6 +68,18 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<double?>("AiAbsError")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("BacktestSold")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("BaselineAbsError")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("BusyDemand")
+                        .HasColumnType("double precision");
+
                     b.Property<DateTime?>("Created_At")
                         .HasColumnType("timestamp with time zone");
 
@@ -80,14 +92,32 @@ namespace ERP.Migrations
                     b.Property<int?>("Deleted_By")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("EarliestStockOutDay")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<double>("ExpectedDemand")
+                        .HasColumnType("double precision");
 
-                    b.Property<int>("InventoryId")
+                    b.Property<int>("HistoryWeeks")
                         .HasColumnType("integer");
 
                     b.Property<bool?>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<double>("LowDemand")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("Method")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly?>("RunsOutAround")
+                        .HasColumnType("date");
+
+                    b.Property<int>("StockOnHand")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SuggestedOrder")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated_At")
                         .HasColumnType("timestamp with time zone");
@@ -95,11 +125,65 @@ namespace ERP.Migrations
                     b.Property<int?>("Updated_By")
                         .HasColumnType("integer");
 
+                    b.Property<double?>("WeeksLeft")
+                        .HasColumnType("double precision");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("InventoryId");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("ForecastResults");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Forecast.ForecastWeek", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("BusyCase")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime?>("Created_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Created_By")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("Deleted_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Deleted_By")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("Expected")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("ForecastResultId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("Low")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime?>("Updated_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Updated_By")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("WeekStart")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ForecastResultId");
+
+                    b.ToTable("ForecastWeeks");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.DamagedInventory", b =>
@@ -1019,13 +1103,24 @@ namespace ERP.Migrations
 
             modelBuilder.Entity("ERP.Repository.Model.Forecast.ForecastResult", b =>
                 {
-                    b.HasOne("ERP.Repository.Model.Inventories.Inventory", "Inventory")
+                    b.HasOne("ERP.Repository.Model.Products.Product", "Product")
                         .WithMany("ForecastResults")
-                        .HasForeignKey("InventoryId")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Inventory");
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Forecast.ForecastWeek", b =>
+                {
+                    b.HasOne("ERP.Repository.Model.Forecast.ForecastResult", "ForecastResult")
+                        .WithMany("Weeks")
+                        .HasForeignKey("ForecastResultId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ForecastResult");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.DamagedInventory", b =>
@@ -1178,11 +1273,14 @@ namespace ERP.Migrations
                     b.Navigation("UserAccount");
                 });
 
+            modelBuilder.Entity("ERP.Repository.Model.Forecast.ForecastResult", b =>
+                {
+                    b.Navigation("Weeks");
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.Inventories.Inventory", b =>
                 {
                     b.Navigation("DamagedInventories");
-
-                    b.Navigation("ForecastResults");
 
                     b.Navigation("InventoryTransactions");
 
@@ -1233,6 +1331,8 @@ namespace ERP.Migrations
 
             modelBuilder.Entity("ERP.Repository.Model.Products.Product", b =>
                 {
+                    b.Navigation("ForecastResults");
+
                     b.Navigation("Inventory");
 
                     b.Navigation("OrderLines");
