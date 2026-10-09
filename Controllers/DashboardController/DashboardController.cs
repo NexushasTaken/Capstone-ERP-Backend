@@ -48,9 +48,9 @@ namespace ERP.Controllers.DashboardController
 
         // One product's weekly demand history and forecast, for the demand chart
         [HttpGet("inventory/forecast/{productId:int}")]
-        public async Task<IActionResult> DemandChart(int productId, [FromQuery] int weeks = 26)
+        public async Task<IActionResult> DemandChart(int productId)
         {
-            var data = await _forecast.GetDemandChart(productId, weeks);
+            var data = await _forecast.GetDemandChart(productId);
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
         }

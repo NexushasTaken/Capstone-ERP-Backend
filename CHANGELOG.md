@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2026-10-09
+
+### Changed
+
+- **BREAKING:** `GET /api/Dashboard/inventory/forecast/{productId}` compares the forecast with the same season in earlier years. It returns the 13 weeks before the forecast and `pastYears`, newest first: for each earlier year, 26 weeks of demand lined up 13 weeks either side of the forecast start (52-week steps; `null` before the product's history) and `sameWeeksTotal`, the demand in the 4 weeks matching the forecast.
+
+### Removed
+
+- **BREAKING:** the `weeks` query parameter and `lastYear` in the demand chart response.
+
 ## [4.1.0] - 2026-10-09
 
 ### Added

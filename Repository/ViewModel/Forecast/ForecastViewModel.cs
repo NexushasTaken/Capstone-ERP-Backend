@@ -68,14 +68,25 @@ namespace ERP.Repository.ViewModel.Forecast
         public double BusyCase { get; set; }
     }
 
-    // The demand chart of one product: recent weekly demand plus the stored forecast weeks
+    // The same season in an earlier year: 13 weeks before and after the date the forecast starts
+    public class DemandPastYearViewModel
+    {
+        public int Year { get; set; }
+
+        // Weekly demand, 26 weeks; null before the product's history
+        public ICollection<double?> Weeks { get; set; } = [];
+
+        // Demand in the 4 weeks lined up with the forecast; null if the history doesn't cover them
+        public double? SameWeeksTotal { get; set; }
+    }
+
+    // The demand chart of one product: the 13 weeks before the forecast, the stored forecast weeks,
+    // and the same season in each earlier year, newest first
     public class DemandChartViewModel
     {
         public DemandForecastViewModel Product { get; set; } = new();
         public ICollection<DemandHistoryPointViewModel> History { get; set; } = [];
         public ICollection<DemandForecastPointViewModel> Forecast { get; set; } = [];
-
-        // Demand 52 weeks before each history and forecast week; null before the product's history
-        public ICollection<double?> LastYear { get; set; } = [];
+        public ICollection<DemandPastYearViewModel> PastYears { get; set; } = [];
     }
 }
