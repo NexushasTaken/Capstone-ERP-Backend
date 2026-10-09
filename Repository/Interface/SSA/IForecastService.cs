@@ -11,6 +11,6 @@ namespace ERP.Repository.Interface.SSA
             string? search,
             bool needOrderOnly
         );
-        Task<DemandChartViewModel> GetDemandChart(int productId, int weeks);
+        Task<DemandChartViewModel> GetDemandChart(int productId);
     }
 }

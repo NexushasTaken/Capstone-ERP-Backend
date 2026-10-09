@@ -18,7 +18,8 @@ namespace ERP.Repository.Services.SSA
         private const int Horizon = 4; // weeks to predict, a normal restock cycle
         private const int BacktestWeeks = 12; // weeks hidden from the model in the backtest
         private const int BaselineWeeks = 4; // the simple guess averages this many weeks
-        private const int WeeksPerYear = 52; // "same weeks last year" on the chart
+        private const int WeeksPerYear = 52; // the chart lines up the same weeks in earlier years
+        private const int SeasonWeeks = 13; // the chart shows 3 months either side of the forecast start
 
         // How many repeating shapes SSA keeps: the trend plus the yearly wave and its sharper
         // parts. Rank 5 tested best (docs/ssa-design/forecast-design.typ).
@@ -63,8 +64,8 @@ namespace ERP.Repository.Services.SSA
             };
         }
 
-        // weeks: how much demand history to show; 0 or more than the product has shows it all
-        public async Task<DemandChartViewModel> GetDemandChart(int productId, int weeks)
+        // The 13 weeks before the forecast, the forecast, and the same season in every earlier year
+        public async Task<DemandChartViewModel> GetDemandChart(int productId)
         {
             await EnsureFresh(false);
 
@@ -74,17 +75,38 @@ namespace ERP.Repository.Services.SSA
 
             var currentWeek = DemandWeek.StartOf(DemandWeek.PhToday());
             var entries = await _forecast.DemandEntries(productId);
-            var shownWeeks = weeks > 0 ? Math.Min(weeks, result.HistoryWeeks) : result.HistoryWeeks;
+            var historyStart = currentWeek.AddDays(-7 * result.HistoryWeeks);
+            var shownWeeks = Math.Min(SeasonWeeks, result.HistoryWeeks);
             var firstWeek = currentWeek.AddDays(-7 * shownWeeks);
             var history = WeeklySeries(firstWeek, currentWeek, entries);
 
-            // The same weeks one year earlier, for the shown history and the forecast weeks.
-            // Null before the product's history starts.
-            var historyStart = currentWeek.AddDays(-7 * result.HistoryWeeks);
-            var lastYearFirst = firstWeek.AddDays(-7 * WeeksPerYear);
-            var lastYear = WeeklySeries(lastYearFirst, lastYearFirst.AddDays(7 * (shownWeeks + Horizon)), entries)
-                .Select((demand, i) => lastYearFirst.AddDays(7 * i) < historyStart ? (double?)null : demand)
-                .ToList();
+            // Step back one year (52 weeks, so weeks keep starting on the same weekday)
+            // while the season window still overlaps the product's history
+            var pastYears = new List<DemandPastYearViewModel>();
+            for (var year = 1; ; year++)
+            {
+                var start = currentWeek.AddDays(-7 * WeeksPerYear * year);
+                var windowStart = start.AddDays(-7 * SeasonWeeks);
+                var windowEnd = start.AddDays(7 * SeasonWeeks);
+                if (windowEnd <= historyStart)
+                {
+                    break;
+                }
+
+                var weeks = WeeklySeries(windowStart, windowEnd, entries)
+                    .Select((demand, i) => windowStart.AddDays(7 * i) < historyStart ? (double?)null : demand)
+                    .ToList();
+                var sameWeeks = weeks.Skip(SeasonWeeks).Take(Horizon).ToList();
+
+                pastYears.Add(
+                    new DemandPastYearViewModel
+                    {
+                        Year = start.Year,
+                        Weeks = weeks,
+                        SameWeeksTotal = sameWeeks.Any(w => w == null) ? null : sameWeeks.Sum(),
+                    }
+                );
+            }
 
             return new DemandChartViewModel
             {
@@ -104,7 +126,7 @@ namespace ERP.Repository.Services.SSA
                         BusyCase = w.BusyCase,
                     })
                     .ToList(),
-                LastYear = lastYear,
+                PastYears = pastYears,
             };
         }
 
