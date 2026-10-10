@@ -89,4 +89,35 @@ namespace ERP.Repository.ViewModel.Forecast
         public ICollection<DemandForecastPointViewModel> Forecast { get; set; } = [];
         public ICollection<DemandPastYearViewModel> PastYears { get; set; } = [];
     }
+
+    // One hidden week of a backtest: what really sold, the AI's guess (with its 95% range)
+    // and the simple guess
+    public class DemandBacktestWeekViewModel
+    {
+        public DateOnly WeekStart { get; set; }
+        public double Actual { get; set; }
+        public double Low { get; set; }
+        public double Expected { get; set; }
+        public double BusyCase { get; set; }
+        public double Baseline { get; set; }
+    }
+
+    // One product's backtest with a chosen length and end point, for the chart's test panel
+    public class DemandBacktestViewModel
+    {
+        public int HiddenWeeks { get; set; }
+        public int EndWeeksAgo { get; set; }
+
+        // False when there is too little history before the hidden weeks (or SSA can't model it)
+        public bool Testable { get; set; }
+
+        // Weeks the AI learned from
+        public int TrainWeeks { get; set; }
+
+        // Up to 13 training weeks just before the hidden ones, so the chart shows the run-up
+        public ICollection<DemandHistoryPointViewModel> Before { get; set; } = [];
+        public ICollection<DemandBacktestWeekViewModel> Weeks { get; set; } = [];
+        public double? AiErrorPercent { get; set; }
+        public double? BaselineErrorPercent { get; set; }
+    }
 }

@@ -54,5 +54,18 @@ namespace ERP.Controllers.DashboardController
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
         }
+
+        // One product's backtest: hide some weeks, predict them, compare with what really sold
+        [HttpGet("inventory/forecast/{productId:int}/backtest")]
+        public async Task<IActionResult> DemandBacktest(
+            int productId,
+            [FromQuery] int hiddenWeeks = 12,
+            [FromQuery] int endWeeksAgo = 0
+        )
+        {
+            var data = await _forecast.GetBacktest(productId, hiddenWeeks, endWeeksAgo);
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", data));
+        }
     }
 }

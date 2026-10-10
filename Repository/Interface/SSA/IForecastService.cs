@@ -12,5 +12,6 @@ namespace ERP.Repository.Interface.SSA
             bool needOrderOnly
         );
         Task<DemandChartViewModel> GetDemandChart(int productId);
+        Task<DemandBacktestViewModel> GetBacktest(int productId, int hiddenWeeks, int endWeeksAgo);
     }
 }
