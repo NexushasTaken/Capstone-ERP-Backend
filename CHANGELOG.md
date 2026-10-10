@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.0] - 2026-10-10
+
+### Added
+
+- `GET /api/Dashboard/inventory/forecast/{productId}/backtest` runs one product's backtest with a chosen length and end point: `hiddenWeeks` (4, 8, 12, 26 or 52; default 12) and `endWeeksAgo` (0, 13, 26 or 39; default 0). It returns each hidden week's real sales, the AI's forecast with its 95% range and the simple 4-week guess, up to 13 weeks before them, the weeks the AI learned from, and both error percents. `testable` is false when there are fewer than 104 weeks before the hidden ones. Other values return 400.
+
 ## [5.0.0] - 2026-10-09
 
 ### Changed

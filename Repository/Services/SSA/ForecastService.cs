@@ -27,7 +27,12 @@ namespace ERP.Repository.Services.SSA
 
         // SSA needs at least twice the window to train; the backtest hides 12 weeks on top.
         // Shorter histories use the average: an 8-week SSA lost to it in testing.
-        private const int YearlyMinWeeks = 2 * YearlyWindow + BacktestWeeks; // 116
+        private const int MinTrainWeeks = 2 * YearlyWindow; // 104
+        private const int YearlyMinWeeks = MinTrainWeeks + BacktestWeeks; // 116
+
+        // The chart's test panel: how many weeks to hide, and how far back the hidden weeks end
+        private static readonly int[] HiddenWeekChoices = [4, 8, 12, 26, 52];
+        private static readonly int[] EndWeeksAgoChoices = [0, 13, 26, 39]; // now, 3, 6 and 9 months ago
 
         // "Runs out around" further away than this isn't worth a date
         private const double MaxWeeksLeftForDate = 104;
@@ -130,6 +135,76 @@ namespace ERP.Repository.Services.SSA
             };
         }
 
+        // Hide `hiddenWeeks` weeks ending `endWeeksAgo` weeks before now, predict them from the weeks
+        // before, and compare with what sold. Recalculated on every request; nothing is stored.
+        public async Task<DemandBacktestViewModel> GetBacktest(int productId, int hiddenWeeks, int endWeeksAgo)
+        {
+            if (!HiddenWeekChoices.Contains(hiddenWeeks))
+            {
+                throw new BadRequest($"Hidden weeks must be one of {string.Join(", ", HiddenWeekChoices)}.");
+            }
+
+            if (!EndWeeksAgoChoices.Contains(endWeeksAgo))
+            {
+                throw new BadRequest($"The test must end one of {string.Join(", ", EndWeeksAgoChoices)} weeks ago.");
+            }
+
+            var product =
+                (await _forecast.ForecastProducts()).FirstOrDefault(p => p.ProductId == productId)
+                ?? throw new NotFound("No forecast for this product. It may be inactive.");
+
+            var currentWeek = DemandWeek.StartOf(DemandWeek.PhToday());
+            var entries = await _forecast.DemandEntries(productId);
+            var series = WeeklySeries(FirstWeek(product, entries, currentWeek), currentWeek, entries);
+
+            var view = new DemandBacktestViewModel { HiddenWeeks = hiddenWeeks, EndWeeksAgo = endWeeksAgo };
+            var trainWeeks = series.Count - endWeeksAgo - hiddenWeeks;
+            if (trainWeeks < MinTrainWeeks)
+            {
+                return view;
+            }
+
+            var test = Backtest(series, hiddenWeeks, endWeeksAgo);
+            if (test.Ai == null)
+            {
+                return view;
+            }
+
+            var hiddenStart = currentWeek.AddDays(-7 * (endWeeksAgo + hiddenWeeks));
+            var before = test.Train.TakeLast(SeasonWeeks).ToList();
+
+            view.Testable = true;
+            view.TrainWeeks = trainWeeks;
+            view.Before = before
+                .Select(
+                    (demand, i) =>
+                        new DemandHistoryPointViewModel
+                        {
+                            WeekStart = hiddenStart.AddDays(-7 * (before.Count - i)),
+                            Demand = demand,
+                        }
+                )
+                .ToList();
+            view.Weeks = test
+                .Hidden.Select(
+                    (actual, i) =>
+                        new DemandBacktestWeekViewModel
+                        {
+                            WeekStart = hiddenStart.AddDays(7 * i),
+                            Actual = actual,
+                            Low = Math.Max(0, test.Ai.Low[i]),
+                            Expected = Math.Max(0, test.Ai.Expected[i]),
+                            BusyCase = Math.Max(0, test.Ai.BusyCase[i]),
+                            Baseline = test.Baseline,
+                        }
+                )
+                .ToList();
+            view.AiErrorPercent = test.Sold > 0 ? test.AiError / test.Sold * 100 : null;
+            view.BaselineErrorPercent = test.Sold > 0 ? test.BaselineError / test.Sold * 100 : null;
+
+            return view;
+        }
+
         // Re-run when forced, when there is no forecast yet, or when the latest one is over a day old
         private async Task EnsureFresh(bool force)
         {
@@ -205,18 +280,8 @@ namespace ERP.Repository.Services.SSA
             }
 
             // Backtest: hide the last 12 weeks, predict them, compare with the simple guess
-            var train = series.Take(series.Count - BacktestWeeks).ToList();
-            var hidden = series.Skip(series.Count - BacktestWeeks).ToList();
-            var aiGuess = Ssa(train, BacktestWeeks);
+            var test = Backtest(series, BacktestWeeks, 0);
             var forecast = Ssa(series, Horizon);
-            var baselineGuess = Average(train);
-
-            var sold = hidden.Sum();
-            var baselineError = hidden.Select(actual => Math.Abs(actual - baselineGuess)).Sum();
-            double? aiError =
-                aiGuess == null
-                    ? null
-                    : hidden.Select((actual, i) => Math.Abs(actual - Math.Max(0, aiGuess.Expected[i]))).Sum();
 
             // The backtest is shown, not used to switch methods: picking the average whenever
             // SSA lost one product's last 12 weeks made the forecast worse overall in testing.
@@ -224,11 +289,42 @@ namespace ERP.Repository.Services.SSA
             var result =
                 forecast == null ? AverageForecast(series, ForecastMethodEnum.AverageFallback) : SsaForecast(forecast);
 
-            result.BacktestSold = sold;
-            result.AiAbsError = aiError;
-            result.BaselineAbsError = baselineError;
+            result.BacktestSold = test.Sold;
+            result.AiAbsError = test.AiError;
+            result.BaselineAbsError = test.BaselineError;
 
             return result;
+        }
+
+        private record BacktestRun(
+            List<double> Train,
+            List<double> Hidden,
+            SsaForecast? Ai,
+            double Baseline,
+            double Sold,
+            double? AiError,
+            double BaselineError
+        );
+
+        // Drop the last `endWeeksAgo` weeks, hide the `hiddenWeeks` before them, and predict the hidden
+        // weeks from everything earlier. Errors are summed (WAPE = error / sold); the AI can't sell below 0.
+        private static BacktestRun Backtest(List<double> series, int hiddenWeeks, int endWeeksAgo)
+        {
+            var end = series.Count - endWeeksAgo;
+            var train = series.Take(end - hiddenWeeks).ToList();
+            var hidden = series.Skip(end - hiddenWeeks).Take(hiddenWeeks).ToList();
+            var ai = Ssa(train, hiddenWeeks);
+            var baseline = Average(train);
+
+            return new BacktestRun(
+                train,
+                hidden,
+                ai,
+                baseline,
+                hidden.Sum(),
+                ai == null ? null : hidden.Select((actual, i) => Math.Abs(actual - Math.Max(0, ai.Expected[i]))).Sum(),
+                hidden.Select(actual => Math.Abs(actual - baseline)).Sum()
+            );
         }
 
         private static ForecastResult SsaForecast(SsaForecast forecast)
