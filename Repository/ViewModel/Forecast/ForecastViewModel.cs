@@ -32,14 +32,14 @@ namespace ERP.Repository.ViewModel.Forecast
         public int SuggestedOrder { get; set; }
         public int Method { get; set; }
         public int HistoryWeeks { get; set; }
-        public double? AiErrorPercent { get; set; }
+        public double? SsaErrorPercent { get; set; }
         public double? BaselineErrorPercent { get; set; }
     }
 
-    // Backtest over every product the AI was tested on, weighted by units sold
+    // Backtest over every product SSA was tested on, weighted by units sold
     public class ForecastAccuracyViewModel
     {
-        public double AiErrorPercent { get; set; }
+        public double SsaErrorPercent { get; set; }
         public double BaselineErrorPercent { get; set; }
         public int ProductsTested { get; set; }
     }
@@ -90,7 +90,7 @@ namespace ERP.Repository.ViewModel.Forecast
         public ICollection<DemandPastYearViewModel> PastYears { get; set; } = [];
     }
 
-    // One hidden week of a backtest: what really sold, the AI's guess (with its 95% range)
+    // One hidden week of a backtest: what really sold, SSA's guess (with its 95% range)
     // and the simple guess
     public class DemandBacktestWeekViewModel
     {
@@ -111,13 +111,13 @@ namespace ERP.Repository.ViewModel.Forecast
         // False when there is too little history before the hidden weeks (or SSA can't model it)
         public bool Testable { get; set; }
 
-        // Weeks the AI learned from
+        // Weeks SSA was fitted on
         public int TrainWeeks { get; set; }
 
         // Up to 13 training weeks just before the hidden ones, so the chart shows the run-up
         public ICollection<DemandHistoryPointViewModel> Before { get; set; } = [];
         public ICollection<DemandBacktestWeekViewModel> Weeks { get; set; } = [];
-        public double? AiErrorPercent { get; set; }
+        public double? SsaErrorPercent { get; set; }
         public double? BaselineErrorPercent { get; set; }
     }
 }
