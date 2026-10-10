@@ -23,10 +23,10 @@ namespace ERP.Repository.Model.Forecast
         public int Method { get; set; }
         public int HistoryWeeks { get; set; }
 
-        // Backtest on the last 12 weeks; null when the AI wasn't tested.
+        // Backtest on the last 12 weeks; null when SSA wasn't tested.
         // Raw sums, so the overall error % can be weighted by units sold.
         public double? BacktestSold { get; set; }
-        public double? AiAbsError { get; set; }
+        public double? SsaAbsError { get; set; }
         public double? BaselineAbsError { get; set; }
 
         public ICollection<ForecastWeek> Weeks { get; set; } = [];

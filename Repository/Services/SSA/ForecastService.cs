@@ -165,7 +165,7 @@ namespace ERP.Repository.Services.SSA
             }
 
             var test = Backtest(series, hiddenWeeks, endWeeksAgo);
-            if (test.Ai == null)
+            if (test.Ssa == null)
             {
                 return view;
             }
@@ -192,14 +192,14 @@ namespace ERP.Repository.Services.SSA
                         {
                             WeekStart = hiddenStart.AddDays(7 * i),
                             Actual = actual,
-                            Low = Math.Max(0, test.Ai.Low[i]),
-                            Expected = Math.Max(0, test.Ai.Expected[i]),
-                            BusyCase = Math.Max(0, test.Ai.BusyCase[i]),
+                            Low = Math.Max(0, test.Ssa.Low[i]),
+                            Expected = Math.Max(0, test.Ssa.Expected[i]),
+                            BusyCase = Math.Max(0, test.Ssa.BusyCase[i]),
                             Baseline = test.Baseline,
                         }
                 )
                 .ToList();
-            view.AiErrorPercent = test.Sold > 0 ? test.AiError / test.Sold * 100 : null;
+            view.SsaErrorPercent = test.Sold > 0 ? test.SsaError / test.Sold * 100 : null;
             view.BaselineErrorPercent = test.Sold > 0 ? test.BaselineError / test.Sold * 100 : null;
 
             return view;
@@ -271,7 +271,7 @@ namespace ERP.Repository.Services.SSA
             await _forecast.ReplaceForecast(results);
         }
 
-        // Pick the method by how much history there is, backtest the AI, and predict the next 4 weeks
+        // Pick the method by how much history there is, backtest SSA, and predict the next 4 weeks
         private static ForecastResult Forecast(List<double> series)
         {
             if (series.Count < YearlyMinWeeks)
@@ -290,7 +290,7 @@ namespace ERP.Repository.Services.SSA
                 forecast == null ? AverageForecast(series, ForecastMethodEnum.AverageFallback) : SsaForecast(forecast);
 
             result.BacktestSold = test.Sold;
-            result.AiAbsError = test.AiError;
+            result.SsaAbsError = test.SsaError;
             result.BaselineAbsError = test.BaselineError;
 
             return result;
@@ -299,30 +299,32 @@ namespace ERP.Repository.Services.SSA
         private record BacktestRun(
             List<double> Train,
             List<double> Hidden,
-            SsaForecast? Ai,
+            SsaForecast? Ssa,
             double Baseline,
             double Sold,
-            double? AiError,
+            double? SsaError,
             double BaselineError
         );
 
         // Drop the last `endWeeksAgo` weeks, hide the `hiddenWeeks` before them, and predict the hidden
-        // weeks from everything earlier. Errors are summed (WAPE = error / sold); the AI can't sell below 0.
+        // weeks from everything earlier. Errors are summed (WAPE = error / sold); SSA's guesses can't go below 0.
         private static BacktestRun Backtest(List<double> series, int hiddenWeeks, int endWeeksAgo)
         {
             var end = series.Count - endWeeksAgo;
             var train = series.Take(end - hiddenWeeks).ToList();
             var hidden = series.Skip(end - hiddenWeeks).Take(hiddenWeeks).ToList();
-            var ai = Ssa(train, hiddenWeeks);
+            var ssa = Ssa(train, hiddenWeeks);
             var baseline = Average(train);
 
             return new BacktestRun(
                 train,
                 hidden,
-                ai,
+                ssa,
                 baseline,
                 hidden.Sum(),
-                ai == null ? null : hidden.Select((actual, i) => Math.Abs(actual - Math.Max(0, ai.Expected[i]))).Sum(),
+                ssa == null
+                    ? null
+                    : hidden.Select((actual, i) => Math.Abs(actual - Math.Max(0, ssa.Expected[i]))).Sum(),
                 hidden.Select(actual => Math.Abs(actual - baseline)).Sum()
             );
         }
@@ -382,7 +384,7 @@ namespace ERP.Repository.Services.SSA
             };
         }
 
-        // Plain arithmetic, no AI: order enough for the busy case
+        // Plain arithmetic, no forecasting model: order enough for the busy case
         private static void Recommend(ForecastResult result, DateOnly today)
         {
             result.SuggestedOrder = Math.Max(0, (int)Math.Ceiling(result.BusyDemand - result.StockOnHand));
@@ -471,7 +473,7 @@ namespace ERP.Repository.Services.SSA
                 SuggestedOrder = f.SuggestedOrder,
                 Method = f.Method,
                 HistoryWeeks = f.HistoryWeeks,
-                AiErrorPercent = f.BacktestSold > 0 ? f.AiAbsError / f.BacktestSold * 100 : null,
+                SsaErrorPercent = f.BacktestSold > 0 ? f.SsaAbsError / f.BacktestSold * 100 : null,
                 BaselineErrorPercent = f.BacktestSold > 0 ? f.BaselineAbsError / f.BacktestSold * 100 : null,
             };
         }

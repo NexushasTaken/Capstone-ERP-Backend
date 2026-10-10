@@ -131,7 +131,7 @@ namespace ERP.Repository.Data.ForecastData
                 .Select(g => new
                 {
                     Sold = g.Sum(f => f.BacktestSold!.Value),
-                    Ai = g.Sum(f => f.AiAbsError!.Value),
+                    Ssa = g.Sum(f => f.SsaAbsError!.Value),
                     Baseline = g.Sum(f => f.BaselineAbsError!.Value),
                     Count = g.Count(),
                 })
@@ -144,7 +144,7 @@ namespace ERP.Repository.Data.ForecastData
 
             return new ForecastAccuracyViewModel
             {
-                AiErrorPercent = totals.Ai / totals.Sold * 100,
+                SsaErrorPercent = totals.Ssa / totals.Sold * 100,
                 BaselineErrorPercent = totals.Baseline / totals.Sold * 100,
                 ProductsTested = totals.Count,
             };

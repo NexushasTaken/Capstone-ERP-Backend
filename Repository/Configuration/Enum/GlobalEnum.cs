@@ -74,7 +74,7 @@
 
         // 2 was an 8-week-window SSA; removed because it lost to the average in testing
 
-        // Average of the last 4 weeks: under 116 weeks of history, not enough for the AI
+        // Average of the last 4 weeks: under 116 weeks of history, not enough for SSA
         Average = 3,
 
         // Average of the last 4 weeks: SSA couldn't model this history (e.g. all zeros)

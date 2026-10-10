@@ -68,9 +68,6 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<double?>("AiAbsError")
-                        .HasColumnType("double precision");
-
                     b.Property<double?>("BacktestSold")
                         .HasColumnType("double precision");
 
@@ -112,6 +109,9 @@ namespace ERP.Migrations
 
                     b.Property<DateOnly?>("RunsOutAround")
                         .HasColumnType("date");
+
+                    b.Property<double?>("SsaAbsError")
+                        .HasColumnType("double precision");
 
                     b.Property<int>("StockOnHand")
                         .HasColumnType("integer");
