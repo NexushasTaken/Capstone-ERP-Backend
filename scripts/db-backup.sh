@@ -5,7 +5,7 @@
 # PGDATABASE, PGUSER, PGPASSWORD.
 set -euo pipefail
 
-# export PATH="$PATH:<postgres-bin-path>"
+export PATH="$PATH:/c/Program Files/PostgreSQL/18/bin"
 export PGHOST="${PGHOST:-localhost}"
 export PGPORT="${PGPORT:-5432}"
 export PGDATABASE="${PGDATABASE:-ERP}"
