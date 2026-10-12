@@ -15,7 +15,7 @@ namespace ERP.Repository.Data.UserAccounts
             var user = await BaseQuery<UserAccount>(false)
                 .Include(i => i.UserInformation)
                 .Include(r => r.UserRole)
-                .FirstOrDefaultAsync(x => x.Email == email && x.IsActive == true, cancellation);
+                .FirstOrDefaultAsync(x => x.Email == email && x.IsActive, cancellation);
 
             return user;
         }
@@ -28,7 +28,7 @@ namespace ERP.Repository.Data.UserAccounts
             var user = await BaseQuery<UserAccount>(true)
                 .Include(i => i.UserInformation)
                 .Include(r => r.UserRole)
-                .FirstOrDefaultAsync(x => x.Email == email && x.IsActive == true, cancellation);
+                .FirstOrDefaultAsync(x => x.Email == email && x.IsActive, cancellation);
 
             return user;
         }
@@ -38,7 +38,7 @@ namespace ERP.Repository.Data.UserAccounts
             var user = await BaseQuery<UserAccount>(false)
                 .Include(i => i.UserInformation)
                 .Include(r => r.UserRole)
-                .FirstOrDefaultAsync(x => x.Id == userId && x.IsActive == true, cancellation);
+                .FirstOrDefaultAsync(x => x.Id == userId && x.IsActive, cancellation);
 
             return user;
         }
@@ -48,7 +48,7 @@ namespace ERP.Repository.Data.UserAccounts
             var user = await BaseQuery<UserAccount>(true)
                 .Include(i => i.UserInformation)
                 .Include(r => r.UserRole)
-                .FirstOrDefaultAsync(x => x.Id == userId && x.IsActive == true, cancellation);
+                .FirstOrDefaultAsync(x => x.Id == userId && x.IsActive, cancellation);
 
             return user;
         }
@@ -67,7 +67,7 @@ namespace ERP.Repository.Data.UserAccounts
         // Active accounts only. Case-insensitive search over first name, last name, email and role. A number also matches the account Id.
         private IQueryable<UserAccount> AccountFilteringQuery(string? name)
         {
-            var query = BaseQuery<UserAccount>(false).Where(u => u.IsActive == true);
+            var query = BaseQuery<UserAccount>(false).Where(u => u.IsActive);
 
             if (!string.IsNullOrWhiteSpace(name))
             {

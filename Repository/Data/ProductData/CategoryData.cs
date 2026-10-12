@@ -10,7 +10,7 @@ namespace ERP.Repository.Data.ProductData
     {
         private IQueryable<Category> FilteringQuery(string? name)
         {
-            var query = BaseQuery<Category>(false).Where(c => c.IsActive == true);
+            var query = BaseQuery<Category>(false).Where(c => c.IsActive);
 
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -61,7 +61,7 @@ namespace ERP.Repository.Data.ProductData
         public async Task<Category> GetCategoryByIdWithTracking(int id, CancellationToken cancellation = default)
         {
             var category = await BaseQuery<Category>(true)
-                .FirstOrDefaultAsync(c => c.Id == id && c.IsActive == true, cancellation);
+                .FirstOrDefaultAsync(c => c.Id == id && c.IsActive, cancellation);
             return category;
         }
     }

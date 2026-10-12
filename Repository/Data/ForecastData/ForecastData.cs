@@ -43,13 +43,13 @@ namespace ERP.Repository.Data.ForecastData
         public async Task<List<ForecastProductViewModel>> ForecastProducts()
         {
             return await BaseQuery<Product>(false)
-                .Where(p => p.IsActive == true)
+                .Where(p => p.IsActive)
                 .Select(p => new ForecastProductViewModel
                 {
                     ProductId = p.Id,
                     Name = p.Name,
                     FirstStocked = p.Inventory.Min(i => i.Created_At),
-                    StockOnHand = p.Inventory.Where(i => i.IsActive == true).Sum(i => i.Quantity),
+                    StockOnHand = p.Inventory.Where(i => i.IsActive).Sum(i => i.Quantity),
                 })
                 .ToListAsync();
         }

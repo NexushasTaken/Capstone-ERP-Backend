@@ -52,7 +52,7 @@ namespace ERP.Repository.Data.OrderData
             CancellationToken cancellation
         )
         {
-            var driver = BaseQuery<DeliveryDriver>(false).Where(d => d.IsActive == true);
+            var driver = BaseQuery<DeliveryDriver>(false).Where(d => d.IsActive);
 
             driver = FilterQuery(driver, name, filter);
 
@@ -63,7 +63,7 @@ namespace ERP.Repository.Data.OrderData
 
         public async Task<int> DriverCount(string? name, int filter)
         {
-            var driver = BaseQuery<DeliveryDriver>(false).Where(d => d.IsActive == true);
+            var driver = BaseQuery<DeliveryDriver>(false).Where(d => d.IsActive);
 
             driver = FilterQuery(driver, name, filter);
 
@@ -75,7 +75,7 @@ namespace ERP.Repository.Data.OrderData
         public async Task<DeliveryDriver> GetSingleDriverWithTracking(int id)
         {
             var driver = await BaseQuery<DeliveryDriver>(true)
-                .Where(d => d.Id == id && d.IsActive == true)
+                .Where(d => d.Id == id && d.IsActive)
                 .FirstOrDefaultAsync();
 
             return driver;

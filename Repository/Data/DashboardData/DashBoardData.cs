@@ -51,7 +51,7 @@ namespace ERP.Repository.Data.DashboardData
 
         public async Task<int> TotalStock()
         {
-            var result = await BaseQuery<Inventory>(false).Where(i => i.IsActive == true).SumAsync(i => i.Quantity);
+            var result = await BaseQuery<Inventory>(false).Where(i => i.IsActive).SumAsync(i => i.Quantity);
 
             return result;
         }
@@ -59,7 +59,7 @@ namespace ERP.Repository.Data.DashboardData
         public async Task<IEnumerable<InventoryStatusTotalViewModel>> InventoryStatusOverView()
         {
             var result = await BaseQuery<Inventory>(false)
-                .Where(i => i.IsActive == true)
+                .Where(i => i.IsActive)
                 .GroupBy(i => new { i.StatusId, Stat = i.InventoryStatus.Status })
                 .Select(i => new InventoryStatusTotalViewModel { Status = i.Key.Stat, Total = i.Count() })
                 .ToListAsync();

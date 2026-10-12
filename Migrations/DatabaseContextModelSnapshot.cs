@@ -197,7 +197,7 @@ namespace ERP.Migrations
                     b.Property<int?>("Deleted_By")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<int>("ProductId")
@@ -363,7 +363,7 @@ namespace ERP.Migrations
                     b.Property<int?>("Deleted_By")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
@@ -403,7 +403,7 @@ namespace ERP.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
@@ -604,7 +604,7 @@ namespace ERP.Migrations
                     b.Property<int?>("Deleted_By")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Type")
@@ -644,7 +644,7 @@ namespace ERP.Migrations
                     b.Property<int?>("Deleted_By")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
@@ -689,7 +689,7 @@ namespace ERP.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Password")
