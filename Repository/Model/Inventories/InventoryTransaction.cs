@@ -2,7 +2,7 @@
 
 namespace ERP.Repository.Model.Inventories
 {
-    public class InventoryTransaction : BaseModel
+    public class InventoryTransaction : CreatedModel
     {
         public int InventoryId { get; set; }
         public Inventory? Inventory { get; set; }

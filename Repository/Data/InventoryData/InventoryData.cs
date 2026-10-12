@@ -269,7 +269,7 @@ namespace ERP.Repository.Data.InventoryData
         public async Task<IEnumerable<InventoryLabel>> GetLabelForInsert()
         {
             var label = await BaseQuery<InventoryLabel>(false)
-                .Where(i => (i.Type == "restock" || i.Type == "return") && i.IsActive == true)
+                .Where(i => i.Type == "restock" || i.Type == "return")
                 .ToListAsync();
 
             return label;
@@ -280,7 +280,7 @@ namespace ERP.Repository.Data.InventoryData
         public async Task<IEnumerable<DamagedInventory>> GetDamageInventoryWithoutTracking(int id)
         {
             var inventory = await BaseQuery<DamagedInventory>(false)
-                .Where(d => d.InventoryId == id && d.IsActive == true)
+                .Where(d => d.InventoryId == id)
                 .OrderByDescending(d => d.Created_At)
                 .ToListAsync();
 
@@ -304,7 +304,7 @@ namespace ERP.Repository.Data.InventoryData
         {
             var transac = await BaseQuery<InventoryTransaction>(false)
                 .Include(t => t.InventoryLabel)
-                .Where(t => t.InventoryId == id && t.IsActive == true)
+                .Where(t => t.InventoryId == id)
                 .ToListAsync();
 
             return transac;

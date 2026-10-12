@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.2.1] - 2026-10-12
+
+### Removed
+
+- The `Sales` table. It was written when an order completed but never read; sales figures already come from completed orders. No API changes.
+- Unused audit columns from tables that never use them: lookup tables (order types/statuses, inventory statuses/labels, user roles) and forecast weeks keep only `Id`; forecast results keep `Id` and `Created_At`; inventory transactions and damage reports keep `Created_By`/`Created_At` but drop the update/delete columns and `IsActive`. Run `dotnet ef database update`; responses are unchanged.
+
 ## [6.2.0] - 2026-10-12
 
 ### Added

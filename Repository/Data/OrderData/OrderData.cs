@@ -154,13 +154,13 @@ namespace ERP.Repository.Data.OrderData
 
         public async Task<IEnumerable<OrderType>> GetOrderTypesWithoutTracking()
         {
-            var type = await BaseQuery<OrderType>(false).Where(t => t.IsActive == true).ToListAsync();
+            var type = await BaseQuery<OrderType>(false).ToListAsync();
             return type;
         }
 
         public async Task<IEnumerable<OrderStatus>> GetOrderStatusesWithoutTracking()
         {
-            var status = await BaseQuery<OrderStatus>(false).Where(s => s.IsActive == true).ToListAsync();
+            var status = await BaseQuery<OrderStatus>(false).ToListAsync();
             return status;
         }
 

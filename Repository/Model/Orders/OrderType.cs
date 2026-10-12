@@ -2,7 +2,7 @@ using ERP.Repository.Model;
 
 namespace ERP.Repository.Model.Orders
 {
-    public class OrderType : BaseModel
+    public class OrderType : KeyModel
     {
         public string? Type { get; set; }
 

@@ -4,7 +4,6 @@ using ERP.Repository.Model.Forecast;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.Model.Products;
-using ERP.Repository.Model.Sales;
 using ERP.Repository.Model.UserAccounts;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,10 +41,6 @@ namespace ERP.Repository
         public DbSet<ForecastWeek> ForecastWeeks { get; set; }
         #endregion
 
-        #region Sales
-        public DbSet<Sale> Sales { get; set; }
-        #endregion
-
         #region AuditLogs
         public DbSet<AuditLog> AuditLogs { get; set; }
         #endregion
@@ -80,10 +75,6 @@ namespace ERP.Repository
             #region Products
             modelBuilder.Entity<Product>().HasKey(p => p.Id);
             modelBuilder.Entity<Category>().HasKey(p => p.Id);
-            #endregion
-
-            #region Sales
-            modelBuilder.Entity<Sale>().HasKey(p => p.Id);
             #endregion
 
             modelBuilder.Entity<ForecastResult>().HasKey(k => k.Id);
@@ -231,131 +222,41 @@ namespace ERP.Repository
             modelBuilder
                 .Entity<UserRole>()
                 .HasData(
-                    new UserRole
-                    {
-                        Id = (int)UserRoleEnum.Owner,
-                        Role = "owner",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    },
-                    new UserRole
-                    {
-                        Id = (int)UserRoleEnum.Secretary,
-                        Role = "secretary",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    }
+                    new UserRole { Id = (int)UserRoleEnum.Owner, Role = "owner" },
+                    new UserRole { Id = (int)UserRoleEnum.Secretary, Role = "secretary" }
                 );
 
             modelBuilder
                 .Entity<OrderType>()
                 .HasData(
-                    new OrderType
-                    {
-                        Id = (int)OrderTypeEnum.Walkin,
-                        Type = "walkin",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    },
-                    new OrderType
-                    {
-                        Id = (int)OrderTypeEnum.Delivery,
-                        Type = "delivery",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    }
+                    new OrderType { Id = (int)OrderTypeEnum.Walkin, Type = "walkin" },
+                    new OrderType { Id = (int)OrderTypeEnum.Delivery, Type = "delivery" }
                 );
 
             modelBuilder
                 .Entity<OrderStatus>()
                 .HasData(
-                    new OrderStatus
-                    {
-                        Id = (int)OrderStatusEnum.Completed,
-                        Status = "completed",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    },
-                    new OrderStatus
-                    {
-                        Id = (int)OrderStatusEnum.Processing,
-                        Status = "processing",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    },
-                    new OrderStatus
-                    {
-                        Id = (int)OrderStatusEnum.Shipped,
-                        Status = "shipped",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    },
-                    new OrderStatus
-                    {
-                        Id = (int)OrderStatusEnum.Cancelled,
-                        Status = "cancelled",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    }
+                    new OrderStatus { Id = (int)OrderStatusEnum.Completed, Status = "completed" },
+                    new OrderStatus { Id = (int)OrderStatusEnum.Processing, Status = "processing" },
+                    new OrderStatus { Id = (int)OrderStatusEnum.Shipped, Status = "shipped" },
+                    new OrderStatus { Id = (int)OrderStatusEnum.Cancelled, Status = "cancelled" }
                 );
 
             modelBuilder
                 .Entity<InventoryStatus>()
                 .HasData(
-                    new InventoryStatus
-                    {
-                        Id = (int)InventoryStatusEnum.Available,
-                        Status = "available",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    },
-                    new InventoryStatus
-                    {
-                        Id = (int)InventoryStatusEnum.LowStock,
-                        Status = "low stock",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    },
-                    new InventoryStatus
-                    {
-                        Id = (int)InventoryStatusEnum.Critical,
-                        Status = "critical",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    }
+                    new InventoryStatus { Id = (int)InventoryStatusEnum.Available, Status = "available" },
+                    new InventoryStatus { Id = (int)InventoryStatusEnum.LowStock, Status = "low stock" },
+                    new InventoryStatus { Id = (int)InventoryStatusEnum.Critical, Status = "critical" }
                 );
 
             modelBuilder
                 .Entity<InventoryLabel>()
                 .HasData(
-                    new InventoryLabel
-                    {
-                        Id = (int)InventoryLabelEnum.Purchase,
-                        Type = "purchase",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    },
-                    new InventoryLabel
-                    {
-                        Id = (int)InventoryLabelEnum.Return,
-                        Type = "return",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    },
-                    new InventoryLabel
-                    {
-                        Id = (int)InventoryLabelEnum.Restock,
-                        Type = "restock",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    },
-                    new InventoryLabel
-                    {
-                        Id = (int)InventoryLabelEnum.Damage,
-                        Type = "damage",
-                        IsActive = true,
-                        Created_At = seededAt,
-                    }
+                    new InventoryLabel { Id = (int)InventoryLabelEnum.Purchase, Type = "purchase" },
+                    new InventoryLabel { Id = (int)InventoryLabelEnum.Return, Type = "return" },
+                    new InventoryLabel { Id = (int)InventoryLabelEnum.Restock, Type = "restock" },
+                    new InventoryLabel { Id = (int)InventoryLabelEnum.Damage, Type = "damage" }
                 );
 
             // Default accounts (password "mypassword"). Salt and hash are fixed literals so the model stays

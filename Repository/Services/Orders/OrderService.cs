@@ -10,7 +10,6 @@ using ERP.Repository.Interface.Orders;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.Model.Products;
-using ERP.Repository.Model.Sales;
 using ERP.Repository.ViewModel.Orders;
 using FluentValidation;
 
@@ -483,19 +482,6 @@ namespace ERP.Repository.Services.Orders
 
             await _orders.SaveChanges();
 
-            if (status.OrderStatusId == (int)OrderStatusEnum.Completed)
-            {
-                var sales = new Sale
-                {
-                    OrderId = order.First().OrderId,
-                    Created_By = _auditLog.CurrentUserId,
-                    Created_At = now,
-                    IsActive = true,
-                };
-
-                await _orders.Save(sales);
-            }
-
             return;
         }
 
@@ -550,7 +536,6 @@ namespace ERP.Repository.Services.Orders
                 InventoryLabelId = (int)InventoryLabelEnum.Purchase,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = DateTime.UtcNow,
-                IsActive = true,
             });
 
             await _inventory.SaveMany(transaction);

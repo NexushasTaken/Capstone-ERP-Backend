@@ -1,6 +1,5 @@
 using ERP.Repository.Model;
 using ERP.Repository.Model.Products;
-using ERP.Repository.Model.Sales;
 
 namespace ERP.Repository.Model.Orders
 {
@@ -17,7 +16,6 @@ namespace ERP.Repository.Model.Orders
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
 
-        public ICollection<Sale> Sales { get; set; } = [];
         public ICollection<OrderLine> OrderLines { get; set; } = [];
     }
 }

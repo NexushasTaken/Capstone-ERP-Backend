@@ -1,7 +1,7 @@
 namespace ERP.Repository.Model.Forecast
 {
     // One of the 4 forecast weeks behind a ForecastResult, drawn by the demand chart.
-    public class ForecastWeek : BaseModel
+    public class ForecastWeek : KeyModel
     {
         public int ForecastResultId { get; set; }
         public ForecastResult? ForecastResult { get; set; }

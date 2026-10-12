@@ -255,13 +255,10 @@ namespace ERP.Repository.Services.SSA
                 result.HistoryWeeks = series.Count;
                 result.StockOnHand = product.StockOnHand;
                 result.Created_At = now;
-                result.IsActive = true;
 
                 foreach (var (week, i) in result.Weeks.Select((w, i) => (w, i)))
                 {
                     week.WeekStart = currentWeek.AddDays(7 * i);
-                    week.Created_At = now;
-                    week.IsActive = true;
                 }
 
                 Recommend(result, today);
