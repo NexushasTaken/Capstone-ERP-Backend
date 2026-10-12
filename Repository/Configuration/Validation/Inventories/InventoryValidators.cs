@@ -23,6 +23,15 @@ namespace ERP.Repository.Configuration.Validation.Inventories
         }
     }
 
+    public class InventoryRestockValidator : AbstractValidator<InventoryRestockViewModel>
+    {
+        public InventoryRestockValidator()
+        {
+            RuleFor(r => r.Id).GreaterThan(0).WithMessage("Inventory item is required");
+            RuleFor(r => r.Quantity).GreaterThan(0).WithMessage("Quantity should be higher than 0");
+        }
+    }
+
     public class InventoryDamageValidator : AbstractValidator<InventoryDamagePostViewModel>
     {
         public InventoryDamageValidator()

@@ -66,6 +66,11 @@ namespace ERP.Repository.Services.Products
                 throw new ValidationFailed("categoryName", "Category Name is required");
             }
 
+            if (await _category.CheckExistingCategory(categoryName))
+            {
+                throw new ValidationFailed("categoryName", "A category with this name already exists.");
+            }
+
             var now = DateTime.UtcNow;
 
             var category = new Category
@@ -139,6 +144,11 @@ namespace ERP.Repository.Services.Products
                 throw new NotFound("Category not found");
             }
 
+            if (await _category.CheckExistingCategory(category.Type, category.Id))
+            {
+                throw new ValidationFailed("type", "A category with this name already exists.");
+            }
+
             var now = DateTime.UtcNow;
             var oldType = ct.Type;
 
@@ -210,6 +220,11 @@ namespace ERP.Repository.Services.Products
         {
             await _productPostValidator.EnsureValidAsync(product);
 
+            if (await _product.CheckExistingProduct(product.Name))
+            {
+                throw new ValidationFailed("name", "A product with this name already exists.");
+            }
+
             var now = DateTime.UtcNow;
 
             var pr = new Product
@@ -271,6 +286,11 @@ namespace ERP.Repository.Services.Products
             if (pr == null)
             {
                 throw new NotFound("Product not found");
+            }
+
+            if (await _product.CheckExistingProduct(product.Name, product.Id))
+            {
+                throw new ValidationFailed("name", "A product with this name already exists.");
             }
 
             var now = DateTime.UtcNow;

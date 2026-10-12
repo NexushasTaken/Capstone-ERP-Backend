@@ -64,5 +64,14 @@ namespace ERP.Repository.Data.ProductData
                 .FirstOrDefaultAsync(c => c.Id == id && c.IsActive, cancellation);
             return category;
         }
+
+        // Case-insensitive; excludeId skips the category being renamed.
+        public async Task<bool> CheckExistingCategory(string type, int excludeId = 0)
+        {
+            var lower = type.ToLower();
+
+            return await BaseQuery<Category>(false)
+                .AnyAsync(c => c.IsActive && c.Id != excludeId && c.Type.ToLower() == lower);
+        }
     }
 }

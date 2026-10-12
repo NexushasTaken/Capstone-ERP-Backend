@@ -23,6 +23,7 @@ namespace ERP.Repository.Services.Inventories
         IAuditLogService _auditLog,
         IValidator<InventoryPostViewModel> _inventoryPostValidator,
         IValidator<InventoryUpdateViewModel> _inventoryUpdateValidator,
+        IValidator<InventoryRestockViewModel> _restockValidator,
         IValidator<InventoryDamagePostViewModel> _damageValidator,
         IValidator<InventoryTransactionPostViewModel> _transactionValidator,
         IValidator<InventoryWareHousePostViewModel> _warehousePostValidator,
@@ -159,6 +160,8 @@ namespace ERP.Repository.Services.Inventories
 
         public async Task Restock(InventoryRestockViewModel inventory)
         {
+            await _restockValidator.EnsureValidAsync(inventory);
+
             var existing = await _inventory.GetInventoryWithTracking(inventory.Id);
 
             if (existing == null)
