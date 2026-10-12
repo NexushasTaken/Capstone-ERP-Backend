@@ -24,6 +24,13 @@ namespace ERP.Repository.Data
             await _context.SaveChangesAsync(cancellation);
         }
 
+        // Marks a row for hard delete; the next SaveChanges removes it.
+        public void Remove<T>(T data)
+            where T : class
+        {
+            _context.Remove(data);
+        }
+
         public IQueryable<T> BaseQuery<T>(bool withTracking)
             where T : class
         {

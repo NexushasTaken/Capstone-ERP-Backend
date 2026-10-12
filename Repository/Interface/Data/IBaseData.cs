@@ -7,6 +7,8 @@
         Task SaveMany<T>(IEnumerable<T> data, CancellationToken cancellation = default)
             where T : class;
         Task SaveChanges(CancellationToken cancellation = default);
+        void Remove<T>(T data)
+            where T : class;
         IQueryable<T> BaseQuery<T>(bool withTracking)
             where T : class;
     }
