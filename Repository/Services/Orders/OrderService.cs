@@ -165,7 +165,6 @@ namespace ERP.Repository.Services.Orders
                             InventoryId = inv.InventoryId,
                             Quantity = inv.Quantity,
                             Amount = product.Price * inv.Quantity,
-                            IsActive = true,
                             Created_By = _auditLog.CurrentUserId,
                             Created_At = now,
                         }
@@ -284,7 +283,6 @@ namespace ERP.Repository.Services.Orders
                             InventoryId = inv.InventoryId,
                             Quantity = inv.Quantity,
                             Amount = product.Price * inv.Quantity,
-                            IsActive = true,
                             Created_By = _auditLog.CurrentUserId,
                             Created_At = now,
                         })
@@ -300,13 +298,40 @@ namespace ERP.Repository.Services.Orders
             header.Updated_By = _auditLog.CurrentUserId;
             header.Updated_At = now;
 
-            var discountChange =
-                oldDiscount == order.DiscountPercent ? "" : $", discount {oldDiscount}% → {order.DiscountPercent}%";
+            // Removed lines are hard-deleted, so the audit message is the only record of what changed.
+            var productNames = lines
+                .GroupBy(l => l.ProductId)
+                .ToDictionary(g => g.Key, g => g.First().Product?.Name ?? $"product #{g.Key}");
+
+            foreach (var (productId, product) in products)
+            {
+                productNames[productId] = product.Name ?? $"product #{productId}";
+            }
+
+            var changes = deltas
+                .Select(d =>
+                {
+                    var name = productNames[d.ProductId];
+                    var from = current.GetValueOrDefault(d.ProductId);
+                    var to = desired.GetValueOrDefault(d.ProductId);
+
+                    return from == 0 ? $"added {name} ×{to}"
+                        : to == 0 ? $"removed {name} ×{from}"
+                        : $"{name} {from} → {to}";
+                })
+                .ToList();
+
+            if (oldDiscount != order.DiscountPercent)
+            {
+                changes.Add($"discount {oldDiscount}% → {order.DiscountPercent}%");
+            }
+
+            var changeSummary = changes.Count == 0 ? "" : $": {string.Join(", ", changes)}";
 
             _auditLog.Log(
                 AuditModuleEnum.Order,
                 AuditActionEnum.Update,
-                $"Edited order #{header.Id} for {header.CustomerName} ({desired.Count} item(s){discountChange})",
+                $"Edited order #{header.Id} for {header.CustomerName}{changeSummary}",
                 header.Id,
                 now
             );
@@ -315,7 +340,7 @@ namespace ERP.Repository.Services.Orders
             await _orders.SaveMany(newLines);
         }
 
-        // Gives `quantity` back to stock from the newest lines first. A line that reaches 0 is soft-deleted.
+        // Gives `quantity` back to stock from the newest lines first. A line that reaches 0 is deleted.
         private void ReturnOrderLineStock(IEnumerable<OrderLine> lines, int quantity, DateTime now)
         {
             foreach (var line in lines.OrderByDescending(l => l.Id))
@@ -340,9 +365,7 @@ namespace ERP.Repository.Services.Orders
 
                 if (line.Quantity == 0)
                 {
-                    line.IsActive = false;
-                    line.Deleted_By = _auditLog.CurrentUserId;
-                    line.Deleted_At = now;
+                    _orders.Remove(line);
                 }
 
                 quantity -= taken;

@@ -20,8 +20,7 @@ namespace ERP.Repository.Data.DashboardData
             var data = await BaseQuery<OrderLine>(false)
                 .Include(o => o.Order)
                 .Where(s =>
-                    s.IsActive == true
-                    && s.Created_At >= start
+                    s.Created_At >= start
                     && s.Created_At < end
                     && s.Order.OrderStatusId == (int)OrderStatusEnum.Completed
                 )

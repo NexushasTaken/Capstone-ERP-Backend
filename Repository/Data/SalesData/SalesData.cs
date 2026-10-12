@@ -73,7 +73,7 @@ namespace ERP.Repository.Data.Sales
         )
         {
             var orders = BaseQuery<OrderLine>(false)
-                .Where(o => o.IsActive == true && o.Order.OrderStatusId == (int)OrderStatusEnum.Completed);
+                .Where(o => o.Order.OrderStatusId == (int)OrderStatusEnum.Completed);
 
             orders = FilteringQuery(orders, name, filter, orderTypeId);
 
@@ -131,7 +131,7 @@ namespace ERP.Repository.Data.Sales
         public async Task<int> OrdersCount(string? name, int filter, int orderTypeId)
         {
             var orders = BaseQuery<OrderLine>(false)
-                .Where(o => o.IsActive == true && o.Order.OrderStatusId == (int)OrderStatusEnum.Completed);
+                .Where(o => o.Order.OrderStatusId == (int)OrderStatusEnum.Completed);
 
             orders = FilteringQuery(orders, name, filter, orderTypeId);
 

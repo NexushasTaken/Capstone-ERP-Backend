@@ -498,17 +498,8 @@ namespace ERP.Migrations
                     b.Property<int?>("Created_By")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
                     b.Property<int>("InventoryId")
                         .HasColumnType("integer");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
 
                     b.Property<int>("OrderId")
                         .HasColumnType("integer");

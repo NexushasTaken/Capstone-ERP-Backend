@@ -82,7 +82,7 @@ namespace ERP.Repository.Data.OrderData
         )
         {
             var orders = BaseQuery<OrderLine>(false)
-                .Where(o => o.IsActive == true && o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
+                .Where(o => o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
 
             orders = FilteringQuery(orders, name, filter, statusId, orderTypeId);
 
@@ -143,7 +143,7 @@ namespace ERP.Repository.Data.OrderData
         public async Task<int> OrdersCount(string? name, int filter, int statusId, int orderTypeId)
         {
             var orders = BaseQuery<OrderLine>(false)
-                .Where(o => o.IsActive == true && o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
+                .Where(o => o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
 
             orders = FilteringQuery(orders, name, filter, statusId, orderTypeId);
 
@@ -186,7 +186,7 @@ namespace ERP.Repository.Data.OrderData
         public async Task<IEnumerable<OrderLine>> GetOrderLinesWithTracking(int id)
         {
             var order = await BaseQuery<OrderLine>(true)
-                .Where(o => o.IsActive == true && o.OrderId == id)
+                .Where(o => o.OrderId == id)
                 .Include(o => o.Product)
                 .Include(o => o.Inventory)
                 .Include(o => o.Order)
