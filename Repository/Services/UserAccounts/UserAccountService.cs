@@ -157,7 +157,6 @@ namespace ERP.Repository.Services.UserAccounts
                     LastName = account.LastName,
                     Created_By = _auditLog.CurrentUserId,
                     Created_At = now,
-                    IsActive = true,
                 },
             };
 
@@ -237,13 +236,6 @@ namespace ERP.Repository.Services.UserAccounts
             existingAccount.IsActive = false;
             existingAccount.Deleted_By = _auditLog.CurrentUserId;
             existingAccount.Deleted_At = now;
-
-            if (existingAccount.UserInformation != null)
-            {
-                existingAccount.UserInformation.IsActive = false;
-                existingAccount.UserInformation.Deleted_By = _auditLog.CurrentUserId;
-                existingAccount.UserInformation.Deleted_At = now;
-            }
 
             _auditLog.Log(
                 AuditModuleEnum.Account,

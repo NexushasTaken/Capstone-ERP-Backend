@@ -166,7 +166,7 @@ namespace ERP.Repository.Data.OrderData
 
         public async Task<Order> GetSingleOrderWithTracking(int id)
         {
-            var order = await BaseQuery<Order>(true).FirstOrDefaultAsync(o => o.IsActive == true && o.Id == id);
+            var order = await BaseQuery<Order>(true).FirstOrDefaultAsync(o => o.Id == id);
             return order;
         }
 

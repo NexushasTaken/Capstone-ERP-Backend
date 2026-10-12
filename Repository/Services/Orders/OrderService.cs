@@ -125,7 +125,6 @@ namespace ERP.Repository.Services.Orders
                 DiscountPercent = order.DiscountPercent,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
-                IsActive = true,
             };
 
             await _orders.Save(header);

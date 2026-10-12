@@ -2,7 +2,7 @@
 
 namespace ERP.Repository.Model.UserAccounts
 {
-    public class UserInformation : BaseModel
+    public class UserInformation : UpdatedModel
     {
         public int UserAccountId { get; set; }
         public UserAccount? UserAccount { get; set; }
