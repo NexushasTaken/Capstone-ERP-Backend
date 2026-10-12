@@ -77,16 +77,16 @@ namespace ERP.Repository.Services.Orders
             return orderStatuses;
         }
 
-        public async Task<IEnumerable<OrderDeliveryRiderViewModel>> GetDeliveryRiders()
+        public async Task<IEnumerable<OrderDeliveryDriverViewModel>> GetDeliveryDrivers()
         {
-            var result = await _orders.GetDeliveryRidersWithoutTracking();
-            var deliveryRiders = result.Select(o => new OrderDeliveryRiderViewModel
+            var result = await _orders.GetDeliveryDriversWithoutTracking();
+            var deliveryDrivers = result.Select(o => new OrderDeliveryDriverViewModel
             {
                 Id = o.Id,
                 FirstName = o.FirstName,
                 LastName = o.LastName,
             });
-            return deliveryRiders;
+            return deliveryDrivers;
         }
 
         public async Task<IEnumerable<OrderStatusCount>> OrdersStatusCount()
@@ -102,9 +102,9 @@ namespace ERP.Repository.Services.Orders
 
             var message = new List<string> { };
 
-            if (order.DeliveryRiderId > 0)
+            if (order.DeliveryDriverId > 0)
             {
-                var driver = await _orders.ValidateDriverWithoutTracking(order.DeliveryRiderId);
+                var driver = await _orders.ValidateDriverWithoutTracking(order.DeliveryDriverId);
 
                 if (driver == null)
                 {
@@ -118,7 +118,7 @@ namespace ERP.Repository.Services.Orders
             {
                 OrderTypeId = order.OrderTypeId,
                 OrderStatusId = (int)OrderStatusEnum.Processing,
-                DeliveryDriverId = order.DeliveryRiderId == 0 ? null : order.DeliveryRiderId,
+                DeliveryDriverId = order.DeliveryDriverId == 0 ? null : order.DeliveryDriverId,
                 CustomerName = order.CustomerName.ToLower(),
                 PickUpAddress = order.PickUpAddress.ToLower(),
                 DeliveryAddress = order.DeliveryAddress.ToLower(),
@@ -208,9 +208,9 @@ namespace ERP.Repository.Services.Orders
 
             var isWalkin = header.OrderTypeId == (int)OrderTypeEnum.Walkin;
 
-            if (!isWalkin && order.DeliveryRiderId > 0)
+            if (!isWalkin && order.DeliveryDriverId > 0)
             {
-                var driver = await _orders.ValidateDriverWithoutTracking(order.DeliveryRiderId);
+                var driver = await _orders.ValidateDriverWithoutTracking(order.DeliveryDriverId);
 
                 if (driver == null)
                 {
@@ -290,7 +290,7 @@ namespace ERP.Repository.Services.Orders
 
             var oldDiscount = header.DiscountPercent;
 
-            header.DeliveryDriverId = isWalkin || order.DeliveryRiderId == 0 ? null : order.DeliveryRiderId;
+            header.DeliveryDriverId = isWalkin || order.DeliveryDriverId == 0 ? null : order.DeliveryDriverId;
             header.PickUpAddress = isWalkin ? "" : (order.PickUpAddress ?? "").ToLower();
             header.DeliveryAddress = isWalkin ? "" : (order.DeliveryAddress ?? "").ToLower();
             header.DiscountPercent = order.DiscountPercent;

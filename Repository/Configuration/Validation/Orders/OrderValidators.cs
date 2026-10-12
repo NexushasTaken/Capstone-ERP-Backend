@@ -17,7 +17,7 @@ namespace ERP.Repository.Configuration.Validation.Orders
         public OrderPostValidator()
         {
             RuleFor(o => o.OrderTypeId).GreaterThan(0).WithMessage("Order Type is required");
-            RuleFor(o => o.DeliveryRiderId).GreaterThanOrEqualTo(0).WithMessage("Driver is Invalid");
+            RuleFor(o => o.DeliveryDriverId).GreaterThanOrEqualTo(0).WithMessage("Driver is Invalid");
             RuleFor(o => o.DiscountPercent).InclusiveBetween(0, 100).WithMessage("Discount must be between 0 and 100");
             RuleFor(o => o.OrderLines).NotEmpty().WithMessage("Add at least one product");
             RuleForEach(o => o.OrderLines).SetValidator(new OrderLineValidator());
@@ -29,7 +29,7 @@ namespace ERP.Repository.Configuration.Validation.Orders
         public OrderPutValidator()
         {
             RuleFor(o => o.OrderId).GreaterThan(0).WithMessage("Order is required");
-            RuleFor(o => o.DeliveryRiderId).GreaterThanOrEqualTo(0).WithMessage("Driver is Invalid");
+            RuleFor(o => o.DeliveryDriverId).GreaterThanOrEqualTo(0).WithMessage("Driver is Invalid");
             RuleFor(o => o.DiscountPercent).InclusiveBetween(0, 100).WithMessage("Discount must be between 0 and 100");
             RuleFor(o => o.OrderLines).NotEmpty().WithMessage("Add at least one product");
             RuleForEach(o => o.OrderLines).SetValidator(new OrderLineValidator());

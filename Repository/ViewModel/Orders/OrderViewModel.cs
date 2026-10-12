@@ -58,7 +58,7 @@
     public class OrderPostViewModel
     {
         public int OrderTypeId { get; set; }
-        public int? DeliveryRiderId { get; set; }
+        public int? DeliveryDriverId { get; set; }
         public string? CustomerName { get; set; }
         public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
@@ -69,7 +69,7 @@
     public class OrderPutViewModel
     {
         public int OrderId { get; set; }
-        public int? DeliveryRiderId { get; set; }
+        public int? DeliveryDriverId { get; set; }
         public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
@@ -94,7 +94,7 @@
         public int OrderStatusId { get; set; }
     }
 
-    public class OrderDeliveryRiderViewModel
+    public class OrderDeliveryDriverViewModel
     {
         public int Id { get; set; }
         public string? FirstName { get; set; }
