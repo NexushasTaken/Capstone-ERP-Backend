@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.1.0] - 2026-10-13
+
+### Changed
+
+- The demand forecast (`GET /api/Dashboard/inventory/forecast` and the chart and backtest endpoints) now uses ML.NET's SSA (`ForecastBySsa`, window 52, rank 5) instead of our own SSA. It is fed a 4-week average of the weekly demand and runs with stabilizing off; the 95% range is still the spread of real weeks around the smoothed line. On the 5-year seed backtest (13 tests of 12 hidden weeks) it misses by 23.5%, against 24.5% for our previous SSA and 31.3% for the 4-week average. Responses are unchanged.
+
 ## [7.0.2] - 2026-10-13
 
 ### Fixed

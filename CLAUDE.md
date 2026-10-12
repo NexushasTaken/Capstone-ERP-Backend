@@ -1,6 +1,6 @@
 # Backend map (ASP.NET Core, namespace `ERP`)
 
-Stack: EF Core + Npgsql (Postgres), FluentValidation, our own SSA for the forecast (`Repository/Services/SSA/SsaForecaster.cs`, no ML packages). DI is in `Program.cs` (services and data are `AddScoped`, `ResponseHelper` is a singleton). Frontend rules live in `../Frontend/.claude/skills/frontend-conventions`.
+Stack: EF Core + Npgsql (Postgres), FluentValidation, ML.NET's `ForecastBySsa` for the forecast, called from `Repository/Services/SSA/SsaForecaster.cs` (tuned: smoothed input, stabilizing off; the earlier textbook SSA lives in git history before 7.1.0). DI is in `Program.cs` (services and data are `AddScoped`, `ResponseHelper` is a singleton). Frontend rules live in `../Frontend/.claude/skills/frontend-conventions`.
 
 ## Layers
 
