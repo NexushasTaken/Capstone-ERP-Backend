@@ -1,4 +1,4 @@
-using ERP.Repository.Configuration.Helper;
+﻿using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Model.Products;
 using Microsoft.EntityFrameworkCore;
@@ -96,6 +96,7 @@ namespace ERP.Repository.Data.ProductData
         {
             var product = await BaseQuery<Product>(false)
                 .Include(p => p.Category)
+                .Include(p => p.Inventory.Where(i => i.IsActive == true))
                 .Where(p => p.IsActive == true)
                 .ToListAsync();
 

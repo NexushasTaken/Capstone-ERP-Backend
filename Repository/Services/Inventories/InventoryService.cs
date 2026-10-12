@@ -93,6 +93,7 @@ namespace ERP.Repository.Services.Inventories
                     Price = p.Price,
                     CategoryName = p.Category == null ? "No Category" : p.Category.Type,
                     Created_At = p.Created_At,
+                    Stock = p.Inventory.Sum(i => i.Quantity),
                 })
                 .ToList();
         }
