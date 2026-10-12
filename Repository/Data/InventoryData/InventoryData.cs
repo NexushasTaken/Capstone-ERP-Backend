@@ -111,7 +111,7 @@ namespace ERP.Repository.Data.InventoryData
             CancellationToken cancellationToken
         )
         {
-            var inventories = BaseQuery<Inventory>(false).Where(i => i.IsActive == true);
+            var inventories = BaseQuery<Inventory>(false).Where(i => i.IsActive);
 
             inventories = FilteringQuery(inventories, name, filter, statusId, wareHousePresent, listFilter);
 
@@ -135,7 +135,7 @@ namespace ERP.Repository.Data.InventoryData
             InventoryListFilter listFilter
         )
         {
-            var count = BaseQuery<Inventory>(false).Where(i => i.IsActive == true);
+            var count = BaseQuery<Inventory>(false).Where(i => i.IsActive);
 
             count = FilteringQuery(count, name, filter, statusId, wareHousePresent, listFilter);
 
@@ -149,16 +149,14 @@ namespace ERP.Repository.Data.InventoryData
             var inventory = await BaseQuery<Inventory>(true)
                 .Include(i => i.Product)
                 .Include(i => i.Warehouse)
-                .FirstOrDefaultAsync(i => i.Id == id && i.IsActive == true);
+                .FirstOrDefaultAsync(i => i.Id == id && i.IsActive);
 
             return inventory;
         }
 
         public async Task<IEnumerable<Inventory>> GetInventoriesWithTracking(List<int> Id)
         {
-            var inventory = await BaseQuery<Inventory>(true)
-                .Where(i => Id.Contains(i.Id) && i.IsActive == true)
-                .ToListAsync();
+            var inventory = await BaseQuery<Inventory>(true).Where(i => Id.Contains(i.Id) && i.IsActive).ToListAsync();
 
             return inventory;
         }
@@ -166,7 +164,7 @@ namespace ERP.Repository.Data.InventoryData
         public async Task<ICollection<Inventory>> GetInventoryWithWareHouseId(int id)
         {
             var inventory = await BaseQuery<Inventory>(true)
-                .Where(i => i.IsActive == true && i.WarehouseId == id)
+                .Where(i => i.IsActive && i.WarehouseId == id)
                 .ToListAsync();
 
             return inventory;
@@ -176,7 +174,7 @@ namespace ERP.Repository.Data.InventoryData
         {
             var inventory = await BaseQuery<Inventory>(true)
                 .Include(i => i.Warehouse)
-                .Where(i => i.ProductId == productId && i.IsActive == true)
+                .Where(i => i.ProductId == productId && i.IsActive)
                 .ToListAsync();
 
             return inventory;
@@ -185,7 +183,7 @@ namespace ERP.Repository.Data.InventoryData
         public async Task<bool> CheckExistingInventory(int productId, int warehouseId)
         {
             return await BaseQuery<Inventory>(false)
-                .AnyAsync(i => i.ProductId == productId && i.WarehouseId == warehouseId && i.IsActive == true);
+                .AnyAsync(i => i.ProductId == productId && i.WarehouseId == warehouseId && i.IsActive);
         }
 
         #endregion
@@ -197,7 +195,7 @@ namespace ERP.Repository.Data.InventoryData
         #region Warehouse
         private IQueryable<Warehouse> WarehouseFilteringQuery(string? name)
         {
-            var query = BaseQuery<Warehouse>(false).Where(w => w.IsActive == true);
+            var query = BaseQuery<Warehouse>(false).Where(w => w.IsActive);
 
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -244,7 +242,7 @@ namespace ERP.Repository.Data.InventoryData
                     Id = w.Id,
                     Name = w.Name,
                     Address = w.Address,
-                    Stocks = w.Inventory.Count(i => i.IsActive == true),
+                    Stocks = w.Inventory.Count(i => i.IsActive),
                     Created_At = w.Created_At,
                 })
                 .ToListAsync(cancellation);
@@ -259,7 +257,7 @@ namespace ERP.Repository.Data.InventoryData
 
         public async Task<Warehouse> GetIndividualWareHouseWithTracking(int id)
         {
-            var wareHouse = await BaseQuery<Warehouse>(true).FirstOrDefaultAsync(w => w.Id == id && w.IsActive == true);
+            var wareHouse = await BaseQuery<Warehouse>(true).FirstOrDefaultAsync(w => w.Id == id && w.IsActive);
 
             return wareHouse;
         }
@@ -290,7 +288,7 @@ namespace ERP.Repository.Data.InventoryData
         public async Task<IEnumerable<InventoryStatusViewModel>> StatusCount()
         {
             var inventory = await BaseQuery<Inventory>(false)
-                .Where(i => i.IsActive == true)
+                .Where(i => i.IsActive)
                 .GroupBy(i => new { i.StatusId, i.InventoryStatus.Status })
                 .Select(g => new InventoryStatusViewModel { Status = g.Key.Status, Count = g.Count() })
                 .ToListAsync();

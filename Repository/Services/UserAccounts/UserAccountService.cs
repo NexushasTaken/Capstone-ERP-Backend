@@ -82,7 +82,7 @@ namespace ERP.Repository.Services.UserAccounts
             {
                 Id = u.Id,
                 FullName = $"{u.UserInformation?.FirstName} {u.UserInformation?.LastName}".Trim(),
-                IsActive = u.IsActive == true,
+                IsActive = u.IsActive,
             });
         }
 

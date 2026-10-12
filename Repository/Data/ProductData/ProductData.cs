@@ -10,7 +10,7 @@ namespace ERP.Repository.Data.ProductData
         // categoryPresent: 0 = only products with a category, 1 = only products without one.
         public IQueryable<Product> FilteringQuery(IQueryable<Product> query, string? name, int categoryPresent)
         {
-            query = query.Where(p => p.IsActive == true);
+            query = query.Where(p => p.IsActive);
 
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -66,7 +66,7 @@ namespace ERP.Repository.Data.ProductData
         public async Task<ICollection<Product>> GetAllProductReferenceByCategoryWithTracking(int categoryId)
         {
             var products = await BaseQuery<Product>(true)
-                .Where(p => p.CategoryId == categoryId && p.IsActive == true)
+                .Where(p => p.CategoryId == categoryId && p.IsActive)
                 .OrderByDescending(p => p.Id)
                 .ToListAsync();
 
@@ -75,14 +75,14 @@ namespace ERP.Repository.Data.ProductData
 
         public async Task<Product> GetProductByIdWithTracking(int id)
         {
-            var product = await BaseQuery<Product>(true).FirstOrDefaultAsync(p => p.Id == id && p.IsActive == true);
+            var product = await BaseQuery<Product>(true).FirstOrDefaultAsync(p => p.Id == id && p.IsActive);
 
             return product;
         }
 
         public async Task<Product> GetProductByIdWithoutTracking(int id)
         {
-            var product = await BaseQuery<Product>(false).FirstOrDefaultAsync(p => p.Id == id && p.IsActive == true);
+            var product = await BaseQuery<Product>(false).FirstOrDefaultAsync(p => p.Id == id && p.IsActive);
 
             return product;
         }
@@ -96,8 +96,8 @@ namespace ERP.Repository.Data.ProductData
         {
             var product = await BaseQuery<Product>(false)
                 .Include(p => p.Category)
-                .Include(p => p.Inventory.Where(i => i.IsActive == true))
-                .Where(p => p.IsActive == true)
+                .Include(p => p.Inventory.Where(i => i.IsActive))
+                .Where(p => p.IsActive)
                 .ToListAsync();
 
             return product;
