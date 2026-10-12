@@ -9,6 +9,7 @@ using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Orders;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
+using ERP.Repository.Model.Products;
 using ERP.Repository.Model.Sales;
 using ERP.Repository.ViewModel.Orders;
 using FluentValidation;
@@ -22,6 +23,7 @@ namespace ERP.Repository.Services.Orders
         IDriverData _driver,
         IAuditLogService _auditLog,
         IValidator<OrderPostViewModel> _orderPostValidator,
+        IValidator<OrderPutViewModel> _orderPutValidator,
         IValidator<OrderStatusPostViewModel> _orderStatusValidator,
         IValidator<DeliveryDriverPostViewModel> _driverPostValidator,
         IValidator<DeliveryDriverPatchViewModel> _driverPatchValidator
@@ -187,6 +189,165 @@ namespace ERP.Repository.Services.Orders
             await _orders.SaveMany(orders);
 
             return message;
+        }
+
+        public async Task UpdateOrder(OrderPutViewModel order)
+        {
+            await _orderPutValidator.EnsureValidAsync(order);
+
+            var lines = (await _orders.GetOrderLinesWithTracking(order.OrderId)).ToList();
+
+            if (lines.Count == 0)
+            {
+                throw new NotFound("Order not found");
+            }
+
+            var header = lines.First().Order;
+
+            if (header.OrderStatusId != (int)OrderStatusEnum.Processing)
+            {
+                throw new BadRequest("Only processing orders can be edited");
+            }
+
+            var isWalkin = header.OrderTypeId == (int)OrderTypeEnum.Walkin;
+
+            if (!isWalkin && order.DeliveryRiderId > 0)
+            {
+                var driver = await _orders.ValidateDriverWithoutTracking(order.DeliveryRiderId);
+
+                if (driver == null)
+                {
+                    throw new BadRequest("Invalid Driver");
+                }
+            }
+
+            var desired = order
+                .OrderLines.GroupBy(l => l.ProductId)
+                .ToDictionary(g => g.Key, g => g.Sum(l => l.Quantity));
+            var current = lines.GroupBy(l => l.ProductId).ToDictionary(g => g.Key, g => g.Sum(l => l.Quantity));
+            var deltas = desired
+                .Keys.Union(current.Keys)
+                .Select(id => (ProductId: id, Delta: desired.GetValueOrDefault(id) - current.GetValueOrDefault(id)))
+                .Where(d => d.Delta != 0)
+                .ToList();
+
+            // Check every added quantity before touching stock, so a shortage leaves the order unchanged.
+            var products = new Dictionary<int, Product>();
+            var shortages = new List<string>();
+
+            foreach (var (productId, delta) in deltas.Where(d => d.Delta > 0))
+            {
+                var product = await _product.GetProductByIdWithoutTracking(productId);
+
+                if (product == null)
+                {
+                    throw new BadRequest("Product Not Found");
+                }
+
+                products[productId] = product;
+
+                var available = (await _inventory.GetProductInventoryWithTracking(productId))
+                    .Where(i => i.Quantity > 0)
+                    .Sum(i => i.Quantity);
+
+                if (available < delta)
+                {
+                    shortages.Add($"Not enough stock for {product.Name}: {available} available, {delta} needed");
+                }
+            }
+
+            if (shortages.Count > 0)
+            {
+                throw new BadRequest(string.Join(". ", shortages));
+            }
+
+            var now = DateTime.UtcNow;
+            var newLines = new List<OrderLine>();
+
+            foreach (var (productId, delta) in deltas)
+            {
+                if (delta < 0)
+                {
+                    ReturnOrderLineStock(lines.Where(l => l.ProductId == productId), -delta, now);
+                    continue;
+                }
+
+                var product = products[productId];
+                var inventory = await UpdateInventoryBaseOnOrders(productId, delta);
+
+                newLines.AddRange(
+                    inventory
+                        .Where(inv => inv.ToSave)
+                        .Select(inv => new OrderLine
+                        {
+                            OrderId = header.Id,
+                            ProductId = productId,
+                            InventoryId = inv.InventoryId,
+                            Quantity = inv.Quantity,
+                            Amount = product.Price * inv.Quantity,
+                            IsActive = true,
+                            Created_By = _auditLog.CurrentUserId,
+                            Created_At = now,
+                        })
+                );
+            }
+
+            var oldDiscount = header.DiscountPercent;
+
+            header.DeliveryDriverId = isWalkin || order.DeliveryRiderId == 0 ? null : order.DeliveryRiderId;
+            header.PibkupAddress = isWalkin ? "" : (order.PickUpAddress ?? "").ToLower();
+            header.DeliveryAddress = isWalkin ? "" : (order.DeliveryAddress ?? "").ToLower();
+            header.DiscountPercent = order.DiscountPercent;
+            header.Updated_By = _auditLog.CurrentUserId;
+            header.Updated_At = now;
+
+            var discountChange =
+                oldDiscount == order.DiscountPercent ? "" : $", discount {oldDiscount}% → {order.DiscountPercent}%";
+
+            _auditLog.Log(
+                AuditModuleEnum.Order,
+                AuditActionEnum.Update,
+                $"Edited order #{header.Id} for {header.CustomerName} ({desired.Count} item(s){discountChange})",
+                header.Id,
+                now
+            );
+
+            await _orders.SaveChanges();
+            await _orders.SaveMany(newLines);
+        }
+
+        // Gives `quantity` back to stock from the newest lines first. A line that reaches 0 is soft-deleted.
+        private void ReturnOrderLineStock(IEnumerable<OrderLine> lines, int quantity, DateTime now)
+        {
+            foreach (var line in lines.OrderByDescending(l => l.Id))
+            {
+                if (quantity <= 0)
+                {
+                    break;
+                }
+
+                var taken = Math.Min(quantity, line.Quantity);
+                var unitPrice = line.Amount / line.Quantity;
+
+                line.Inventory.Quantity += taken;
+                line.Inventory.StatusId = ReorderRatio.Ratio(line.Inventory.Quantity, line.Inventory.ReorderPoint);
+                line.Inventory.Updated_By = _auditLog.CurrentUserId;
+                line.Inventory.Updated_At = now;
+
+                line.Quantity -= taken;
+                line.Amount = unitPrice * line.Quantity;
+                line.Updated_By = _auditLog.CurrentUserId;
+                line.Updated_At = now;
+
+                if (line.Quantity == 0)
+                {
+                    line.IsActive = false;
+                    line.Deleted_By = _auditLog.CurrentUserId;
+                    line.Deleted_At = now;
+                }
+
+                quantity -= taken;
+            }
         }
 
         private async Task<

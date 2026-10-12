@@ -24,6 +24,18 @@ namespace ERP.Repository.Configuration.Validation.Orders
         }
     }
 
+    public class OrderPutValidator : AbstractValidator<OrderPutViewModel>
+    {
+        public OrderPutValidator()
+        {
+            RuleFor(o => o.OrderId).GreaterThan(0).WithMessage("Order is required");
+            RuleFor(o => o.DeliveryRiderId).GreaterThanOrEqualTo(0).WithMessage("Driver is Invalid");
+            RuleFor(o => o.DiscountPercent).InclusiveBetween(0, 100).WithMessage("Discount must be between 0 and 100");
+            RuleFor(o => o.OrderLines).NotEmpty().WithMessage("Add at least one product");
+            RuleForEach(o => o.OrderLines).SetValidator(new OrderLineValidator());
+        }
+    }
+
     public class OrderStatusValidator : AbstractValidator<OrderStatusPostViewModel>
     {
         public OrderStatusValidator()
