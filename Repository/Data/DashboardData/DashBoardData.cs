@@ -44,29 +44,10 @@ namespace ERP.Repository.Data.DashboardData
             CancellationToken cancellation
         )
         {
+            // Same-length period just before [from, to); counts sales exactly like OverView.
             TimeSpan span = to - from;
 
-            to = from;
-
-            from = from - span;
-
-            var start = new DateTime(from.Year, from.Month, from.Day, 0, 0, 0, DateTimeKind.Utc);
-            var end = new DateTime(to.Year, to.Month, to.Day, 0, 0, 0, DateTimeKind.Utc);
-
-            var data = await BaseQuery<OrderLine>(false)
-                .Include(o => o.Order)
-                .Where(s => s.IsActive == true && s.Created_At >= start && s.Created_At < end)
-                .ToListAsync(cancellation);
-
-            var result = data.GroupBy(s => new { s.Created_At.Value.Year, s.Created_At.Value.Month })
-                .OrderBy(g => g.Key.Month)
-                .Select(g => new MonthsDataViewModel
-                {
-                    Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM yyyy"),
-                    Data = g.Sum(x => x.Amount * (1 - x.Order.DiscountPercent / 100m)),
-                });
-
-            return result;
+            return await OverView(from - span, from, cancellation);
         }
 
         public async Task<int> TotalStock()
