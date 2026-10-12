@@ -120,7 +120,7 @@ namespace ERP.Repository.Services.Orders
                 OrderStatusId = (int)OrderStatusEnum.Processing,
                 DeliveryDriverId = order.DeliveryRiderId == 0 ? null : order.DeliveryRiderId,
                 CustomerName = order.CustomerName.ToLower(),
-                PibkupAddress = order.PickUpAddress.ToLower(),
+                PickUpAddress = order.PickUpAddress.ToLower(),
                 DeliveryAddress = order.DeliveryAddress.ToLower(),
                 DiscountPercent = order.DiscountPercent,
                 Created_By = _auditLog.CurrentUserId,
@@ -291,7 +291,7 @@ namespace ERP.Repository.Services.Orders
             var oldDiscount = header.DiscountPercent;
 
             header.DeliveryDriverId = isWalkin || order.DeliveryRiderId == 0 ? null : order.DeliveryRiderId;
-            header.PibkupAddress = isWalkin ? "" : (order.PickUpAddress ?? "").ToLower();
+            header.PickUpAddress = isWalkin ? "" : (order.PickUpAddress ?? "").ToLower();
             header.DeliveryAddress = isWalkin ? "" : (order.DeliveryAddress ?? "").ToLower();
             header.DiscountPercent = order.DiscountPercent;
             header.Updated_By = _auditLog.CurrentUserId;

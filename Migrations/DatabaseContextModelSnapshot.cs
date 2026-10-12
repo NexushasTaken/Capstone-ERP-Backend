@@ -452,7 +452,7 @@ namespace ERP.Migrations
                     b.Property<int>("OrderTypeId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("PibkupAddress")
+                    b.Property<string>("PickUpAddress")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("Updated_At")

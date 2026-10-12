@@ -97,7 +97,7 @@ namespace ERP.Repository.Data.Sales
                                 o.First().Order.DeliveryDriver.LastName
                             ),
                     CustomerName = o.First().Order.CustomerName,
-                    PickUpAddress = o.First().Order.PibkupAddress,
+                    PickUpAddress = o.First().Order.PickUpAddress,
                     DeliveryAddress = o.First().Order.DeliveryAddress,
                     Orders = o.GroupBy(g => g.ProductId)
                         .Select(g => new OrderViewModel
