@@ -69,7 +69,7 @@
     // How a product's demand forecast was made (ForecastResult.Method)
     public enum ForecastMethodEnum
     {
-        // SSA with a 52-week window: learns the yearly season (116+ weeks of history)
+        // SSA with a 52-week window: finds the yearly season (116+ weeks of history)
         YearlySsa = 1,
 
         // 2 was an 8-week-window SSA; removed because it lost to the average in testing
