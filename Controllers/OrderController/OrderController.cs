@@ -52,11 +52,11 @@ namespace ERP.Controllers.OrderController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", statuses));
         }
 
-        [HttpGet("riders")]
-        public async Task<IActionResult> GetDeliveryRiders()
+        [HttpGet("driver/active")]
+        public async Task<IActionResult> GetDeliveryDrivers()
         {
-            var riders = await _orderService.GetDeliveryRiders();
-            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", riders));
+            var drivers = await _orderService.GetDeliveryDrivers();
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", drivers));
         }
 
         [HttpGet("status/count")]

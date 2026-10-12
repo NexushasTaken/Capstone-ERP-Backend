@@ -170,10 +170,10 @@ namespace ERP.Repository.Data.OrderData
             return order;
         }
 
-        public async Task<IEnumerable<DeliveryDriver>> GetDeliveryRidersWithoutTracking()
+        public async Task<IEnumerable<DeliveryDriver>> GetDeliveryDriversWithoutTracking()
         {
-            var riders = await BaseQuery<DeliveryDriver>(false).Where(r => r.IsActive).ToListAsync();
-            return riders;
+            var drivers = await BaseQuery<DeliveryDriver>(false).Where(r => r.IsActive).ToListAsync();
+            return drivers;
         }
 
         public async Task<DeliveryDriver> ValidateDriverWithoutTracking(int? driverId)
