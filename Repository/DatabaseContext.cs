@@ -1,4 +1,5 @@
 ﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Model;
 using ERP.Repository.Model.AuditLogs;
 using ERP.Repository.Model.Forecast;
 using ERP.Repository.Model.Inventories;
@@ -81,6 +82,23 @@ namespace ERP.Repository
             modelBuilder.Entity<ForecastWeek>().HasKey(k => k.Id);
 
             modelBuilder.Entity<AuditLog>().HasKey(k => k.Id);
+            #endregion
+
+            #region Soft Delete Default
+            // IsActive defaults to true in the database too. The sentinel is true (matching the C# initializer),
+            // so EF only leaves the column out of an INSERT when it's true and still writes an explicit false.
+            foreach (
+                var entity in modelBuilder
+                    .Model.GetEntityTypes()
+                    .Where(e => typeof(BaseModel).IsAssignableFrom(e.ClrType))
+            )
+            {
+                modelBuilder
+                    .Entity(entity.ClrType)
+                    .Property(nameof(BaseModel.IsActive))
+                    .HasDefaultValue(true)
+                    .HasSentinel(true);
+            }
             #endregion
 
             #region Setting up Relationships

@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.0.1] - 2026-10-13
+
+### Fixed
+
+- `IsActive` now defaults to `true` in the database (it defaulted to `false` since 6.3.2) on categories, products, warehouses, inventories, drivers and user accounts. Run `dotnet ef database update`; existing rows are unchanged.
+
 ## [7.0.0] - 2026-10-12
 
 ### Changed
