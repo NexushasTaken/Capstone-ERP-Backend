@@ -102,5 +102,14 @@ namespace ERP.Repository.Data.ProductData
 
             return product;
         }
+
+        // Case-insensitive; excludeId skips the product being edited.
+        public async Task<bool> CheckExistingProduct(string name, int excludeId = 0)
+        {
+            var lower = name.ToLower();
+
+            return await BaseQuery<Product>(false)
+                .AnyAsync(p => p.IsActive && p.Id != excludeId && p.Name.ToLower() == lower);
+        }
     }
 }

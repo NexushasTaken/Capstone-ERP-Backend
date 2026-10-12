@@ -13,5 +13,6 @@ namespace ERP.Repository.Interface.Data.ProductData
         );
         Task<int> CategoryTotalCount(string? name, CancellationToken cancellation = default);
         Task<Category> GetCategoryByIdWithTracking(int id, CancellationToken cancellation = default);
+        Task<bool> CheckExistingCategory(string type, int excludeId = 0);
     }
 }

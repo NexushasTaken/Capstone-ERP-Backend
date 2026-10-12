@@ -112,6 +112,40 @@ namespace ERP.Repository.Services.Orders
                 }
             }
 
+            // Check stock for every product before saving anything, so a shortage creates no order.
+            var products = new Dictionary<int, Product>();
+            var shortages = new List<string>();
+
+            foreach (
+                var (productId, quantity) in order
+                    .OrderLines.GroupBy(l => l.ProductId)
+                    .Select(g => (g.Key, g.Sum(l => l.Quantity)))
+            )
+            {
+                var product = await _product.GetProductByIdWithoutTracking(productId);
+
+                if (product == null)
+                {
+                    throw new BadRequest("Product Not Found");
+                }
+
+                products[productId] = product;
+
+                var available = (await _inventory.GetProductInventoryWithTracking(productId))
+                    .Where(i => i.Quantity > 0)
+                    .Sum(i => i.Quantity);
+
+                if (available < quantity)
+                {
+                    shortages.Add($"Not enough stock for {product.Name}: {available} available, {quantity} needed");
+                }
+            }
+
+            if (shortages.Count > 0)
+            {
+                throw new BadRequest(string.Join(". ", shortages));
+            }
+
             var now = DateTime.UtcNow;
 
             var header = new Order
@@ -133,12 +167,7 @@ namespace ERP.Repository.Services.Orders
 
             foreach (var ord in order.OrderLines)
             {
-                var product = await _product.GetProductByIdWithoutTracking(ord.ProductId);
-
-                if (product == null)
-                {
-                    throw new BadRequest("Product Not Found");
-                }
+                var product = products[ord.ProductId];
 
                 var inventory = await UpdateInventoryBaseOnOrders(ord.ProductId, ord.Quantity);
 

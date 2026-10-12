@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.0.2] - 2026-10-13
+
+### Fixed
+
+- `POST /api/Order/insert` rejects an order when a product doesn't have enough stock ("Not enough stock for …: n available, m needed") and saves nothing. Before, it saved the order for the units available, emptied the stock and returned 200.
+- `POST /api/Category/insert` and `PATCH /api/Category/patch` reject a name another category already has ("A category with this name already exists."), ignoring case.
+- `POST /api/Product/insert` and `PATCH /api/Product/patch` reject a name another product already has ("A product with this name already exists."), ignoring case.
+- `PATCH /api/Inventory/restock` rejects a quantity of 0 or less. Before, a negative quantity lowered the stock.
+
 ## [7.0.1] - 2026-10-13
 
 ### Fixed
