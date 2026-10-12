@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.3.1] - 2026-10-12
+
+### Removed
+
+- Unused soft-delete columns (`IsActive`, `Deleted_By`, `Deleted_At`) from orders and user information. Orders are never deleted (cancelling is a status), and a user's information follows its account, whose own `IsActive` is unchanged. Run `dotnet ef database update`; responses are unchanged.
+
 ## [6.3.0] - 2026-10-12
 
 ### Changed

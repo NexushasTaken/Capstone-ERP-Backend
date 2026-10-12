@@ -296,7 +296,6 @@ namespace ERP.Repository
                         UserAccountId = 1,
                         FirstName = "Bill",
                         LastName = "Gates",
-                        IsActive = true,
                         Created_At = seededAt,
                     },
                     new UserInformation
@@ -305,7 +304,6 @@ namespace ERP.Repository
                         UserAccountId = 2,
                         FirstName = "Mark",
                         LastName = "Zucherbeard",
-                        IsActive = true,
                         Created_At = seededAt,
                     }
                 );

@@ -437,12 +437,6 @@ namespace ERP.Migrations
                     b.Property<string>("CustomerName")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
                     b.Property<string>("DeliveryAddress")
                         .HasColumnType("text");
 
@@ -451,9 +445,6 @@ namespace ERP.Migrations
 
                     b.Property<decimal>("DiscountPercent")
                         .HasColumnType("numeric");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
 
                     b.Property<int>("OrderStatusId")
                         .HasColumnType("integer");
@@ -759,17 +750,8 @@ namespace ERP.Migrations
                     b.Property<int?>("Created_By")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
                     b.Property<string>("FirstName")
                         .HasColumnType("text");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
                         .HasColumnType("text");
@@ -796,7 +778,6 @@ namespace ERP.Migrations
                             Id = 1,
                             Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             FirstName = "Bill",
-                            IsActive = true,
                             LastName = "Gates",
                             UserAccountId = 1
                         },
@@ -805,7 +786,6 @@ namespace ERP.Migrations
                             Id = 2,
                             Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             FirstName = "Mark",
-                            IsActive = true,
                             LastName = "Zucherbeard",
                             UserAccountId = 2
                         });

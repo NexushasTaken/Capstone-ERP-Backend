@@ -3,7 +3,7 @@ using ERP.Repository.Model.Products;
 
 namespace ERP.Repository.Model.Orders
 {
-    public class Order : BaseModel
+    public class Order : UpdatedModel
     {
         public int OrderTypeId { get; set; }
         public OrderType? OrderType { get; set; }
