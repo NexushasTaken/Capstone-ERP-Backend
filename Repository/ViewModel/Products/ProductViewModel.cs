@@ -11,6 +11,9 @@
         public string? CreatedByName { get; set; }
         public DateTime? Updated_At { get; set; }
         public string? UpdatedByName { get; set; }
+
+        /// <summary>Total stock across warehouses; only set by the inventory/order product picker.</summary>
+        public int? Stock { get; set; }
     }
 
     public class ProductPageViewModel()
