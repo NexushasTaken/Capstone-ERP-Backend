@@ -2,7 +2,7 @@
 
 namespace ERP.Repository.Model.Inventories
 {
-    public class DamagedInventory : BaseModel
+    public class DamagedInventory : CreatedModel
     {
         public int InventoryId { get; set; }
         public Inventory? Inventory { get; set; }

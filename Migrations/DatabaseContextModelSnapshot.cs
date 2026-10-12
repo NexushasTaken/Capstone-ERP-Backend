@@ -80,23 +80,11 @@ namespace ERP.Migrations
                     b.Property<DateTime?>("Created_At")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
                     b.Property<double>("ExpectedDemand")
                         .HasColumnType("double precision");
 
                     b.Property<int>("HistoryWeeks")
                         .HasColumnType("integer");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
 
                     b.Property<double>("LowDemand")
                         .HasColumnType("double precision");
@@ -117,12 +105,6 @@ namespace ERP.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("SuggestedOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
                         .HasColumnType("integer");
 
                     b.Property<double?>("WeeksLeft")
@@ -146,35 +128,14 @@ namespace ERP.Migrations
                     b.Property<double>("BusyCase")
                         .HasColumnType("double precision");
 
-                    b.Property<DateTime?>("Created_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
                     b.Property<double>("Expected")
                         .HasColumnType("double precision");
 
                     b.Property<int>("ForecastResultId")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<double>("Low")
                         .HasColumnType("double precision");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
-                        .HasColumnType("integer");
 
                     b.Property<DateOnly>("WeekStart")
                         .HasColumnType("date");
@@ -200,29 +161,14 @@ namespace ERP.Migrations
                     b.Property<int?>("Created_By")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
                     b.Property<int>("InventoryId")
                         .HasColumnType("integer");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<string>("Reason")
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -296,29 +242,8 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("Created_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Type")
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -328,29 +253,21 @@ namespace ERP.Migrations
                         new
                         {
                             Id = 1,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Type = "purchase"
                         },
                         new
                         {
                             Id = 2,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Type = "return"
                         },
                         new
                         {
                             Id = 3,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Type = "restock"
                         },
                         new
                         {
                             Id = 4,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Type = "damage"
                         });
                 });
@@ -363,29 +280,8 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("Created_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Status")
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -395,22 +291,16 @@ namespace ERP.Migrations
                         new
                         {
                             Id = 1,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Status = "available"
                         },
                         new
                         {
                             Id = 2,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Status = "low stock"
                         },
                         new
                         {
                             Id = 3,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Status = "critical"
                         });
                 });
@@ -429,31 +319,16 @@ namespace ERP.Migrations
                     b.Property<int?>("Created_By")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
                     b.Property<int>("InventoryId")
                         .HasColumnType("integer");
 
                     b.Property<int>("InventoryLabelId")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<int>("QuantityChanged")
                         .HasColumnType("integer");
 
                     b.Property<int>("StockLevel")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -669,29 +544,8 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("Created_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Status")
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -701,29 +555,21 @@ namespace ERP.Migrations
                         new
                         {
                             Id = 1,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Status = "completed"
                         },
                         new
                         {
                             Id = 2,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Status = "processing"
                         },
                         new
                         {
                             Id = 3,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Status = "shipped"
                         },
                         new
                         {
                             Id = 4,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Status = "cancelled"
                         });
                 });
@@ -736,29 +582,8 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("Created_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Type")
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -768,15 +593,11 @@ namespace ERP.Migrations
                         new
                         {
                             Id = 1,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Type = "walkin"
                         },
                         new
                         {
                             Id = 2,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Type = "delivery"
                         });
                 });
@@ -861,45 +682,6 @@ namespace ERP.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
-                });
-
-            modelBuilder.Entity("ERP.Repository.Model.Sales.Sale", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("Created_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("Sales");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>
@@ -1046,29 +828,8 @@ namespace ERP.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("Created_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
-                    b.Property<bool?>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Role")
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -1078,15 +839,11 @@ namespace ERP.Migrations
                         new
                         {
                             Id = 1,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Role = "owner"
                         },
                         new
                         {
                             Id = 2,
-                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsActive = true,
                             Role = "secretary"
                         });
                 });
@@ -1240,17 +997,6 @@ namespace ERP.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("ERP.Repository.Model.Sales.Sale", b =>
-                {
-                    b.HasOne("ERP.Repository.Model.Orders.Order", "Order")
-                        .WithMany("Sales")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-                });
-
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>
                 {
                     b.HasOne("ERP.Repository.Model.UserAccounts.UserRole", "UserRole")
@@ -1310,8 +1056,6 @@ namespace ERP.Migrations
             modelBuilder.Entity("ERP.Repository.Model.Orders.Order", b =>
                 {
                     b.Navigation("OrderLines");
-
-                    b.Navigation("Sales");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Orders.OrderStatus", b =>

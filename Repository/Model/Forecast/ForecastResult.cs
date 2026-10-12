@@ -4,10 +4,13 @@ namespace ERP.Repository.Model.Forecast
 {
     // One product's demand forecast for the next 4 weeks and what to order.
     // Every forecast run replaces all rows.
-    public class ForecastResult : BaseModel
+    public class ForecastResult : KeyModel
     {
         public int ProductId { get; set; }
         public Product? Product { get; set; }
+
+        // When this forecast run happened
+        public DateTime? Created_At { get; set; }
 
         // 4-week totals of forecasted demand (units sold - units returned)
         public double LowDemand { get; set; }

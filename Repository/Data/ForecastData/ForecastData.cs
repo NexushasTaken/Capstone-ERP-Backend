@@ -21,7 +21,7 @@ namespace ERP.Repository.Data.ForecastData
             var returned = (int)InventoryLabelEnum.Return;
 
             var query = BaseQuery<InventoryTransaction>(false)
-                .Where(t => t.IsActive == true && t.Created_At != null)
+                .Where(t => t.Created_At != null)
                 .Where(t => t.InventoryLabelId == purchase || t.InventoryLabelId == returned);
 
             if (productId > 0)
@@ -56,7 +56,7 @@ namespace ERP.Repository.Data.ForecastData
 
         public async Task<DateTime?> LatestForecastTime()
         {
-            return await BaseQuery<ForecastResult>(false).Where(f => f.IsActive == true).MaxAsync(f => f.Created_At);
+            return await BaseQuery<ForecastResult>(false).MaxAsync(f => f.Created_At);
         }
 
         // Every run replaces the previous results
@@ -76,7 +76,7 @@ namespace ERP.Repository.Data.ForecastData
         // Search by product name; optionally only the products with a suggested order
         private IQueryable<ForecastResult> FilteringQuery(string? search, bool needOrderOnly)
         {
-            var query = BaseQuery<ForecastResult>(false).Where(f => f.IsActive == true);
+            var query = BaseQuery<ForecastResult>(false);
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -118,15 +118,13 @@ namespace ERP.Repository.Data.ForecastData
 
         public async Task<int> NeedOrderCount()
         {
-            return await BaseQuery<ForecastResult>(false)
-                .Where(f => f.IsActive == true && f.SuggestedOrder > 0)
-                .CountAsync();
+            return await BaseQuery<ForecastResult>(false).Where(f => f.SuggestedOrder > 0).CountAsync();
         }
 
         public async Task<ForecastAccuracyViewModel?> Accuracy()
         {
             var totals = await BaseQuery<ForecastResult>(false)
-                .Where(f => f.IsActive == true && f.BacktestSold != null)
+                .Where(f => f.BacktestSold != null)
                 .GroupBy(_ => 1)
                 .Select(g => new
                 {
@@ -154,8 +152,8 @@ namespace ERP.Repository.Data.ForecastData
         {
             return await BaseQuery<ForecastResult>(false)
                 .Include(f => f.Product)
-                .Include(f => f.Weeks.Where(w => w.IsActive == true).OrderBy(w => w.WeekStart))
-                .Where(f => f.IsActive == true && f.ProductId == productId)
+                .Include(f => f.Weeks.OrderBy(w => w.WeekStart))
+                .Where(f => f.ProductId == productId)
                 .FirstOrDefaultAsync();
         }
     }

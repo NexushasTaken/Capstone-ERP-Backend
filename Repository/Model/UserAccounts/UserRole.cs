@@ -2,7 +2,7 @@
 
 namespace ERP.Repository.Model.UserAccounts
 {
-    public class UserRole : BaseModel
+    public class UserRole : KeyModel
     {
         public string? Role { get; set; }
 

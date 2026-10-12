@@ -323,7 +323,6 @@ namespace ERP.Repository.Services.Inventories
                 Quantity = damaged.Quantity,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
-                IsActive = true,
             };
 
             if (damaged.DamagedType == 1)
@@ -380,7 +379,6 @@ namespace ERP.Repository.Services.Inventories
                 InventoryLabelId = transaction.Label,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = DateTime.UtcNow,
-                IsActive = true,
             };
 
             await _inventory.Save(transac);

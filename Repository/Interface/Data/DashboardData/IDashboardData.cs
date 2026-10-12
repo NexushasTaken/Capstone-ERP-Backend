@@ -1,4 +1,3 @@
-﻿using ERP.Repository.Model.Sales;
 using ERP.Repository.ViewModel.Dashboard;
 
 namespace ERP.Repository.Interface.Data.DashboardData

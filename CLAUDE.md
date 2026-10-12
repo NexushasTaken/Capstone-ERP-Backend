@@ -11,7 +11,8 @@ Every service and data class has an interface under `Repository/Interface/`. Vie
 
 - Controllers stay thin and return `StatusCode(200, _response.Status(200, true, "msg", content))`.
 - Data classes extend `BaseData` (`BaseQuery<T>(withTracking)`, `Save`, `SaveChanges`).
-- Entities extend `BaseModel` (audit columns + `IsActive` soft delete). Every list, count and aggregate query must filter `IsActive == true`.
+- Entities pick a base from `Repository/Model/BaseModel.cs`: `KeyModel` (Id only: lookups, forecast tables), `CreatedModel` (+ `Created_By`/`Created_At`: append-only rows like `InventoryTransaction`, `DamagedInventory`), or `BaseModel` (+ update/delete audit columns and `IsActive` soft delete: anything users edit or delete). Every list, count and aggregate query on a `BaseModel` entity must filter `IsActive == true`.
+- There is no Sales table: a sale is an `Order` with status completed; sales figures come from completed `OrderLine`s.
 - Services log with `_auditLog.Log(AuditModuleEnum.X, AuditActionEnum.Y, ...)` and set `Created_By` / `Updated_By` from `_auditLog.CurrentUserId`.
 - Paging: call `PageQueryValidator.Ensure(page, pageSize)` in the service. Page responses carry the items, `PageCount` and `Rows`.
 - Search: `SearchPattern.Contains` (ILike) and `SearchPattern.TryParseId` for `INV-12` style ids.
