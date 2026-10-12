@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.1.0] - 2026-10-12
+
+### Added
+
+- `PUT /api/Order/put` edits a _Processing_ order: its items (add, remove, change quantity), discount, driver and pickup/delivery addresses. Order type and customer cannot change. Stock moves right away: removed or lowered quantities go back to the warehouse they came from, and added quantities are deducted like a new order. If any added quantity is short of stock, the whole edit is rejected with a 400 that lists the short products. Orders in any other status return a 400. Each edit is written to the audit log.
+- `GET /api/Order/all` returns `deliveryDriverId` for each order and `productId` for each order line.
+
+### Changed
+
+- Order lines removed by an edit are soft-deleted and are left out of the order list and count, sales, the dashboard, and the stock returned when an order is cancelled.
+
 ## [6.0.0] - 2026-10-10
 
 ### Changed

@@ -10,6 +10,7 @@
 
     public class OrderViewModel
     {
+        public int ProductId { get; set; }
         public string? ProductName { get; set; }
         public int Quantity { get; set; }
         public decimal Price { get; set; }
@@ -21,6 +22,7 @@
         public int OrderId { get; set; }
         public string? OrderType { get; set; }
         public string? OrderStatus { get; set; }
+        public int? DeliveryDriverId { get; set; }
         public string? DriverName { get; set; }
         public string? CustomerName { get; set; }
         public string? PickUpAddress { get; set; }
@@ -58,6 +60,16 @@
         public int OrderTypeId { get; set; }
         public int? DeliveryRiderId { get; set; }
         public string? CustomerName { get; set; }
+        public string? PickUpAddress { get; set; }
+        public string? DeliveryAddress { get; set; }
+        public decimal DiscountPercent { get; set; }
+        public ICollection<OrderLineViewModel> OrderLines { get; set; } = [];
+    }
+
+    public class OrderPutViewModel
+    {
+        public int OrderId { get; set; }
+        public int? DeliveryRiderId { get; set; }
         public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }

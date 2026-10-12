@@ -14,6 +14,7 @@ namespace ERP.Repository.Interface.Orders
             CancellationToken cancellationToken = default
         );
         Task<List<string>?> InsertOrder(OrderPostViewModel order);
+        Task UpdateOrder(OrderPutViewModel order);
         Task<IEnumerable<OrderTypeViewModel>> GetOrderTypes();
         Task<IEnumerable<OrderStatusViewModel>> GetOrderStatuses();
         Task UpdateOrderStatus(OrderStatusPostViewModel status);

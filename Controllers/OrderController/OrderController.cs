@@ -102,6 +102,14 @@ namespace ERP.Controllers.OrderController
             return StatusCode(200, _response.Status(200, true, "Orders Added Successfully", message));
         }
 
+        [HttpPut("put")]
+        public async Task<IActionResult> UpdateOrder([FromBody] OrderPutViewModel order)
+        {
+            await _orderService.UpdateOrder(order);
+
+            return StatusCode(200, _response.Status(200, true, "Order Updated Successfully", null));
+        }
+
         [Authorize(Roles = "owner")]
         [HttpPost("driver/insert")]
         public async Task<IActionResult> AddNewDriver([FromBody] DeliveryDriverPostViewModel driver)

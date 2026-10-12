@@ -82,7 +82,7 @@ namespace ERP.Repository.Data.OrderData
         )
         {
             var orders = BaseQuery<OrderLine>(false)
-                .Where(o => o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
+                .Where(o => o.IsActive == true && o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
 
             orders = FilteringQuery(orders, name, filter, statusId, orderTypeId);
 
@@ -97,6 +97,7 @@ namespace ERP.Repository.Data.OrderData
                     OrderId = o.Key,
                     OrderType = o.First().Order.OrderType.Type,
                     OrderStatus = o.First().Order.OrderStatus.Status,
+                    DeliveryDriverId = o.First().Order.DeliveryDriverId,
                     DriverName =
                         o.First().Order.DeliveryDriver == null
                             ? ""
@@ -111,6 +112,7 @@ namespace ERP.Repository.Data.OrderData
                     Orders = o.GroupBy(g => g.ProductId)
                         .Select(g => new OrderViewModel
                         {
+                            ProductId = g.Key,
                             ProductName = g.First().Product.Name,
                             Quantity = g.Sum(x => x.Quantity),
                             Price = g.First().Product.Price,
@@ -141,7 +143,7 @@ namespace ERP.Repository.Data.OrderData
         public async Task<int> OrdersCount(string? name, int filter, int statusId, int orderTypeId)
         {
             var orders = BaseQuery<OrderLine>(false)
-                .Where(o => o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
+                .Where(o => o.IsActive == true && o.Order.OrderStatusId != (int)OrderStatusEnum.Completed);
 
             orders = FilteringQuery(orders, name, filter, statusId, orderTypeId);
 
@@ -184,7 +186,7 @@ namespace ERP.Repository.Data.OrderData
         public async Task<IEnumerable<OrderLine>> GetOrderLinesWithTracking(int id)
         {
             var order = await BaseQuery<OrderLine>(true)
-                .Where(o => o.OrderId == id)
+                .Where(o => o.IsActive == true && o.OrderId == id)
                 .Include(o => o.Product)
                 .Include(o => o.Inventory)
                 .Include(o => o.Order)

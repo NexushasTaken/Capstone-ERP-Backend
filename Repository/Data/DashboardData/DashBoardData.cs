@@ -20,7 +20,8 @@ namespace ERP.Repository.Data.DashboardData
             var data = await BaseQuery<OrderLine>(false)
                 .Include(o => o.Order)
                 .Where(s =>
-                    s.Created_At >= start
+                    s.IsActive == true
+                    && s.Created_At >= start
                     && s.Created_At < end
                     && s.Order.OrderStatusId == (int)OrderStatusEnum.Completed
                 )
@@ -54,7 +55,7 @@ namespace ERP.Repository.Data.DashboardData
 
             var data = await BaseQuery<OrderLine>(false)
                 .Include(o => o.Order)
-                .Where(s => s.Created_At >= start && s.Created_At < end)
+                .Where(s => s.IsActive == true && s.Created_At >= start && s.Created_At < end)
                 .ToListAsync(cancellation);
 
             var result = data.GroupBy(s => new { s.Created_At.Value.Year, s.Created_At.Value.Month })
