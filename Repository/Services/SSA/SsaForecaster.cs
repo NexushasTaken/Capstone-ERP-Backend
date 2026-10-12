@@ -13,12 +13,16 @@ namespace ERP.Repository.Services.SSA
     // and use them to continue the series into the future. It is statistics, re-fitted from
     // scratch on every call; nothing is kept between runs.
     //
-    // Unlike the textbook SSA on master, ML.NET continues from the raw recent weeks, not the
-    // smoothed line. On our data that lost to a simple 4-week average
-    // (docs/ssa-design/mlnet-ssa-test.typ); this branch exists to compare the two.
+    // Out of the box ML.NET lost to a simple 4-week average on our data: it continues from the
+    // raw recent weeks (copying their random wobble forward) and its default "stabilize" step
+    // flattens the yearly season. So we feed it a 4-week average of the history instead of the
+    // raw weeks (like textbook SSA continuing its smoothed line) and turn stabilizing off.
+    // ML.NET's own range would then be too narrow, so the range is computed here, the same way
+    // as master: from how far the real weeks landed from the smoothed line.
     public static class SsaForecaster
     {
-        private const float ConfidenceLevel = 0.95f;
+        private const double Z95 = 1.96; // 95% of a normal spread is within 1.96 standard deviations
+        private const int SmoothingWeeks = 4;
 
         // Returns null when the history can't be modelled (too short, all zeros, or ML.NET
         // rejects it); the caller then falls back to the simple average.
@@ -31,11 +35,24 @@ namespace ERP.Repository.Services.SSA
                 return null;
             }
 
+            // Each week becomes the average of itself and the weeks just before it
+            var smoothed = new double[n];
+            for (int i = 0; i < n; i++)
+            {
+                int from = Math.Max(0, i - SmoothingWeeks + 1);
+                double sum = 0;
+                for (int j = from; j <= i; j++)
+                {
+                    sum += series[j];
+                }
+                smoothed[i] = sum / (i - from + 1);
+            }
+
             // A new context per call: the backtest endpoint runs outside the forecast lock
             var ml = new MLContext(seed: 0);
-            var data = ml.Data.LoadFromEnumerable(series.Select(d => new DemandInput { Demand = (float)d }));
+            var data = ml.Data.LoadFromEnumerable(smoothed.Select(d => new DemandInput { Demand = (float)d }));
 
-            SsaOutput output;
+            double[] expected;
             try
             {
                 var model = ml
@@ -49,24 +66,31 @@ namespace ERP.Repository.Services.SSA
                         // Keep exactly `rank` shapes; ML.NET ignores `rank` unless the method is Fixed
                         rankSelectionMethod: RankSelectionMethod.Fixed,
                         rank: rank,
-                        confidenceLevel: ConfidenceLevel,
-                        confidenceLowerBoundColumn: nameof(SsaOutput.Low),
-                        confidenceUpperBoundColumn: nameof(SsaOutput.BusyCase)
+                        // Stabilizing flattens the yearly season (31.7% -> 25.6% error without it)
+                        shouldStabilize: false
                     )
                     .Fit(data);
 
                 using var engine = model.CreateTimeSeriesEngine<DemandInput, SsaOutput>(ml);
-                output = engine.Predict();
+                expected = engine.Predict().Forecast.Select(x => (double)x).ToArray();
             }
             catch (Exception e) when (e is ArgumentException or InvalidOperationException)
             {
                 return null;
             }
 
+            // The range: how far real weeks landed from the smoothed line in the past
+            double squared = 0;
+            for (int i = 0; i < n; i++)
+            {
+                squared += (series[i] - smoothed[i]) * (series[i] - smoothed[i]);
+            }
+            var spread = Z95 * Math.Sqrt(squared / n);
+
             return new SsaForecast(
-                output.Forecast.Select(x => (double)x).ToArray(),
-                output.Low.Select(x => Math.Max(0, (double)x)).ToArray(),
-                output.BusyCase.Select(x => (double)x).ToArray()
+                expected,
+                expected.Select(e => Math.Max(0, e - spread)).ToArray(),
+                expected.Select(e => e + spread).ToArray()
             );
         }
 
@@ -78,8 +102,6 @@ namespace ERP.Repository.Services.SSA
         private class SsaOutput
         {
             public float[] Forecast { get; set; } = [];
-            public float[] Low { get; set; } = [];
-            public float[] BusyCase { get; set; } = [];
         }
     }
 }
