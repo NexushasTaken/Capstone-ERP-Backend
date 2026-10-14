@@ -590,6 +590,36 @@ namespace ERP.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ERP.Repository.Model.Orders.Sale", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("Created_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Created_By")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Created_At");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.ToTable("Sales");
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.Products.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -971,6 +1001,17 @@ namespace ERP.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("ERP.Repository.Model.Orders.Sale", b =>
+                {
+                    b.HasOne("ERP.Repository.Model.Orders.Order", "Order")
+                        .WithOne("Sale")
+                        .HasForeignKey("ERP.Repository.Model.Orders.Sale", "OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.Products.Product", b =>
                 {
                     b.HasOne("ERP.Repository.Model.Products.Category", "Category")
@@ -1039,6 +1080,8 @@ namespace ERP.Migrations
             modelBuilder.Entity("ERP.Repository.Model.Orders.Order", b =>
                 {
                     b.Navigation("OrderLines");
+
+                    b.Navigation("Sale");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Orders.OrderStatus", b =>

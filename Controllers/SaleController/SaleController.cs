@@ -16,10 +16,21 @@ namespace ERP.Controllers.SaleController
             [FromQuery] string? name = "",
             [FromQuery] int filter = 0,
             [FromQuery] int orderTypeId = 0,
+            [FromQuery] DateOnly? from = null,
+            [FromQuery] DateOnly? to = null,
             CancellationToken cancellationToken = default
         )
         {
-            var salesData = await _sales.GetSales(page, pageSize, name, filter, orderTypeId, cancellationToken);
+            var salesData = await _sales.GetSales(
+                page,
+                pageSize,
+                name,
+                filter,
+                orderTypeId,
+                from,
+                to,
+                cancellationToken
+            );
 
             return StatusCode(
                 200,

@@ -1,19 +1,32 @@
-﻿using ERP.Repository.Model.Orders;
-using ERP.Repository.ViewModel.Sales;
+﻿using ERP.Repository.ViewModel.Sales;
 
 namespace ERP.Repository.Interface.Data.SalesData
 {
     public interface ISalesData : IBaseData
     {
-        IQueryable<OrderLine> FilteringQuery(IQueryable<OrderLine> query, string? name, int filter, int orderTypeId);
-        Task<IEnumerable<SaleTotalViewModel>> GetOrdersWithoutTracking(
+        Task<IEnumerable<SaleTotalViewModel>> GetSalesWithoutTracking(
             int page,
             int pageSize,
             string? name,
             int filter,
             int orderTypeId,
+            DateOnly? from,
+            DateOnly? to,
             CancellationToken cancellationToken = default
         );
-        Task<int> OrdersCount(string? name, int filter, int orderTypeId);
+        Task<int> SalesCount(
+            string? name,
+            int orderTypeId,
+            DateOnly? from,
+            DateOnly? to,
+            CancellationToken cancellationToken = default
+        );
+        Task<decimal> SalesTotalAmount(
+            string? name,
+            int orderTypeId,
+            DateOnly? from,
+            DateOnly? to,
+            CancellationToken cancellationToken = default
+        );
     }
 }

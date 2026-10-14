@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.0.0] - 2026-10-15
+
+### Added
+
+- A `Sales` table: one row per completed order, written when the order is completed through `PATCH /api/Order/status/patch`, with when it sold (`Created_At`), who completed it (`Created_By`) and the amount charged after discount (`Total`). The migration fills it for orders that are already completed. Run `dotnet ef database update`.
+- `GET /api/Sale/all` takes `from` and `to` (`yyyy-MM-dd`, both inclusive, Philippine days) and returns 400 when `from` is after `to`.
+- `GET /api/Sale/all` returns `totalAmount`, the sum of every sale matching the filters (not just the page).
+
+### Changed
+
+- **BREAKING:** `GET /api/Sale/all` sorts with new `filter` codes: 0 newest first, 1 oldest first, 2 total high to low, 3 total low to high, 4 customer A to Z, 5 customer Z to A. The old product and quantity codes are gone (they never took effect).
+- **BREAKING:** A sale's `id` in `GET /api/Sale/all` is now the sale's own id, and `SAL-n` search matches it; it used to be the order id.
+- A sale's date is when the order was completed, not when it was created.
+- `GET /api/Dashboard/sales` reads the `Sales` table and counts days and months in Philippine time, so a month's total matches the Sales list for that month.
+
+### Fixed
+
+- Searching `GET /api/Sale/all` by product name returns each matching sale with all of its products and its full total. Before, it dropped the sale's other products and showed a smaller subtotal.
+
 ## [7.1.0] - 2026-10-13
 
 ### Changed

@@ -38,6 +38,7 @@ namespace ERP.Repository
         public DbSet<OrderStatus> OrderStatuses { get; set; }
         public DbSet<DeliveryDriver> DeliveryDrivers { get; set; }
         public DbSet<OrderLine> OrderLines { get; set; }
+        public DbSet<Sale> Sales { get; set; }
         public DbSet<ForecastResult> ForecastResults { get; set; }
         public DbSet<ForecastWeek> ForecastWeeks { get; set; }
         #endregion
@@ -71,6 +72,7 @@ namespace ERP.Repository
             modelBuilder.Entity<OrderStatus>().HasKey(p => p.Id);
             modelBuilder.Entity<DeliveryDriver>().HasKey(p => p.Id);
             modelBuilder.Entity<OrderLine>().HasKey(p => p.Id);
+            modelBuilder.Entity<Sale>().HasKey(p => p.Id);
             #endregion
 
             #region Products
@@ -204,6 +206,11 @@ namespace ERP.Repository
                 .HasOne(i => i.Inventory)
                 .WithMany(w => w.OrderLines)
                 .HasForeignKey(i => i.InventoryId);
+
+            // One sale per completed order.
+            modelBuilder.Entity<Sale>().HasOne(s => s.Order).WithOne(o => o.Sale).HasForeignKey<Sale>(s => s.OrderId);
+
+            modelBuilder.Entity<Sale>().HasIndex(s => s.Created_At);
 
             modelBuilder
                 .Entity<ForecastResult>()

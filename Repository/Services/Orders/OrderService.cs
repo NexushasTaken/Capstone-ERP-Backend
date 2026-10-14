@@ -524,6 +524,7 @@ namespace ERP.Repository.Services.Orders
             switch (stat)
             {
                 case OrderStatusEnum.Completed:
+                    header.Sale = NewSale(order, header.DiscountPercent, now);
                     await CommitInventoryTransaction(inventory);
                     break;
                 case OrderStatusEnum.Cancelled:
@@ -570,6 +571,19 @@ namespace ERP.Repository.Services.Orders
             {
                 throw new BadRequest("A shipped order cannot go back to processing");
             }
+        }
+
+        // The sale record of a completed order: when it sold, who completed it, and the amount charged.
+        private Sale NewSale(IEnumerable<OrderLine> lines, decimal discountPercent, DateTime now)
+        {
+            var subtotal = lines.Sum(l => l.Amount);
+
+            return new Sale
+            {
+                Total = subtotal - OrderMath.DiscountAmount(subtotal, discountPercent),
+                Created_By = _auditLog.CurrentUserId,
+                Created_At = now,
+            };
         }
 
         private async Task CommitInventoryTransaction(List<(int inventoryId, int quantity)> inventory)

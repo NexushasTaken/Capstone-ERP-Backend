@@ -1,5 +1,4 @@
-﻿using ERP.Repository.Configuration.Enum;
-using ERP.Repository.Configuration.Helper;
+﻿using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Data.SalesData;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.ViewModel.Orders;
@@ -10,96 +9,90 @@ namespace ERP.Repository.Data.Sales
 {
     public class SalesData(DatabaseContext _context) : BaseData(_context), ISalesData
     {
-        public IQueryable<OrderLine> FilteringQuery(
-            IQueryable<OrderLine> query,
-            string? name,
-            int filter,
-            int orderTypeId
-        )
+        // from/to are whole Philippine days (to is inclusive), the days the list shows; Created_At is UTC.
+        private IQueryable<Sale> FilteringQuery(string? name, int orderTypeId, DateOnly? from, DateOnly? to)
         {
+            var query = BaseQuery<Sale>(false);
+
             if (!string.IsNullOrWhiteSpace(name))
             {
                 var pattern = SearchPattern.Contains(name);
                 var hasId = SearchPattern.TryParseId(name, "SAL", out var id);
 
-                query = query.Where(o =>
-                    EF.Functions.ILike(o.Product.Name, pattern)
-                    || EF.Functions.ILike(o.Order.CustomerName, pattern)
-                    || EF.Functions.ILike(o.Order.OrderType.Type, pattern)
-                    || (hasId && o.OrderId == id)
+                // A product match keeps the whole sale, with all of its lines.
+                query = query.Where(s =>
+                    EF.Functions.ILike(s.Order.CustomerName, pattern)
+                    || EF.Functions.ILike(s.Order.OrderType.Type, pattern)
+                    || s.Order.OrderLines.Any(l => EF.Functions.ILike(l.Product.Name, pattern))
+                    || (hasId && s.Id == id)
                 );
             }
 
             if (orderTypeId > 0)
             {
-                query = query.Where(o => o.Order.OrderTypeId == orderTypeId);
+                query = query.Where(s => s.Order.OrderTypeId == orderTypeId);
             }
 
-            if (Enum.IsDefined(typeof(OrdersFilter), filter))
+            if (from != null)
             {
-                var selectedFilter = (OrdersFilter)filter;
-
-                switch (selectedFilter)
-                {
-                    case OrdersFilter.PRDATOZ:
-                        query = query.OrderBy(o => o.Product.Name);
-                        break;
-                    case OrdersFilter.PRDZTOA:
-                        query = query.OrderByDescending(o => o.Product.Name);
-                        break;
-                    case OrdersFilter.QHIGH:
-                        query = query.OrderByDescending(o => o.Quantity);
-                        break;
-                    case OrdersFilter.QLOW:
-                        query = query.OrderBy(o => o.Quantity);
-                        break;
-                }
+                var start = from.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc) - DemandWeek.PhOffset;
+                query = query.Where(s => s.Created_At >= start);
             }
-            else
+
+            if (to != null)
             {
-                query = query.OrderByDescending(o => o.Order.Created_At);
+                var end = to.Value.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc) - DemandWeek.PhOffset;
+                query = query.Where(s => s.Created_At < end);
             }
 
             return query;
         }
 
-        public async Task<IEnumerable<SaleTotalViewModel>> GetOrdersWithoutTracking(
+        // filter: 0 = newest first, 1 = oldest first, 2 = total high-low, 3 = total low-high,
+        // 4 = customer A-Z, 5 = customer Z-A. Ties fall back to Id so paging stays stable.
+        private static IQueryable<Sale> SortingQuery(IQueryable<Sale> query, int filter)
+        {
+            var sorted = filter switch
+            {
+                1 => query.OrderBy(s => s.Created_At),
+                2 => query.OrderByDescending(s => s.Total),
+                3 => query.OrderBy(s => s.Total),
+                4 => query.OrderBy(s => s.Order.CustomerName),
+                5 => query.OrderByDescending(s => s.Order.CustomerName),
+                _ => query.OrderByDescending(s => s.Created_At),
+            };
+
+            return sorted.ThenBy(s => s.Id);
+        }
+
+        public async Task<IEnumerable<SaleTotalViewModel>> GetSalesWithoutTracking(
             int page,
             int pageSize,
             string? name,
             int filter,
             int orderTypeId,
+            DateOnly? from,
+            DateOnly? to,
             CancellationToken cancellation = default
         )
         {
-            var orders = BaseQuery<OrderLine>(false)
-                .Where(o => o.Order.OrderStatusId == (int)OrderStatusEnum.Completed);
-
-            orders = FilteringQuery(orders, name, filter, orderTypeId);
-
-            var groupedOrders = orders
-                .Include(o => o.Product)
-                .Include(o => o.Order.OrderType)
-                .Include(o => o.Order.OrderStatus)
-                .Include(o => o.Order.DeliveryDriver)
-                .GroupBy(o => o.OrderId)
-                .Select(o => new SaleTotalViewModel
+            var result = await SortingQuery(FilteringQuery(name, orderTypeId, from, to), filter)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(s => new SaleTotalViewModel
                 {
-                    Id = o.Key,
-                    OrderType = o.First().Order.OrderType.Type,
-                    OrderStatus = o.First().Order.OrderStatus.Status,
+                    Id = s.Id,
+                    OrderType = s.Order.OrderType.Type,
+                    OrderStatus = s.Order.OrderStatus.Status,
                     DriverName =
-                        o.First().Order.DeliveryDriver == null
+                        s.Order.DeliveryDriver == null
                             ? ""
-                            : string.Concat(
-                                o.First().Order.DeliveryDriver.FirstName,
-                                " ",
-                                o.First().Order.DeliveryDriver.LastName
-                            ),
-                    CustomerName = o.First().Order.CustomerName,
-                    PickUpAddress = o.First().Order.PickUpAddress,
-                    DeliveryAddress = o.First().Order.DeliveryAddress,
-                    Orders = o.GroupBy(g => g.ProductId)
+                            : string.Concat(s.Order.DeliveryDriver.FirstName, " ", s.Order.DeliveryDriver.LastName),
+                    CustomerName = s.Order.CustomerName,
+                    PickUpAddress = s.Order.PickUpAddress,
+                    DeliveryAddress = s.Order.DeliveryAddress,
+                    Orders = s
+                        .Order.OrderLines.GroupBy(l => l.ProductId)
                         .Select(g => new OrderViewModel
                         {
                             ProductName = g.First().Product.Name,
@@ -108,36 +101,42 @@ namespace ERP.Repository.Data.Sales
                             TotalAmount = g.Sum(x => x.Amount),
                         })
                         .ToList(),
-                    Subtotal = o.Sum(g => g.Amount),
-                    DiscountPercent = o.First().Order.DiscountPercent,
-                    Created_At = o.First().Created_At,
-                });
-
-            var result = await groupedOrders
-                .OrderByDescending(o => o.Id)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                    Subtotal = s.Order.OrderLines.Sum(l => l.Amount),
+                    DiscountPercent = s.Order.DiscountPercent,
+                    Total = s.Total,
+                    Created_At = s.Created_At,
+                })
                 .ToListAsync(cancellation);
 
             foreach (var sale in result)
             {
-                sale.DiscountAmount = OrderMath.DiscountAmount(sale.Subtotal, sale.DiscountPercent);
-                sale.Total = sale.Subtotal - sale.DiscountAmount;
+                // The stored total is what was charged, so the discount shown is whatever makes up the difference.
+                sale.DiscountAmount = sale.Subtotal - sale.Total;
             }
 
             return result;
         }
 
-        public async Task<int> OrdersCount(string? name, int filter, int orderTypeId)
+        public async Task<int> SalesCount(
+            string? name,
+            int orderTypeId,
+            DateOnly? from,
+            DateOnly? to,
+            CancellationToken cancellation = default
+        )
         {
-            var orders = BaseQuery<OrderLine>(false)
-                .Where(o => o.Order.OrderStatusId == (int)OrderStatusEnum.Completed);
+            return await FilteringQuery(name, orderTypeId, from, to).CountAsync(cancellation);
+        }
 
-            orders = FilteringQuery(orders, name, filter, orderTypeId);
-
-            var result = await orders.Distinct().GroupBy(s => s.OrderId).CountAsync();
-
-            return result;
+        public async Task<decimal> SalesTotalAmount(
+            string? name,
+            int orderTypeId,
+            DateOnly? from,
+            DateOnly? to,
+            CancellationToken cancellation = default
+        )
+        {
+            return await FilteringQuery(name, orderTypeId, from, to).SumAsync(s => s.Total, cancellation);
         }
     }
 }
