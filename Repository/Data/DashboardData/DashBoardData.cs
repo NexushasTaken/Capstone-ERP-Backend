@@ -15,16 +15,19 @@ namespace ERP.Repository.Data.DashboardData
             CancellationToken cancellation
         )
         {
-            // Days and months are Philippine time, as on the Sales list, so a month here matches its total there.
+            // from and to are whole days, both included. Days and months are Philippine time, as on the
+            // Sales list, so a month here matches its total there.
             var start = new DateTime(from.Year, from.Month, from.Day, 0, 0, 0, DateTimeKind.Utc) - DemandWeek.PhOffset;
-            var end = new DateTime(to.Year, to.Month, to.Day, 0, 0, 0, DateTimeKind.Utc) - DemandWeek.PhOffset;
+            var end =
+                new DateTime(to.Year, to.Month, to.Day, 0, 0, 0, DateTimeKind.Utc).AddDays(1) - DemandWeek.PhOffset;
             var data = await BaseQuery<Sale>(false)
                 .Where(s => s.Created_At >= start && s.Created_At < end)
                 .ToListAsync(cancellation);
 
             var result = data.Select(s => (Sold: s.Created_At!.Value + DemandWeek.PhOffset, s.Total))
                 .GroupBy(s => new { s.Sold.Year, s.Sold.Month })
-                .OrderBy(g => g.Key.Month)
+                .OrderBy(g => g.Key.Year)
+                .ThenBy(g => g.Key.Month)
                 .Select(g => new MonthsDataViewModel
                 {
                     Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM yyyy"),
@@ -40,10 +43,10 @@ namespace ERP.Repository.Data.DashboardData
             CancellationToken cancellation
         )
         {
-            // Same-length period just before [from, to); counts sales exactly like OverView.
-            TimeSpan span = to - from;
+            // The same number of days just before from (both ends included), counted exactly like OverView.
+            var days = (to.Date - from.Date).Days + 1;
 
-            return await OverView(from - span, from, cancellation);
+            return await OverView(from.Date.AddDays(-days), from.Date.AddDays(-1), cancellation);
         }
 
         public async Task<int> TotalStock()

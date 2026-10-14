@@ -5,6 +5,14 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.0.1] - 2026-10-15
+
+### Fixed
+
+- `GET /api/Dashboard/sales` includes the `to` day. Before, the range stopped the day before, so the default range (the 1st of this month as `to`) left the current month out.
+- `GET /api/Dashboard/sales` lists months in date order across years (November 2025 before January 2026). Before, it sorted by month number only.
+- The growth figure of `GET /api/Dashboard/sales` compares against the same number of days just before `from`, now that `to` is included.
+
 ## [8.0.0] - 2026-10-15
 
 ### Added
