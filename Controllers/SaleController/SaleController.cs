@@ -43,5 +43,22 @@ namespace ERP.Controllers.SaleController
                 }
             );
         }
+
+        [HttpGet("range")]
+        public async Task<IActionResult> GetSaleDateRange(CancellationToken cancellationToken = default)
+        {
+            var range = await _sales.GetSaleDateRange(cancellationToken);
+
+            return StatusCode(
+                200,
+                new
+                {
+                    status = 200,
+                    success = true,
+                    message = "Retrieved Successfully",
+                    range,
+                }
+            );
+        }
     }
 }

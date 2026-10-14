@@ -28,4 +28,11 @@ namespace ERP.Repository.ViewModel.Sales
         // Sum of Total over every sale matching the filters, not just this page.
         public decimal TotalAmount { get; set; }
     }
+
+    // First and last day (Philippine time) that has a sale; both null when there are no sales.
+    public class SaleDateRangeViewModel
+    {
+        public DateOnly? First { get; set; }
+        public DateOnly? Last { get; set; }
+    }
 }

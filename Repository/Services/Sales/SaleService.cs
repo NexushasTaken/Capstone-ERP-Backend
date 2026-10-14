@@ -1,4 +1,5 @@
 ﻿using ERP.Repository.Configuration.Exception_Extender;
+using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Interface.Data.SalesData;
 using ERP.Repository.Interface.Sales;
@@ -47,5 +48,16 @@ namespace ERP.Repository.Services.Sales
                 TotalAmount = totalAmount,
             };
         }
+
+        public async Task<SaleDateRangeViewModel> GetSaleDateRange(CancellationToken cancellationToken = default)
+        {
+            var (first, last) = await _sales.SaleDateRange(cancellationToken);
+
+            return new SaleDateRangeViewModel { First = PhDay(first), Last = PhDay(last) };
+        }
+
+        // The Philippine day a UTC time falls on, the same day rule the list's from/to filter uses.
+        private static DateOnly? PhDay(DateTime? utc) =>
+            utc is { } value ? DateOnly.FromDateTime(value + DemandWeek.PhOffset) : null;
     }
 }
