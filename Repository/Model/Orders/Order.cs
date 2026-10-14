@@ -17,5 +17,6 @@ namespace ERP.Repository.Model.Orders
         public decimal DiscountPercent { get; set; }
 
         public ICollection<OrderLine> OrderLines { get; set; } = [];
+        public Sale? Sale { get; set; }
     }
 }

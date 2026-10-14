@@ -24,5 +24,8 @@ namespace ERP.Repository.ViewModel.Sales
         public IEnumerable<SaleTotalViewModel> Sales { get; set; } = [];
         public int PageCount { get; set; }
         public int Rows { get; set; }
+
+        // Sum of Total over every sale matching the filters, not just this page.
+        public decimal TotalAmount { get; set; }
     }
 }

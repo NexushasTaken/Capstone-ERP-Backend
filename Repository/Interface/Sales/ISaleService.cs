@@ -1,5 +1,4 @@
-﻿using ERP.Repository.ViewModel.Orders;
-using ERP.Repository.ViewModel.Sales;
+﻿using ERP.Repository.ViewModel.Sales;
 
 namespace ERP.Repository.Interface.Sales
 {
@@ -11,6 +10,8 @@ namespace ERP.Repository.Interface.Sales
             string? name,
             int filter,
             int orderTypeId,
+            DateOnly? from,
+            DateOnly? to,
             CancellationToken cancellationToken = default
         );
     }

@@ -1,4 +1,4 @@
-﻿using ERP.Repository.Configuration.Enum;
+﻿using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Data.DashboardData;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
@@ -15,23 +15,20 @@ namespace ERP.Repository.Data.DashboardData
             CancellationToken cancellation
         )
         {
-            var start = new DateTime(from.Year, from.Month, from.Day, 0, 0, 0, DateTimeKind.Utc);
-            var end = new DateTime(to.Year, to.Month, to.Day, 0, 0, 0, DateTimeKind.Utc);
-            var data = await BaseQuery<OrderLine>(false)
-                .Include(o => o.Order)
-                .Where(s =>
-                    s.Created_At >= start
-                    && s.Created_At < end
-                    && s.Order.OrderStatusId == (int)OrderStatusEnum.Completed
-                )
+            // Days and months are Philippine time, as on the Sales list, so a month here matches its total there.
+            var start = new DateTime(from.Year, from.Month, from.Day, 0, 0, 0, DateTimeKind.Utc) - DemandWeek.PhOffset;
+            var end = new DateTime(to.Year, to.Month, to.Day, 0, 0, 0, DateTimeKind.Utc) - DemandWeek.PhOffset;
+            var data = await BaseQuery<Sale>(false)
+                .Where(s => s.Created_At >= start && s.Created_At < end)
                 .ToListAsync(cancellation);
 
-            var result = data.GroupBy(s => new { s.Created_At.Value.Year, s.Created_At.Value.Month })
+            var result = data.Select(s => (Sold: s.Created_At!.Value + DemandWeek.PhOffset, s.Total))
+                .GroupBy(s => new { s.Sold.Year, s.Sold.Month })
                 .OrderBy(g => g.Key.Month)
                 .Select(g => new MonthsDataViewModel
                 {
                     Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM yyyy"),
-                    Data = g.Sum(x => x.Amount * (1 - x.Order.DiscountPercent / 100m)),
+                    Data = g.Sum(x => x.Total),
                 });
 
             return result;

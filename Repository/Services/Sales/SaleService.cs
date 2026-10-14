@@ -1,8 +1,7 @@
-﻿using ERP.Repository.Configuration.Validation;
+﻿using ERP.Repository.Configuration.Exception_Extender;
+using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Interface.Data.SalesData;
 using ERP.Repository.Interface.Sales;
-using ERP.Repository.Model.Orders;
-using ERP.Repository.ViewModel.Orders;
 using ERP.Repository.ViewModel.Sales;
 
 namespace ERP.Repository.Services.Sales
@@ -15,26 +14,37 @@ namespace ERP.Repository.Services.Sales
             string? name,
             int filter,
             int orderTypeId,
+            DateOnly? from,
+            DateOnly? to,
             CancellationToken cancellationToken = default
         )
         {
             PageQueryValidator.Ensure(page, pageSize);
 
-            var result = await _sales.GetOrdersWithoutTracking(
+            if (from > to)
+            {
+                throw new BadRequest("The start date must be on or before the end date");
+            }
+
+            var result = await _sales.GetSalesWithoutTracking(
                 page,
                 pageSize,
                 name,
                 filter,
                 orderTypeId,
+                from,
+                to,
                 cancellationToken
             );
-            var totalCount = await _sales.OrdersCount(name, filter, orderTypeId);
+            var totalCount = await _sales.SalesCount(name, orderTypeId, from, to, cancellationToken);
+            var totalAmount = await _sales.SalesTotalAmount(name, orderTypeId, from, to, cancellationToken);
 
             return new SalesPageViewModel
             {
                 Sales = result,
                 PageCount = (int)Math.Ceiling((double)totalCount / pageSize),
                 Rows = totalCount,
+                TotalAmount = totalAmount,
             };
         }
     }
