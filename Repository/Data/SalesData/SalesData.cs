@@ -138,5 +138,14 @@ namespace ERP.Repository.Data.Sales
         {
             return await FilteringQuery(name, orderTypeId, from, to).SumAsync(s => s.Total, cancellation);
         }
+
+        // When the oldest and newest sales happened (UTC); both null when there are no sales.
+        public async Task<(DateTime? First, DateTime? Last)> SaleDateRange(CancellationToken cancellation = default)
+        {
+            var first = await BaseQuery<Sale>(false).MinAsync(s => s.Created_At, cancellation);
+            var last = await BaseQuery<Sale>(false).MaxAsync(s => s.Created_At, cancellation);
+
+            return (first, last);
+        }
     }
 }
