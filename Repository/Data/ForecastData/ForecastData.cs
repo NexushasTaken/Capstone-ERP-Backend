@@ -12,9 +12,9 @@ namespace ERP.Repository.Data.ForecastData
     public class ForecastData(DatabaseContext _context) : BaseData(_context), IForecastData
     {
         // Demand = units sold - units returned. Sales are Purchase entries (-quantity, written when an
-        // order is completed); every Return entry counts as returned, whatever its sign
-        // (Return Stock writes +quantity, Mark as Damaged -> Return Item writes -quantity).
-        // Restocks and damage are not demand.
+        // order is completed); every Return entry counts as returned, whatever its sign. Returns are
+        // written by a Sales return (+quantity); older rows from the removed Inventory "Return Stock"
+        // (+quantity) and "Return Item" damage type (-quantity) still count. Restocks and damage are not demand.
         public async Task<List<DemandEntryViewModel>> DemandEntries(int? productId = null)
         {
             var purchase = (int)InventoryLabelEnum.Purchase;

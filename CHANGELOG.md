@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [10.0.0] - 2026-10-16
+
+### Added
+
+- `POST /api/Sale/return` (owner and secretary) records a customer return from a completed sale: `{ saleId, reason, items: [{ productId, quantity, conditionId }] }`. Any product and any quantity up to what is still unreturned can come back, over as many returns as needed; more than that returns 400 naming the product. Good units (`conditionId` 1) go back to stock with a Return movement; damaged units (2) get a Return movement, then a Damage movement and a damage record, so stock is unchanged. The refund is the units' share of what was paid, after the order discount. Each product is audit-logged under Orders as Stock returned or Damaged (return).
+- `GET /api/Sale/returns?page&pageSize&name&from&to` lists returns newest first, with product, customer, quantity, condition, refund, reason and who processed it. `name` matches the product, the customer or a sale id like `SAL-12`; `from`/`to` are Philippine days on the return date.
+
+### Changed
+
+- **BREAKING:** the Sales endpoints are open to the secretary role too; `GET /api/Sale/report` stays owner only.
+- Sales in `GET /api/Sale/all` carry `refunded` and `totalAfterRefunds`, and each product carries `productId`, `returnedQuantity` and `soldUnitPrice`. `totalAmount` is now the total after refunds.
+- The dashboard sales overview subtracts refunds, counted in the month of the sale so it matches the Sales list.
+- The sales report PDF adds Refunded and After refunds to the summary and tables, and its Gross / Net total labels are now Subtotal / Total.
+
+### Removed
+
+- **BREAKING:** `restockType` on `PATCH /api/Inventory/restock` and `damagedType` on `PATCH /api/Inventory/markasdamage`. A restock is always stock received, and marking as damaged always takes the units out of stock. Customer returns are recorded with `POST /api/Sale/return`.
+
 ## [9.2.0] - 2026-10-16
 
 ### Added

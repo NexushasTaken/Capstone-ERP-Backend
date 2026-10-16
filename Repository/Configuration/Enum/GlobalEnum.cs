@@ -16,6 +16,13 @@
         Delivery = 2,
     }
 
+    // What came back on a sale return
+    public enum ReturnConditionEnum
+    {
+        Good = 1,
+        Damaged = 2,
+    }
+
     public enum InventoryStatusEnum
     {
         Available = 1,

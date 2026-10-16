@@ -570,6 +570,54 @@ namespace ERP.Migrations
                     b.ToTable("Sales");
                 });
 
+            modelBuilder.Entity("ERP.Repository.Model.Orders.SaleReturn", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConditionId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("Created_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Created_By")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("InventoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Refund")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("SaleId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Created_At");
+
+                    b.HasIndex("InventoryId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SaleId");
+
+                    b.ToTable("SaleReturns");
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.Products.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -955,6 +1003,33 @@ namespace ERP.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("ERP.Repository.Model.Orders.SaleReturn", b =>
+                {
+                    b.HasOne("ERP.Repository.Model.Inventories.Inventory", "Inventory")
+                        .WithMany()
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Repository.Model.Products.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Repository.Model.Orders.Sale", "Sale")
+                        .WithMany("Returns")
+                        .HasForeignKey("SaleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Inventory");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Sale");
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.Products.Product", b =>
                 {
                     b.HasOne("ERP.Repository.Model.Products.Category", "Category")
@@ -1030,6 +1105,11 @@ namespace ERP.Migrations
             modelBuilder.Entity("ERP.Repository.Model.Orders.OrderType", b =>
                 {
                     b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Orders.Sale", b =>
+                {
+                    b.Navigation("Returns");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Products.Category", b =>

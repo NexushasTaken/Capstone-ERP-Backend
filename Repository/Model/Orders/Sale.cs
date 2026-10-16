@@ -9,5 +9,7 @@ namespace ERP.Repository.Model.Orders
 
         // Amount charged, net of the order's discount, at the time of the sale.
         public decimal Total { get; set; }
+
+        public ICollection<SaleReturn> Returns { get; set; } = [];
     }
 }

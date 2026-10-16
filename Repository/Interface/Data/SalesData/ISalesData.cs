@@ -1,4 +1,5 @@
-﻿using ERP.Repository.ViewModel.Sales;
+﻿using ERP.Repository.Model.Orders;
+using ERP.Repository.ViewModel.Sales;
 
 namespace ERP.Repository.Interface.Data.SalesData
 {
@@ -32,6 +33,21 @@ namespace ERP.Repository.Interface.Data.SalesData
         Task<List<SaleReportSale>> GetSalesForReport(
             DateOnly from,
             DateOnly to,
+            CancellationToken cancellationToken = default
+        );
+        Task<Sale?> GetSaleForReturnWithTracking(int saleId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<SaleReturnViewModel>> GetReturnsWithoutTracking(
+            int page,
+            int pageSize,
+            string? name,
+            DateOnly? from,
+            DateOnly? to,
+            CancellationToken cancellationToken = default
+        );
+        Task<int> ReturnsCount(
+            string? name,
+            DateOnly? from,
+            DateOnly? to,
             CancellationToken cancellationToken = default
         );
     }

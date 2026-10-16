@@ -174,53 +174,26 @@ namespace ERP.Repository.Services.Inventories
 
             existing.StatusId = ReorderRatio.Ratio(existing.Quantity, existing.ReorderPoint);
 
-            if (inventory.RestockType == 1)
-            {
-                _auditLog.Log(
-                    AuditModuleEnum.Inventory,
-                    AuditActionEnum.IncreaseStock,
-                    $"Received {inventory.Quantity} '{ItemLabel(existing)}'",
-                    existing.Id,
-                    now
-                );
-            }
-            else
-            {
-                _auditLog.Log(
-                    AuditModuleEnum.Inventory,
-                    AuditActionEnum.ReturnStock,
-                    $"Returned {inventory.Quantity} '{ItemLabel(existing)}' to stock",
-                    existing.Id,
-                    now
-                );
-            }
+            // customer returns are recorded from the sale (Sales module), so a restock is always supplier stock
+            _auditLog.Log(
+                AuditModuleEnum.Inventory,
+                AuditActionEnum.IncreaseStock,
+                $"Received {inventory.Quantity} '{ItemLabel(existing)}'",
+                existing.Id,
+                now
+            );
 
             await _inventory.SaveChanges();
 
-            var transaction = new InventoryTransactionPostViewModel { };
-
-            if (inventory.RestockType == 1)
-            {
-                transaction = new InventoryTransactionPostViewModel
+            await InventoryTransaction(
+                new InventoryTransactionPostViewModel
                 {
                     Id = existing.Id,
                     Quantity = +inventory.Quantity,
                     Label = (int)InventoryLabelEnum.Restock,
                     StockLevel = existing.Quantity,
-                };
-            }
-            else
-            {
-                transaction = new InventoryTransactionPostViewModel
-                {
-                    Id = existing.Id,
-                    Quantity = +inventory.Quantity,
-                    Label = (int)InventoryLabelEnum.Return,
-                    StockLevel = existing.Quantity,
-                };
-            }
-
-            await InventoryTransaction(transaction);
+                }
+            );
 
             return;
         }
@@ -301,20 +274,18 @@ namespace ERP.Repository.Services.Inventories
 
             var now = DateTime.UtcNow;
 
-            if (damaged.DamagedType == 1)
+            if (inventory.Quantity < damaged.Quantity)
             {
-                if (inventory.Quantity < damaged.Quantity)
-                {
-                    throw new BadRequest("Quantity is greater than what you have in stocks");
-                }
-
-                var sub = inventory.Quantity - damaged.Quantity;
-
-                inventory.Quantity = sub;
-                inventory.Updated_By = _auditLog.CurrentUserId;
-                inventory.Updated_At = now;
-                inventory.StatusId = ReorderRatio.Ratio(sub, inventory.ReorderPoint);
+                throw new BadRequest("Quantity is greater than what you have in stocks");
             }
+
+            // stock on hand only; a damaged customer return is recorded from the sale (Sales module)
+            var sub = inventory.Quantity - damaged.Quantity;
+
+            inventory.Quantity = sub;
+            inventory.Updated_By = _auditLog.CurrentUserId;
+            inventory.Updated_At = now;
+            inventory.StatusId = ReorderRatio.Ratio(sub, inventory.ReorderPoint);
 
             var damn = new DamagedInventory
             {
@@ -325,26 +296,13 @@ namespace ERP.Repository.Services.Inventories
                 Created_At = now,
             };
 
-            if (damaged.DamagedType == 1)
-            {
-                _auditLog.Log(
-                    AuditModuleEnum.Inventory,
-                    AuditActionEnum.CurrentItemDamage,
-                    $"Marked {damaged.Quantity} '{ItemLabel(inventory)}' as damaged (Current Item): {damn.Reason}",
-                    inventory.Id,
-                    now
-                );
-            }
-            else
-            {
-                _auditLog.Log(
-                    AuditModuleEnum.Inventory,
-                    AuditActionEnum.ReturnItemDamage,
-                    $"Recorded {damaged.Quantity} returned '{ItemLabel(inventory)}' as damaged (Return Item): {damn.Reason}",
-                    inventory.Id,
-                    now
-                );
-            }
+            _auditLog.Log(
+                AuditModuleEnum.Inventory,
+                AuditActionEnum.CurrentItemDamage,
+                $"Marked {damaged.Quantity} '{ItemLabel(inventory)}' as damaged: {damn.Reason}",
+                inventory.Id,
+                now
+            );
 
             await _inventory.Save(damn);
 
@@ -352,7 +310,7 @@ namespace ERP.Repository.Services.Inventories
             {
                 Id = inventory.Id,
                 Quantity = -damaged.Quantity,
-                Label = damaged.DamagedType == 1 ? (int)InventoryLabelEnum.Damage : (int)InventoryLabelEnum.Return,
+                Label = (int)InventoryLabelEnum.Damage,
                 StockLevel = inventory.Quantity,
             };
 

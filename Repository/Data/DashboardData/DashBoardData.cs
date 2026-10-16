@@ -20,8 +20,10 @@ namespace ERP.Repository.Data.DashboardData
             var start = new DateTime(from.Year, from.Month, from.Day, 0, 0, 0, DateTimeKind.Utc) - DemandWeek.PhOffset;
             var end =
                 new DateTime(to.Year, to.Month, to.Day, 0, 0, 0, DateTimeKind.Utc).AddDays(1) - DemandWeek.PhOffset;
+            // A refund counts against its sale's month, so a month matches the Sales list's total after refunds.
             var data = await BaseQuery<Sale>(false)
                 .Where(s => s.Created_At >= start && s.Created_At < end)
+                .Select(s => new { s.Created_At, Total = s.Total - s.Returns.Sum(r => r.Refund) })
                 .ToListAsync(cancellation);
 
             var result = data.Select(s => (Sold: s.Created_At!.Value + DemandWeek.PhOffset, s.Total))
