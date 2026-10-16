@@ -30,16 +30,11 @@ namespace ERP.Repository.Configuration.Validation.Orders
             When(
                 o => DiscountTypes.IsPreset(o.DiscountType),
                 () =>
-                {
                     RuleFor(o => o.DiscountPercent)
                         .Must((o, percent) => percent == DiscountTypes.PresetRates[o.DiscountType])
                         .WithMessage(o =>
                             $"The {DiscountTypes.Label(o.DiscountType)} discount is fixed at {DiscountTypes.PresetRates[o.DiscountType]}%"
-                        );
-                    RuleFor(o => o.DiscountIdNumber)
-                        .MaximumLength(50)
-                        .WithMessage("ID number can't be longer than 50 characters");
-                }
+                        )
             );
 
             When(

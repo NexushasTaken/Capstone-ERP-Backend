@@ -81,7 +81,6 @@ namespace ERP.Repository
                 .Property(o => o.DiscountType)
                 .HasMaxLength(20)
                 .HasDefaultValue(DiscountTypes.None);
-            modelBuilder.Entity<Order>().Property(o => o.DiscountIdNumber).HasMaxLength(50);
             #endregion
 
             #region Products

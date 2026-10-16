@@ -106,7 +106,6 @@ namespace ERP.Repository.Data.Sales
                     Subtotal = s.Order.OrderLines.Sum(l => l.Amount),
                     DiscountPercent = s.Order.DiscountPercent,
                     DiscountType = s.Order.DiscountType,
-                    DiscountIdNumber = s.Order.DiscountIdNumber,
                     Total = s.Total,
                     Refunded = s.Returns.Sum(r => r.Refund),
                     Created_At = s.Created_At,
