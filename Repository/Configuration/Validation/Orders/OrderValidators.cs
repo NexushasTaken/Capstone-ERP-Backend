@@ -1,3 +1,4 @@
+using ERP.Repository.Configuration.Helper;
 using ERP.Repository.ViewModel.Orders;
 using FluentValidation;
 
@@ -12,6 +13,44 @@ namespace ERP.Repository.Configuration.Validation.Orders
         }
     }
 
+    // Shared by create and edit. Who may pick a custom discount is checked in OrderService.
+    public class OrderDiscountValidator : AbstractValidator<IOrderDiscount>
+    {
+        public OrderDiscountValidator()
+        {
+            RuleFor(o => o.DiscountType)
+                .Must(t => DiscountTypes.All.Contains(t))
+                .WithMessage("Discount type must be none, senior, pwd, solo_parent or custom");
+
+            When(
+                o => o.DiscountType == DiscountTypes.None,
+                () => RuleFor(o => o.DiscountPercent).Equal(0).WithMessage("Discount must be 0 when there is none")
+            );
+
+            When(
+                o => DiscountTypes.IsPreset(o.DiscountType),
+                () =>
+                {
+                    RuleFor(o => o.DiscountPercent)
+                        .Must((o, percent) => percent == DiscountTypes.PresetRates[o.DiscountType])
+                        .WithMessage(o =>
+                            $"The {DiscountTypes.Label(o.DiscountType)} discount is fixed at {DiscountTypes.PresetRates[o.DiscountType]}%"
+                        );
+                    RuleFor(o => o.DiscountIdNumber)
+                        .NotEmpty()
+                        .WithMessage("ID number is required for this discount")
+                        .MaximumLength(50)
+                        .WithMessage("ID number can't be longer than 50 characters");
+                }
+            );
+
+            When(
+                o => o.DiscountType == DiscountTypes.Custom,
+                () => RuleFor(o => o.DiscountPercent).GreaterThan(0).WithMessage("Custom discount must be more than 0")
+            );
+        }
+    }
+
     public class OrderPostValidator : AbstractValidator<OrderPostViewModel>
     {
         public OrderPostValidator()
@@ -19,6 +58,7 @@ namespace ERP.Repository.Configuration.Validation.Orders
             RuleFor(o => o.OrderTypeId).GreaterThan(0).WithMessage("Order Type is required");
             RuleFor(o => o.DeliveryDriverId).GreaterThanOrEqualTo(0).WithMessage("Driver is Invalid");
             RuleFor(o => o.DiscountPercent).InclusiveBetween(0, 100).WithMessage("Discount must be between 0 and 100");
+            Include(new OrderDiscountValidator());
             RuleFor(o => o.OrderLines).NotEmpty().WithMessage("Add at least one product");
             RuleForEach(o => o.OrderLines).SetValidator(new OrderLineValidator());
         }
@@ -31,6 +71,7 @@ namespace ERP.Repository.Configuration.Validation.Orders
             RuleFor(o => o.OrderId).GreaterThan(0).WithMessage("Order is required");
             RuleFor(o => o.DeliveryDriverId).GreaterThanOrEqualTo(0).WithMessage("Driver is Invalid");
             RuleFor(o => o.DiscountPercent).InclusiveBetween(0, 100).WithMessage("Discount must be between 0 and 100");
+            Include(new OrderDiscountValidator());
             RuleFor(o => o.OrderLines).NotEmpty().WithMessage("Add at least one product");
             RuleForEach(o => o.OrderLines).SetValidator(new OrderLineValidator());
         }

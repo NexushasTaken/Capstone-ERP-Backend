@@ -3,6 +3,7 @@ using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Interface.AuditLogs;
+using ERP.Repository.Interface.CurrentUser;
 using ERP.Repository.Interface.Data.InventoryData;
 using ERP.Repository.Interface.Data.OrderData;
 using ERP.Repository.Interface.Data.ProductData;
@@ -21,6 +22,7 @@ namespace ERP.Repository.Services.Orders
         IProductData _product,
         IDriverData _driver,
         IAuditLogService _auditLog,
+        ICurrentUserService _currentUser,
         IValidator<OrderPostViewModel> _orderPostValidator,
         IValidator<OrderPutViewModel> _orderPutValidator,
         IValidator<OrderStatusPostViewModel> _orderStatusValidator,
@@ -30,6 +32,30 @@ namespace ERP.Repository.Services.Orders
     ) : IOrderService
     {
         #region Orders
+
+        // Secretaries may only pick the legal presets; a custom rate is the owner's call.
+        // When editing, a custom discount the owner already set may stay as it is.
+        private void EnsureCanSetDiscount(IOrderDiscount discount, Order? current)
+        {
+            if (discount.DiscountType != DiscountTypes.Custom || _currentUser.Role == "owner")
+            {
+                return;
+            }
+
+            var keepsOwnersDiscount =
+                current?.DiscountType == DiscountTypes.Custom && current.DiscountPercent == discount.DiscountPercent;
+
+            if (!keepsOwnersDiscount)
+            {
+                throw new BadRequest("Only the owner can set a custom discount");
+            }
+        }
+
+        private static string? DiscountIdNumberFor(IOrderDiscount discount) =>
+            DiscountTypes.IsPreset(discount.DiscountType) ? discount.DiscountIdNumber?.Trim() : null;
+
+        private static string DiscountSummary(string type, decimal percent) =>
+            type == DiscountTypes.None ? "none" : $"{DiscountTypes.Label(type)} {percent}%";
 
         public async Task<OrderPageViewModel> GetOrders(
             int page,
@@ -100,6 +126,7 @@ namespace ERP.Repository.Services.Orders
         public async Task<List<string>?> InsertOrder(OrderPostViewModel order)
         {
             await _orderPostValidator.EnsureValidAsync(order);
+            EnsureCanSetDiscount(order, null);
 
             var message = new List<string> { };
 
@@ -157,6 +184,8 @@ namespace ERP.Repository.Services.Orders
                 CustomerName = order.CustomerName.ToLower(),
                 DeliveryAddress = order.DeliveryAddress.ToLower(),
                 DiscountPercent = order.DiscountPercent,
+                DiscountType = order.DiscountType,
+                DiscountIdNumber = DiscountIdNumberFor(order),
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
             };
@@ -234,6 +263,8 @@ namespace ERP.Repository.Services.Orders
             {
                 throw new BadRequest("Only processing orders can be edited");
             }
+
+            EnsureCanSetDiscount(order, header);
 
             var isWalkin = header.OrderTypeId == (int)OrderTypeEnum.Walkin;
 
@@ -317,11 +348,14 @@ namespace ERP.Repository.Services.Orders
                 );
             }
 
-            var oldDiscount = header.DiscountPercent;
+            var oldDiscount = DiscountSummary(header.DiscountType, header.DiscountPercent);
+            var newDiscount = DiscountSummary(order.DiscountType, order.DiscountPercent);
 
             header.DeliveryDriverId = isWalkin || order.DeliveryDriverId == 0 ? null : order.DeliveryDriverId;
             header.DeliveryAddress = isWalkin ? "" : (order.DeliveryAddress ?? "").ToLower();
             header.DiscountPercent = order.DiscountPercent;
+            header.DiscountType = order.DiscountType;
+            header.DiscountIdNumber = DiscountIdNumberFor(order);
             header.Updated_By = _auditLog.CurrentUserId;
             header.Updated_At = now;
 
@@ -348,9 +382,9 @@ namespace ERP.Repository.Services.Orders
                 })
                 .ToList();
 
-            if (oldDiscount != order.DiscountPercent)
+            if (oldDiscount != newDiscount)
             {
-                changes.Add($"discount {oldDiscount}% → {order.DiscountPercent}%");
+                changes.Add($"discount {oldDiscount} → {newDiscount}");
             }
 
             var changeSummary = changes.Count == 0 ? "" : $": {string.Join(", ", changes)}";

@@ -1,3 +1,4 @@
+using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Model;
 using ERP.Repository.Model.Products;
 
@@ -14,6 +15,10 @@ namespace ERP.Repository.Model.Orders
         public string? CustomerName { get; set; }
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
+
+        // One of DiscountTypes; the ID number is only kept for the legal (preset) discounts.
+        public string DiscountType { get; set; } = DiscountTypes.None;
+        public string? DiscountIdNumber { get; set; }
 
         public ICollection<OrderLine> OrderLines { get; set; } = [];
         public Sale? Sale { get; set; }

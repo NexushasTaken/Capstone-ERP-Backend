@@ -120,6 +120,8 @@ namespace ERP.Repository.Data.OrderData
                         .ToList(),
                     Subtotal = o.Sum(g => g.Amount),
                     DiscountPercent = o.First().Order.DiscountPercent,
+                    DiscountType = o.First().Order.DiscountType,
+                    DiscountIdNumber = o.First().Order.DiscountIdNumber,
                     Created_At = o.First().Created_At,
                     Updated_At = o.First().Order.Updated_At,
                 });

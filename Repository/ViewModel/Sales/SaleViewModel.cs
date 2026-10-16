@@ -13,6 +13,8 @@ namespace ERP.Repository.ViewModel.Sales
         public IEnumerable<SaleLineViewModel> Orders { get; set; } = [];
         public decimal Subtotal { get; set; }
         public decimal DiscountPercent { get; set; }
+        public string? DiscountType { get; set; }
+        public string? DiscountIdNumber { get; set; }
         public decimal DiscountAmount { get; set; }
         public decimal Total { get; set; }
 
