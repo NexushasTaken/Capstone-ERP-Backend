@@ -25,4 +25,9 @@
     {
         public int Id { get; set; }
     }
+
+    public class DriverImportViewModel
+    {
+        public List<DeliveryDriverPostViewModel> Rows { get; set; } = [];
+    }
 }

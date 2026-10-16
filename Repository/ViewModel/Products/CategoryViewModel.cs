@@ -17,4 +17,14 @@
         public int PageCount { get; set; }
         public int Rows { get; set; }
     }
+
+    public class CategoryImportRow
+    {
+        public string? Type { get; set; }
+    }
+
+    public class CategoryImportViewModel
+    {
+        public List<CategoryImportRow> Rows { get; set; } = [];
+    }
 }

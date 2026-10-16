@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.2.0] - 2026-10-16
+
+### Added
+
+- `POST /api/Category/import`, `POST /api/Product/import` and `POST /api/Order/driver/import` (owner only) add many rows at once from `{ rows: [...] }`, up to 1000 per request. Every row is checked first; if any row fails, nothing is saved and the 400 lists errors as `rows.N.<field>`. Each added row gets its own audit log entry.
+- Product import rows take a category by name (matched ignoring case, blank means none) and an optional `quantity` + `reorderPoint`; when both are given, the product gets its stock record and a Restock movement for the opening stock, the same as `POST /api/Inventory/insert`.
+- Import rejects names that already exist or repeat within the file, and product rows whose category doesn't exist.
+- `POST /api/Category/import/check` and `POST /api/Product/import/check` (owner only) run the existing-name, repeated-name and unknown-category checks without saving, so a file can be checked as soon as it is picked.
+
 ## [9.1.0] - 2026-10-16
 
 ### Added

@@ -34,4 +34,22 @@
     {
         public int Id { get; set; }
     }
+
+    public class ProductImportRow
+    {
+        public string? Name { get; set; }
+
+        /// <summary>Category name, matched case-insensitively; blank means uncategorized.</summary>
+        public string? Category { get; set; }
+        public decimal Price { get; set; }
+
+        /// <summary>Opening stock; when set, a stock record is created with ReorderPoint.</summary>
+        public int? Quantity { get; set; }
+        public int? ReorderPoint { get; set; }
+    }
+
+    public class ProductImportViewModel
+    {
+        public List<ProductImportRow> Rows { get; set; } = [];
+    }
 }

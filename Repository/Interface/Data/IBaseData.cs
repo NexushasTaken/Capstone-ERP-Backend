@@ -1,4 +1,6 @@
-﻿namespace ERP.Repository.Interface.Data
+﻿using Microsoft.EntityFrameworkCore.Storage;
+
+namespace ERP.Repository.Interface.Data
 {
     public interface IBaseData
     {
@@ -9,6 +11,7 @@
         Task SaveChanges(CancellationToken cancellation = default);
         void Remove<T>(T data)
             where T : class;
+        Task<IDbContextTransaction> BeginTransaction(CancellationToken cancellation = default);
         IQueryable<T> BaseQuery<T>(bool withTracking)
             where T : class;
     }

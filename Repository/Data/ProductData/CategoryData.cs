@@ -73,5 +73,18 @@ namespace ERP.Repository.Data.ProductData
             return await BaseQuery<Category>(false)
                 .AnyAsync(c => c.IsActive && c.Id != excludeId && c.Type.ToLower() == lower);
         }
+
+        // Active categories whose name matches one of names (case-insensitive), keyed by lowercase name.
+        public async Task<Dictionary<string, int>> GetCategoryIdsByNames(IEnumerable<string> names)
+        {
+            var lower = names.Select(n => n.ToLower()).Distinct().ToList();
+
+            var matches = await BaseQuery<Category>(false)
+                .Where(c => c.IsActive && lower.Contains(c.Type.ToLower()))
+                .Select(c => new { c.Id, c.Type })
+                .ToListAsync();
+
+            return matches.GroupBy(c => c.Type.ToLower()).ToDictionary(g => g.Key, g => g.First().Id);
+        }
     }
 }

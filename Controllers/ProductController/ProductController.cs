@@ -45,6 +45,27 @@ namespace ERP.Controllers.ProductController
         }
 
         [Authorize(Roles = "owner")]
+        [HttpPost("import")]
+        public async Task<IActionResult> ImportProducts([FromBody] ProductImportViewModel import)
+        {
+            var count = await _productService.ImportProducts(import);
+
+            return StatusCode(200, _response.Status(200, true, $"Imported {count} product(s)", count));
+        }
+
+        /// <summary>
+        /// Checks an import against the database (existing or repeated names, unknown categories) without saving.
+        /// </summary>
+        [Authorize(Roles = "owner")]
+        [HttpPost("import/check")]
+        public async Task<IActionResult> CheckProductImport([FromBody] ProductImportViewModel import)
+        {
+            await _productService.CheckProductImport(import);
+
+            return StatusCode(200, _response.Status(200, true, "No problems found", null));
+        }
+
+        [Authorize(Roles = "owner")]
         [HttpPatch("patch")]
         public async Task<IActionResult> UpdateProduct([FromBody] ProductUpdateViewModel product)
         {

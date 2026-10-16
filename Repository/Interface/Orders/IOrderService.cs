@@ -27,6 +27,7 @@ namespace ERP.Repository.Interface.Orders
             CancellationToken cancellation
         );
         Task AddDriver(DeliveryDriverPostViewModel driver);
+        Task<int> ImportDrivers(DriverImportViewModel import);
         Task UpdateDriver(DeliveryDriverPatchViewModel driver);
         Task DeleteDriver(int id);
         Task<IEnumerable<OrderStatusCount>> OrdersStatusCount();

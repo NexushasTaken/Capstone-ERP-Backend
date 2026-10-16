@@ -25,7 +25,8 @@ namespace ERP.Repository.Services.Orders
         IValidator<OrderPutViewModel> _orderPutValidator,
         IValidator<OrderStatusPostViewModel> _orderStatusValidator,
         IValidator<DeliveryDriverPostViewModel> _driverPostValidator,
-        IValidator<DeliveryDriverPatchViewModel> _driverPatchValidator
+        IValidator<DeliveryDriverPatchViewModel> _driverPatchValidator,
+        IValidator<DriverImportViewModel> _driverImportValidator
     ) : IOrderService
     {
         #region Orders
@@ -663,6 +664,45 @@ namespace ERP.Repository.Services.Orders
             await _driver.SaveChanges();
 
             return;
+        }
+
+        // All-or-nothing: every row is validated first, then all drivers are saved in one transaction.
+        public async Task<int> ImportDrivers(DriverImportViewModel import)
+        {
+            await _driverImportValidator.EnsureValidAsync(import);
+
+            var now = DateTime.UtcNow;
+
+            var drivers = import
+                .Rows.Select(d => new DeliveryDriver
+                {
+                    FirstName = d.FirstName!.Trim().ToLower(),
+                    LastName = (d.LastName ?? "").Trim().ToLower(),
+                    Created_By = _auditLog.CurrentUserId,
+                    Created_At = now,
+                    IsActive = true,
+                })
+                .ToList();
+
+            await using var transaction = await _driver.BeginTransaction();
+
+            await _driver.SaveMany(drivers);
+
+            foreach (var data in drivers)
+            {
+                _auditLog.Log(
+                    AuditModuleEnum.Driver,
+                    AuditActionEnum.Create,
+                    $"Imported driver {data.FirstName} {data.LastName}".Trim(),
+                    data.Id,
+                    now
+                );
+            }
+            await _driver.SaveChanges();
+
+            await transaction.CommitAsync();
+
+            return drivers.Count;
         }
 
         public async Task UpdateDriver(DeliveryDriverPatchViewModel driver)

@@ -1,5 +1,6 @@
 ﻿using ERP.Repository.Interface.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ERP.Repository.Data
 {
@@ -29,6 +30,12 @@ namespace ERP.Repository.Data
             where T : class
         {
             _context.Remove(data);
+        }
+
+        // Every data class shares the scoped context, so one transaction covers writes made through any of them.
+        public async Task<IDbContextTransaction> BeginTransaction(CancellationToken cancellation = default)
+        {
+            return await _context.Database.BeginTransactionAsync(cancellation);
         }
 
         public IQueryable<T> BaseQuery<T>(bool withTracking)
