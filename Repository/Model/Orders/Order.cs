@@ -16,9 +16,8 @@ namespace ERP.Repository.Model.Orders
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
 
-        // One of DiscountTypes; the ID number is only kept for the legal (preset) discounts.
+        // One of DiscountTypes.
         public string DiscountType { get; set; } = DiscountTypes.None;
-        public string? DiscountIdNumber { get; set; }
 
         public ICollection<OrderLine> OrderLines { get; set; } = [];
         public Sale? Sale { get; set; }

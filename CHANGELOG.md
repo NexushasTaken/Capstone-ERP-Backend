@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [12.0.0] - 2026-10-16
+
+### Removed
+
+- **BREAKING:** the discount ID number. Orders in `GET /api/Order/all` and sales in `GET /api/Sale/all` no longer carry `discountIdNumber`, and `POST /api/Order/insert` and `PUT /api/Order/put` ignore it. The column is dropped from the database.
+
 ## [11.1.0] - 2026-10-16
 
 ### Changed

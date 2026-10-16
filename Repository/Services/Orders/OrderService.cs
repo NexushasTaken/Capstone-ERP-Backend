@@ -51,11 +51,6 @@ namespace ERP.Repository.Services.Orders
             }
         }
 
-        private static string? DiscountIdNumberFor(IOrderDiscount discount) =>
-            DiscountTypes.IsPreset(discount.DiscountType) && !string.IsNullOrWhiteSpace(discount.DiscountIdNumber)
-                ? discount.DiscountIdNumber.Trim()
-                : null;
-
         private static string DiscountSummary(string type, decimal percent) =>
             type == DiscountTypes.None ? "none" : $"{DiscountTypes.Label(type)} {percent}%";
 
@@ -187,7 +182,6 @@ namespace ERP.Repository.Services.Orders
                 DeliveryAddress = order.DeliveryAddress.ToLower(),
                 DiscountPercent = order.DiscountPercent,
                 DiscountType = order.DiscountType,
-                DiscountIdNumber = DiscountIdNumberFor(order),
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
             };
@@ -357,7 +351,6 @@ namespace ERP.Repository.Services.Orders
             header.DeliveryAddress = isWalkin ? "" : (order.DeliveryAddress ?? "").ToLower();
             header.DiscountPercent = order.DiscountPercent;
             header.DiscountType = order.DiscountType;
-            header.DiscountIdNumber = DiscountIdNumberFor(order);
             header.Updated_By = _auditLog.CurrentUserId;
             header.Updated_At = now;
 

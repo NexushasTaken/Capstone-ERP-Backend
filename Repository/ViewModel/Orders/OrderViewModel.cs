@@ -32,7 +32,6 @@ namespace ERP.Repository.ViewModel.Orders
         public decimal Subtotal { get; set; }
         public decimal DiscountPercent { get; set; }
         public string? DiscountType { get; set; }
-        public string? DiscountIdNumber { get; set; }
         public decimal DiscountAmount { get; set; }
         public decimal Total { get; set; }
         public DateTime? Created_At { get; set; }
@@ -62,7 +61,6 @@ namespace ERP.Repository.ViewModel.Orders
     {
         decimal DiscountPercent { get; }
         string DiscountType { get; }
-        string? DiscountIdNumber { get; }
     }
 
     public class OrderPostViewModel : IOrderDiscount
@@ -73,7 +71,6 @@ namespace ERP.Repository.ViewModel.Orders
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
         public string DiscountType { get; set; } = DiscountTypes.None;
-        public string? DiscountIdNumber { get; set; }
         public ICollection<OrderLineViewModel> OrderLines { get; set; } = [];
     }
 
@@ -84,7 +81,6 @@ namespace ERP.Repository.ViewModel.Orders
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
         public string DiscountType { get; set; } = DiscountTypes.None;
-        public string? DiscountIdNumber { get; set; }
         public ICollection<OrderLineViewModel> OrderLines { get; set; } = [];
     }
 
