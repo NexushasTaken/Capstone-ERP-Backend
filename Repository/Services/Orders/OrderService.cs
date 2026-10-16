@@ -52,7 +52,9 @@ namespace ERP.Repository.Services.Orders
         }
 
         private static string? DiscountIdNumberFor(IOrderDiscount discount) =>
-            DiscountTypes.IsPreset(discount.DiscountType) ? discount.DiscountIdNumber?.Trim() : null;
+            DiscountTypes.IsPreset(discount.DiscountType) && !string.IsNullOrWhiteSpace(discount.DiscountIdNumber)
+                ? discount.DiscountIdNumber.Trim()
+                : null;
 
         private static string DiscountSummary(string type, decimal percent) =>
             type == DiscountTypes.None ? "none" : $"{DiscountTypes.Label(type)} {percent}%";
