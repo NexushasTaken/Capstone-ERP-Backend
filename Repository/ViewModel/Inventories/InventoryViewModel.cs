@@ -90,19 +90,4 @@
         public int Id { get; set; }
         public string? Type { get; set; }
     }
-
-    public class InventoryMovementVelocityViewModel
-    {
-        public int InventoryId { get; set; }
-        public string? Name { get; set; }
-        public string? Classification { get; set; }
-        public double VelocityMetric { get; set; }
-    }
-
-    public class InventoryMovementVelocityPageViewModel
-    {
-        public IEnumerable<InventoryMovementVelocityViewModel> inventories { get; set; } = [];
-        public int PageCount { get; set; }
-        public int Rows { get; set; }
-    }
 }
