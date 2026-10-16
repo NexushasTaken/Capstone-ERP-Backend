@@ -1,4 +1,5 @@
 ﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Model;
 using ERP.Repository.Model.AuditLogs;
 using ERP.Repository.Model.Forecast;
@@ -73,6 +74,14 @@ namespace ERP.Repository
             modelBuilder.Entity<OrderLine>().HasKey(p => p.Id);
             modelBuilder.Entity<Sale>().HasKey(p => p.Id);
             modelBuilder.Entity<SaleReturn>().HasKey(p => p.Id);
+
+            // The default keeps direct inserts (scripts/main.py) valid without naming the column.
+            modelBuilder
+                .Entity<Order>()
+                .Property(o => o.DiscountType)
+                .HasMaxLength(20)
+                .HasDefaultValue(DiscountTypes.None);
+            modelBuilder.Entity<Order>().Property(o => o.DiscountIdNumber).HasMaxLength(50);
             #endregion
 
             #region Products

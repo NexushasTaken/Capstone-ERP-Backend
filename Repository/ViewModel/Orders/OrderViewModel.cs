@@ -1,4 +1,6 @@
-﻿namespace ERP.Repository.ViewModel.Orders
+﻿using ERP.Repository.Configuration.Helper;
+
+namespace ERP.Repository.ViewModel.Orders
 {
     public enum OrdersFilter
     {
@@ -29,6 +31,8 @@
         public IEnumerable<OrderViewModel> Orders { get; set; } = [];
         public decimal Subtotal { get; set; }
         public decimal DiscountPercent { get; set; }
+        public string? DiscountType { get; set; }
+        public string? DiscountIdNumber { get; set; }
         public decimal DiscountAmount { get; set; }
         public decimal Total { get; set; }
         public DateTime? Created_At { get; set; }
@@ -54,22 +58,33 @@
         public int Quantity { get; set; }
     }
 
-    public class OrderPostViewModel
+    public interface IOrderDiscount
+    {
+        decimal DiscountPercent { get; }
+        string DiscountType { get; }
+        string? DiscountIdNumber { get; }
+    }
+
+    public class OrderPostViewModel : IOrderDiscount
     {
         public int OrderTypeId { get; set; }
         public int? DeliveryDriverId { get; set; }
         public string? CustomerName { get; set; }
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
+        public string DiscountType { get; set; } = DiscountTypes.None;
+        public string? DiscountIdNumber { get; set; }
         public ICollection<OrderLineViewModel> OrderLines { get; set; } = [];
     }
 
-    public class OrderPutViewModel
+    public class OrderPutViewModel : IOrderDiscount
     {
         public int OrderId { get; set; }
         public int? DeliveryDriverId { get; set; }
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
+        public string DiscountType { get; set; } = DiscountTypes.None;
+        public string? DiscountIdNumber { get; set; }
         public ICollection<OrderLineViewModel> OrderLines { get; set; } = [];
     }
 

@@ -14,5 +14,7 @@ namespace ERP.Repository.Services.CurrentUser
                 return int.TryParse(userIdClaim, out var userId) ? userId : null;
             }
         }
+
+        public string? Role => _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Role);
     }
 }

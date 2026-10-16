@@ -402,8 +402,19 @@ namespace ERP.Migrations
                     b.Property<int?>("DeliveryDriverId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("DiscountIdNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<decimal>("DiscountPercent")
                         .HasColumnType("numeric");
+
+                    b.Property<string>("DiscountType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("none");
 
                     b.Property<int>("OrderStatusId")
                         .HasColumnType("integer");

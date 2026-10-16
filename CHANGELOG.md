@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [11.0.0] - 2026-10-16
+
+### Changed
+
+- **BREAKING:** `POST /api/Order/insert` and `PUT /api/Order/put` take `discountType` (`none`, `senior`, `pwd`, `solo_parent` or `custom`) and `discountIdNumber`. Senior citizen and PWD discounts are fixed at 20% and solo parent at 10% (RA 9994, RA 10754, RA 11861), and they need an ID number. `none` must be 0%, and `custom` takes any percent above 0 up to 100. Clients that send only `discountPercent` get 400 unless it is 0.
+- Only the owner can set a custom discount. A secretary can pick the presets, and can edit an order that has the owner's custom discount as long as they leave that discount unchanged; otherwise the API returns 400.
+- Orders in `GET /api/Order/all` and sales in `GET /api/Sale/all` carry `discountType` and `discountIdNumber`. The order edit audit message names the discount type, e.g. "discount none → senior citizen 20%".
+- Existing orders with a discount become `custom`; the rest become `none`.
+
 ## [10.0.0] - 2026-10-16
 
 ### Added
