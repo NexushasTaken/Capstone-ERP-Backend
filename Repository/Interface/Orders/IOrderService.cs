@@ -16,6 +16,7 @@ namespace ERP.Repository.Interface.Orders
         Task<List<string>?> InsertOrder(OrderPostViewModel order);
         Task UpdateOrder(OrderPutViewModel order);
         Task<IEnumerable<OrderTypeViewModel>> GetOrderTypes();
+        Task<IEnumerable<DiscountViewModel>> GetDiscounts();
         Task<IEnumerable<OrderStatusViewModel>> GetOrderStatuses();
         Task UpdateOrderStatus(OrderStatusPostViewModel status);
         Task<IEnumerable<OrderDeliveryDriverViewModel>> GetDeliveryDrivers();

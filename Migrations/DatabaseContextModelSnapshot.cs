@@ -379,6 +379,56 @@ namespace ERP.Migrations
                     b.ToTable("DeliveryDrivers");
                 });
 
+            modelBuilder.Entity("ERP.Repository.Model.Orders.Discount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("Percent")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Discounts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Percent = 0m,
+                            Type = "none"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Percent = 20m,
+                            Type = "senior"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Percent = 20m,
+                            Type = "pwd"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Percent = 10m,
+                            Type = "solo_parent"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Type = "custom"
+                        });
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.Orders.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -402,15 +452,13 @@ namespace ERP.Migrations
                     b.Property<int?>("DeliveryDriverId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("DiscountId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<decimal>("DiscountPercent")
                         .HasColumnType("numeric");
-
-                    b.Property<string>("DiscountType")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("none");
 
                     b.Property<int>("OrderStatusId")
                         .HasColumnType("integer");
@@ -427,6 +475,8 @@ namespace ERP.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DeliveryDriverId");
+
+                    b.HasIndex("DiscountId");
 
                     b.HasIndex("OrderStatusId");
 
@@ -953,6 +1003,12 @@ namespace ERP.Migrations
                         .WithMany("Orders")
                         .HasForeignKey("DeliveryDriverId");
 
+                    b.HasOne("ERP.Repository.Model.Orders.Discount", "Discount")
+                        .WithMany("Orders")
+                        .HasForeignKey("DiscountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ERP.Repository.Model.Orders.OrderStatus", "OrderStatus")
                         .WithMany("Orders")
                         .HasForeignKey("OrderStatusId")
@@ -966,6 +1022,8 @@ namespace ERP.Migrations
                         .IsRequired();
 
                     b.Navigation("DeliveryDriver");
+
+                    b.Navigation("Discount");
 
                     b.Navigation("OrderStatus");
 
@@ -1093,6 +1151,11 @@ namespace ERP.Migrations
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Orders.DeliveryDriver", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Orders.Discount", b =>
                 {
                     b.Navigation("Orders");
                 });

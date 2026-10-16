@@ -45,6 +45,14 @@ namespace ERP.Controllers.OrderController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", types));
         }
 
+        [HttpGet("discounts")]
+        public async Task<IActionResult> GetDiscounts()
+        {
+            var discounts = await _orderService.GetDiscounts();
+
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", discounts));
+        }
+
         [HttpGet("status")]
         public async Task<IActionResult> GetOrderStatuses()
         {

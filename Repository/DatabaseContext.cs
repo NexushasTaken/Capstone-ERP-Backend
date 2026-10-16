@@ -1,5 +1,4 @@
 ﻿using ERP.Repository.Configuration.Enum;
-using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Model;
 using ERP.Repository.Model.AuditLogs;
 using ERP.Repository.Model.Forecast;
@@ -36,6 +35,7 @@ namespace ERP.Repository
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderType> OrderTypes { get; set; }
         public DbSet<OrderStatus> OrderStatuses { get; set; }
+        public DbSet<Discount> Discounts { get; set; }
         public DbSet<DeliveryDriver> DeliveryDrivers { get; set; }
         public DbSet<OrderLine> OrderLines { get; set; }
         public DbSet<Sale> Sales { get; set; }
@@ -75,12 +75,10 @@ namespace ERP.Repository
             modelBuilder.Entity<Sale>().HasKey(p => p.Id);
             modelBuilder.Entity<SaleReturn>().HasKey(p => p.Id);
 
+            modelBuilder.Entity<Discount>().HasKey(p => p.Id);
+
             // The default keeps direct inserts (scripts/main.py) valid without naming the column.
-            modelBuilder
-                .Entity<Order>()
-                .Property(o => o.DiscountType)
-                .HasMaxLength(20)
-                .HasDefaultValue(DiscountTypes.None);
+            modelBuilder.Entity<Order>().Property(o => o.DiscountId).HasDefaultValue((int)DiscountTypeEnum.None);
             #endregion
 
             #region Products
@@ -182,6 +180,12 @@ namespace ERP.Repository
 
             modelBuilder
                 .Entity<Order>()
+                .HasOne(i => i.Discount)
+                .WithMany(w => w.Orders)
+                .HasForeignKey(i => i.DiscountId);
+
+            modelBuilder
+                .Entity<Order>()
                 .HasOne(i => i.DeliveryDriver)
                 .WithMany(w => w.Orders)
                 .HasForeignKey(i => i.DeliveryDriverId);
@@ -250,6 +254,41 @@ namespace ERP.Repository
                 .HasData(
                     new UserRole { Id = (int)UserRoleEnum.Owner, Role = "owner" },
                     new UserRole { Id = (int)UserRoleEnum.Secretary, Role = "secretary" }
+                );
+
+            modelBuilder
+                .Entity<Discount>()
+                .HasData(
+                    new Discount
+                    {
+                        Id = (int)DiscountTypeEnum.None,
+                        Type = "none",
+                        Percent = 0m,
+                    },
+                    new Discount
+                    {
+                        Id = (int)DiscountTypeEnum.Senior,
+                        Type = "senior",
+                        Percent = 20m,
+                    },
+                    new Discount
+                    {
+                        Id = (int)DiscountTypeEnum.Pwd,
+                        Type = "pwd",
+                        Percent = 20m,
+                    },
+                    new Discount
+                    {
+                        Id = (int)DiscountTypeEnum.SoloParent,
+                        Type = "solo_parent",
+                        Percent = 10m,
+                    },
+                    new Discount
+                    {
+                        Id = (int)DiscountTypeEnum.Custom,
+                        Type = "custom",
+                        Percent = null,
+                    }
                 );
 
             modelBuilder

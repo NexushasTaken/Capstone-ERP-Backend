@@ -120,7 +120,8 @@ namespace ERP.Repository.Data.OrderData
                         .ToList(),
                     Subtotal = o.Sum(g => g.Amount),
                     DiscountPercent = o.First().Order.DiscountPercent,
-                    DiscountType = o.First().Order.DiscountType,
+                    DiscountId = o.First().Order.DiscountId,
+                    DiscountType = o.First().Order.Discount!.Type,
                     Created_At = o.First().Created_At,
                     Updated_At = o.First().Order.Updated_At,
                 });
@@ -156,6 +157,11 @@ namespace ERP.Repository.Data.OrderData
         {
             var type = await BaseQuery<OrderType>(false).ToListAsync();
             return type;
+        }
+
+        public async Task<IEnumerable<Discount>> GetDiscountsWithoutTracking()
+        {
+            return await BaseQuery<Discount>(false).OrderBy(d => d.Id).ToListAsync();
         }
 
         public async Task<IEnumerable<OrderStatus>> GetOrderStatusesWithoutTracking()
