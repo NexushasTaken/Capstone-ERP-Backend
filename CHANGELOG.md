@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.1.0] - 2026-10-16
+
+### Added
+
+- `GET /api/Sale/report?period=daily|weekly|monthly&date=yyyy-MM-dd` downloads a sales report PDF (owner only). Daily lists each sale of that day; weekly has one row per day of its Monday-to-Sunday week; monthly has one row per week of its month. Every report has a summary (sales, gross, discounts, net total, average sale) and the top 10 products by revenue. `date` is a Philippine day and defaults to today; any other `period` returns 400.
+
 ## [9.0.0] - 2026-10-16
 
 ### Changed

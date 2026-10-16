@@ -60,5 +60,19 @@ namespace ERP.Controllers.SaleController
                 }
             );
         }
+
+        // period: daily (the day), weekly (its Monday-to-Sunday week) or monthly (its month).
+        // date is a Philippine day and defaults to today.
+        [HttpGet("report")]
+        public async Task<IActionResult> GetSalesReport(
+            [FromQuery] string? period = "daily",
+            [FromQuery] DateOnly? date = null,
+            CancellationToken cancellationToken = default
+        )
+        {
+            var report = await _sales.GetSalesReportPdf(period, date, cancellationToken);
+
+            return File(report.Content, "application/pdf", report.FileName);
+        }
     }
 }

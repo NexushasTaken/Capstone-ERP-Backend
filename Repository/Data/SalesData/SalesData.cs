@@ -146,5 +146,37 @@ namespace ERP.Repository.Data.Sales
 
             return (first, last);
         }
+
+        // Every sale in the Philippine days from..to (inclusive), oldest first, with its lines.
+        // Uses the list's filter so the report's day boundaries match the Sales list.
+        public async Task<List<SaleReportSale>> GetSalesForReport(
+            DateOnly from,
+            DateOnly to,
+            CancellationToken cancellation = default
+        )
+        {
+            return await FilteringQuery(null, 0, from, to)
+                .OrderBy(s => s.Created_At)
+                .ThenBy(s => s.Id)
+                .Select(s => new SaleReportSale
+                {
+                    Id = s.Id,
+                    Created_At = s.Created_At,
+                    CustomerName = s.Order.CustomerName,
+                    OrderType = s.Order.OrderType.Type,
+                    Subtotal = s.Order.OrderLines.Sum(l => l.Amount),
+                    Total = s.Total,
+                    Lines = s
+                        .Order.OrderLines.Select(l => new SaleReportLine
+                        {
+                            ProductId = l.ProductId,
+                            ProductName = l.Product.Name,
+                            Quantity = l.Quantity,
+                            Amount = l.Amount,
+                        })
+                        .ToList(),
+                })
+                .ToListAsync(cancellation);
+        }
     }
 }

@@ -34,4 +34,72 @@ namespace ERP.Repository.ViewModel.Sales
         public DateOnly? First { get; set; }
         public DateOnly? Last { get; set; }
     }
+
+    public enum SaleReportPeriod
+    {
+        Daily,
+        Weekly,
+        Monthly,
+    }
+
+    // One sale as the PDF report reads it; Created_At is UTC.
+    public class SaleReportSale
+    {
+        public int Id { get; set; }
+        public DateTime? Created_At { get; set; }
+        public string? CustomerName { get; set; }
+        public string? OrderType { get; set; }
+        public decimal Subtotal { get; set; }
+        public decimal Total { get; set; }
+        public List<SaleReportLine> Lines { get; set; } = [];
+    }
+
+    public class SaleReportLine
+    {
+        public int ProductId { get; set; }
+        public string? ProductName { get; set; }
+        public int Quantity { get; set; }
+        public decimal Amount { get; set; }
+    }
+
+    // One day (weekly report) or one week (monthly report).
+    public class SaleReportRow
+    {
+        public string Label { get; set; } = "";
+        public int Sales { get; set; }
+        public decimal Gross { get; set; }
+        public decimal Discount { get; set; }
+        public decimal Net { get; set; }
+    }
+
+    public class SaleReportProduct
+    {
+        public string? Name { get; set; }
+        public int Quantity { get; set; }
+
+        // Sum of line amounts, before the order discount.
+        public decimal Revenue { get; set; }
+    }
+
+    // Everything the PDF shows. From/To are inclusive Philippine days; GeneratedAt is Philippine time.
+    public class SaleReportViewModel
+    {
+        public SaleReportPeriod Period { get; set; }
+        public DateOnly From { get; set; }
+        public DateOnly To { get; set; }
+        public DateTime GeneratedAt { get; set; }
+        public string GeneratedBy { get; set; } = "";
+        public int SalesCount { get; set; }
+        public decimal Gross { get; set; }
+        public decimal Discount { get; set; }
+        public decimal Net { get; set; }
+        public decimal Average { get; set; }
+
+        // Daily report: every sale of the day. Weekly / monthly: Rows instead.
+        public IList<SaleReportSale> Sales { get; set; } = [];
+        public IList<SaleReportRow> Rows { get; set; } = [];
+        public IList<SaleReportProduct> TopProducts { get; set; } = [];
+    }
+
+    public record SaleReportFile(byte[] Content, string FileName);
 }
