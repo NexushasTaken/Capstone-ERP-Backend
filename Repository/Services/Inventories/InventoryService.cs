@@ -25,9 +25,7 @@ namespace ERP.Repository.Services.Inventories
         IValidator<InventoryUpdateViewModel> _inventoryUpdateValidator,
         IValidator<InventoryRestockViewModel> _restockValidator,
         IValidator<InventoryDamagePostViewModel> _damageValidator,
-        IValidator<InventoryTransactionPostViewModel> _transactionValidator,
-        IValidator<InventoryWareHousePostViewModel> _warehousePostValidator,
-        IValidator<InventoryWareHouseUpdateViewModel> _warehouseUpdateValidator
+        IValidator<InventoryTransactionPostViewModel> _transactionValidator
     ) : IInventoryService
     {
         #region Inventory
@@ -37,7 +35,6 @@ namespace ERP.Repository.Services.Inventories
             string name,
             int filter,
             int statusId,
-            int wareHousePresent,
             InventoryListFilter listFilter,
             CancellationToken cancellationToken
         )
@@ -50,12 +47,11 @@ namespace ERP.Repository.Services.Inventories
                 name,
                 filter,
                 statusId,
-                wareHousePresent,
                 listFilter,
                 cancellationToken
             );
 
-            var totalCount = await _inventory.InventoryCount(name, filter, statusId, wareHousePresent, listFilter);
+            var totalCount = await _inventory.InventoryCount(name, filter, statusId, listFilter);
 
             var inventory = inv.Select(i => new InventoryViewModel
             {
@@ -64,8 +60,6 @@ namespace ERP.Repository.Services.Inventories
                 Name = i.Product?.Name,
                 Quantity = i.Quantity,
                 ReorderPoint = i.ReorderPoint,
-                WarehouseId = i.WarehouseId ?? 0,
-                WarehouseName = i.Warehouse?.Name ?? "No Warehouse",
                 Status = i.InventoryStatus.Status,
                 CategoryName = i.Product?.Category?.Type ?? "No Category",
                 Created_At = i.Created_At,
@@ -103,11 +97,11 @@ namespace ERP.Repository.Services.Inventories
         {
             await _inventoryPostValidator.EnsureValidAsync(inventory);
 
-            var duplicate = await _inventory.CheckExistingInventory(inventory.ProductId, inventory.WarehouseId);
+            var duplicate = await _inventory.CheckExistingInventory(inventory.ProductId);
 
             if (duplicate)
             {
-                throw new BadRequest("This product is already stocked in this warehouse.");
+                throw new BadRequest("This product already has a stock record.");
             }
 
             var product = await _product.GetProductByIdWithoutTracking(inventory.ProductId);
@@ -122,7 +116,6 @@ namespace ERP.Repository.Services.Inventories
             var inv = new Inventory
             {
                 Quantity = inventory.Quantity,
-                WarehouseId = inventory.WarehouseId,
                 ProductId = inventory.ProductId,
                 ReorderPoint = inventory.ReorderPoint,
                 StatusId = ReorderRatio.Ratio(inventory.Quantity, inventory.ReorderPoint),
@@ -133,12 +126,10 @@ namespace ERP.Repository.Services.Inventories
 
             await _inventory.Save(inv);
 
-            var warehouse = await _inventory.GetIndividualWareHouseWithTracking(inventory.WarehouseId);
-
             _auditLog.Log(
                 AuditModuleEnum.Inventory,
                 AuditActionEnum.Create,
-                $"Added {inv.Quantity} '{product.Name}' to {warehouse?.Name ?? "no warehouse"}",
+                $"Added {inv.Quantity} '{product.Name}'",
                 inv.Id,
                 now
             );
@@ -272,7 +263,7 @@ namespace ERP.Repository.Services.Inventories
 
             var now = DateTime.UtcNow;
 
-            // product and warehouse are fixed; stock only moves between warehouses through a transfer
+            // the product is fixed; only the reorder point changes
             var message =
                 existing.ReorderPoint != inventory.ReorderPoint
                     ? $"Updated inventory '{ItemLabel(existing)}': reorder point {existing.ReorderPoint} → {inventory.ReorderPoint}"
@@ -364,10 +355,10 @@ namespace ERP.Repository.Services.Inventories
             return;
         }
 
-        // "Nails at Main Warehouse" — a stock record is named by its product and warehouse
+        // a stock record is named by its product
         private static string ItemLabel(Inventory inventory)
         {
-            return $"{inventory.Product?.Name ?? "unknown product"} at {inventory.Warehouse?.Name ?? "no warehouse"}";
+            return inventory.Product?.Name ?? "unknown product";
         }
 
         public async Task InventoryTransaction(InventoryTransactionPostViewModel transaction)
@@ -396,144 +387,6 @@ namespace ERP.Repository.Services.Inventories
             return data;
         }
 
-        #endregion
-
-        #region Warehouse
-        public async Task<WarehousePageViewModel> GetWarehouses(
-            int page,
-            int pageSize,
-            string? name,
-            int filter,
-            CancellationToken cancellation
-        )
-        {
-            PageQueryValidator.Ensure(page, pageSize);
-
-            var wareHouses = await _inventory.GetWarehousesWithoutTracking(page, pageSize, name, filter, cancellation);
-            var count = await _inventory.WarehouseTotalCount(name, cancellation);
-
-            return new WarehousePageViewModel
-            {
-                Warehouses = wareHouses,
-                PageCount = (int)Math.Ceiling(count / (double)pageSize),
-                Rows = count,
-            };
-        }
-
-        public async Task NewWareHouse(InventoryWareHousePostViewModel wareHouse)
-        {
-            await _warehousePostValidator.EnsureValidAsync(wareHouse);
-
-            var now = DateTime.UtcNow;
-
-            var wh = new Warehouse
-            {
-                Name = wareHouse.Name.ToLower(),
-                Address = wareHouse.Address.ToLower(),
-                Created_By = _auditLog.CurrentUserId,
-                Created_At = now,
-                IsActive = true,
-            };
-
-            await _inventory.Save(wh);
-
-            _auditLog.Log(
-                AuditModuleEnum.Warehouse,
-                AuditActionEnum.Create,
-                $"Added warehouse '{wh.Name}'",
-                wh.Id,
-                now
-            );
-            await _inventory.SaveChanges();
-
-            return;
-        }
-
-        public async Task UpdateWareHouse(InventoryWareHouseUpdateViewModel wareHouse)
-        {
-            await _warehouseUpdateValidator.EnsureValidAsync(wareHouse);
-
-            var wh = await _inventory.GetIndividualWareHouseWithTracking(wareHouse.Id);
-
-            if (wh == null)
-            {
-                throw new NotFound("Warehouse not found");
-            }
-
-            var now = DateTime.UtcNow;
-            var oldName = wh.Name;
-            var changes = new List<string>();
-
-            var newName = wareHouse.Name.ToLower();
-            var newAddress = wareHouse.Address.ToLower();
-
-            if (wh.Name != newName)
-            {
-                changes.Add($"name '{wh.Name}' → '{newName}'");
-            }
-
-            if (wh.Address != newAddress)
-            {
-                changes.Add($"address '{wh.Address}' → '{newAddress}'");
-            }
-
-            wh.Name = newName;
-            wh.Address = newAddress;
-            wh.Updated_By = _auditLog.CurrentUserId;
-            wh.Updated_At = now;
-
-            var message =
-                changes.Count > 0
-                    ? $"Updated warehouse '{oldName}': {string.Join(", ", changes)}"
-                    : $"Updated warehouse '{oldName}' (no changes)";
-
-            _auditLog.Log(AuditModuleEnum.Warehouse, AuditActionEnum.Update, message, wh.Id, now);
-
-            await _inventory.SaveChanges();
-
-            return;
-        }
-
-        public async Task DeleteWareHouse(int id)
-        {
-            if (id <= 0)
-            {
-                throw new BadRequest("Warehouse is required");
-            }
-
-            var wareHouse = await _inventory.GetIndividualWareHouseWithTracking(id);
-
-            if (wareHouse == null)
-            {
-                throw new NotFound("Warehouse not found");
-            }
-
-            var now = DateTime.UtcNow;
-
-            wareHouse.IsActive = false;
-            wareHouse.Deleted_By = _auditLog.CurrentUserId;
-            wareHouse.Deleted_At = now;
-
-            var inventories = await _inventory.GetInventoryWithWareHouseId(id);
-
-            foreach (var inv in inventories)
-            {
-                inv.WarehouseId = null;
-                inv.Updated_By = _auditLog.CurrentUserId;
-                inv.Updated_At = now;
-            }
-
-            var message =
-                inventories.Count > 0
-                    ? $"Deleted warehouse '{wareHouse.Name}' ({inventories.Count} inventory item(s) unassigned)"
-                    : $"Deleted warehouse '{wareHouse.Name}'";
-
-            _auditLog.Log(AuditModuleEnum.Warehouse, AuditActionEnum.Delete, message, wareHouse.Id, now);
-
-            await _inventory.SaveChanges();
-
-            return;
-        }
         #endregion
 
         #region InventoryLabel
@@ -604,7 +457,6 @@ namespace ERP.Repository.Services.Inventories
                     Name = i.Name,
                     Classification = i.Classification,
                     VelocityMetric = i.VelocityMetric,
-                    Warehouse = i.Warehouse,
                 }),
                 PageCount = (int)Math.Ceiling(total / (double)pageSize),
                 Rows = total,

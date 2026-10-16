@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.0.0] - 2026-10-16
+
+### Changed
+
+- **BREAKING:** An inventory item is one stock record per product (the store is the only stock location). Adding a second active record for the same product returns 400 "This product already has a stock record."
+- **BREAKING:** `POST /api/Inventory/insert` no longer takes `warehouseId`.
+- **BREAKING:** `GET /api/Inventory/all` no longer takes `wareHousePresent` or `warehouseId`, no longer returns `warehouseId` / `warehouseName`, and its search no longer matches warehouse names. Sort `6` (warehouse) is gone.
+- **BREAKING:** The movement velocity list no longer returns `warehouse`.
+- Order stock shortage messages no longer name a warehouse.
+
+### Removed
+
+- **BREAKING:** The Warehouse module: `GET /api/Inventory/warehouse/all`, `POST /api/Inventory/warehouse/insert`, `PATCH /api/Inventory/warehouse/patch`, `DELETE /api/Inventory/warehouse/delete`, the `Warehouses` table, `Inventories.WarehouseId` and the `Warehouse` audit module (6). Run `dotnet ef database update` on an emptied database, then re-seed with `scripts/main.py`; the new unique index fails if a product still has several active stock records.
+- **BREAKING:** The order pickup address: `pickUpAddress` is gone from order create, edit, list and details, from sale details, and from the `Orders` table.
+
 ## [8.1.0] - 2026-10-15
 
 ### Added

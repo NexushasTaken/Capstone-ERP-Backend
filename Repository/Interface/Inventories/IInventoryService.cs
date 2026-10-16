@@ -19,7 +19,6 @@ namespace ERP.Repository.Interface.Inventories
             string name,
             int filter,
             int statusId,
-            int wareHousePresent,
             InventoryListFilter listFilter,
             CancellationToken cancellation
         );
@@ -34,16 +33,6 @@ namespace ERP.Repository.Interface.Inventories
         Task UpdateInventory(InventoryUpdateViewModel inventory);
         Task MarkAsDamaged(InventoryDamagePostViewModel damaged);
         Task InventoryTransaction(InventoryTransactionPostViewModel transaction);
-        Task<WarehousePageViewModel> GetWarehouses(
-            int page,
-            int pageSize,
-            string? name,
-            int filter,
-            CancellationToken cancellation
-        );
-        Task NewWareHouse(InventoryWareHousePostViewModel wareHouse);
-        Task UpdateWareHouse(InventoryWareHouseUpdateViewModel wareHouse);
-        Task DeleteWareHouse(int id);
         Task<IEnumerable<InventoryLabelViewModel>> GetInventoryLabels();
         Task<IEnumerable<InventoryDamageViewModel>> GetDamageInventory(int id);
         Task<IEnumerable<InventoryTransactionViewModle>> GetInventoryItemTransaction(int id);

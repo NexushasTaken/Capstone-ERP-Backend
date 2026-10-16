@@ -12,7 +12,7 @@
         public DateTime? Updated_At { get; set; }
         public string? UpdatedByName { get; set; }
 
-        /// <summary>Total stock across warehouses; only set by the inventory/order product picker.</summary>
+        /// <summary>Stock on hand; only set by the inventory/order product picker.</summary>
         public int? Stock { get; set; }
     }
 

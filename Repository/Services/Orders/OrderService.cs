@@ -154,7 +154,6 @@ namespace ERP.Repository.Services.Orders
                 OrderStatusId = (int)OrderStatusEnum.Processing,
                 DeliveryDriverId = order.DeliveryDriverId == 0 ? null : order.DeliveryDriverId,
                 CustomerName = order.CustomerName.ToLower(),
-                PickUpAddress = order.PickUpAddress.ToLower(),
                 DeliveryAddress = order.DeliveryAddress.ToLower(),
                 DiscountPercent = order.DiscountPercent,
                 Created_By = _auditLog.CurrentUserId,
@@ -176,7 +175,7 @@ namespace ERP.Repository.Services.Orders
                     if (inv.OrderQuantity > 0)
                     {
                         message.Add(
-                            $"Insufficient inventory for product {product.Name} at Warehouse {inv.Warehouse}. Unfulfilled Quantity: {inv.OrderQuantity}"
+                            $"Insufficient inventory for product {product.Name}. Unfulfilled Quantity: {inv.OrderQuantity}"
                         );
                     }
 
@@ -320,7 +319,6 @@ namespace ERP.Repository.Services.Orders
             var oldDiscount = header.DiscountPercent;
 
             header.DeliveryDriverId = isWalkin || order.DeliveryDriverId == 0 ? null : order.DeliveryDriverId;
-            header.PickUpAddress = isWalkin ? "" : (order.PickUpAddress ?? "").ToLower();
             header.DeliveryAddress = isWalkin ? "" : (order.DeliveryAddress ?? "").ToLower();
             header.DiscountPercent = order.DiscountPercent;
             header.Updated_By = _auditLog.CurrentUserId;
@@ -401,7 +399,7 @@ namespace ERP.Repository.Services.Orders
         }
 
         private async Task<
-            List<(int Quantity, int InventoryId, int OrderQuantity, string Warehouse, bool ToSave)>
+            List<(int Quantity, int InventoryId, int OrderQuantity, bool ToSave)>
         > UpdateInventoryBaseOnOrders(int productId, int quantity)
         {
             var inventory = await _inventory.GetProductInventoryWithTracking(productId);
@@ -411,11 +409,10 @@ namespace ERP.Repository.Services.Orders
                 throw new BadRequest("Product Inventory Not Found");
             }
 
-            List<(int Quantity, int InventoryId, int OrderQuantity, string Warehouse, bool ToSave)> result = new List<(
+            List<(int Quantity, int InventoryId, int OrderQuantity, bool ToSave)> result = new List<(
                 int Quantity,
                 int InventoryId,
                 int OrderQuantity,
-                string Warehouse,
                 bool ToSave
             )>
             { };
@@ -429,30 +426,14 @@ namespace ERP.Repository.Services.Orders
 
                 if (inv.Quantity <= 0)
                 {
-                    result.Add(
-                        (
-                            inv.Quantity,
-                            inv.Id,
-                            quantity,
-                            inv.Warehouse.Name == null ? "No Warehouse" : inv.Warehouse.Name,
-                            false
-                        )
-                    );
+                    result.Add((inv.Quantity, inv.Id, quantity, false));
                     continue;
                 }
 
                 if (quantity >= inv.Quantity)
                 {
                     quantity -= inv.Quantity;
-                    result.Add(
-                        (
-                            inv.Quantity,
-                            inv.Id,
-                            quantity,
-                            inv.Warehouse.Name == null ? "No Warehouse" : inv.Warehouse.Name,
-                            true
-                        )
-                    );
+                    result.Add((inv.Quantity, inv.Id, quantity, true));
                     inv.Quantity = 0;
                     inv.StatusId = ReorderRatio.Ratio(inv.Quantity, inv.ReorderPoint);
                     inv.Updated_By = _auditLog.CurrentUserId;
@@ -460,9 +441,7 @@ namespace ERP.Repository.Services.Orders
                 }
                 else
                 {
-                    result.Add(
-                        (quantity, inv.Id, 0, inv.Warehouse.Name == null ? "No Warehouse" : inv.Warehouse.Name, true)
-                    );
+                    result.Add((quantity, inv.Id, 0, true));
                     inv.Quantity -= quantity;
                     quantity = 0;
                     inv.StatusId = ReorderRatio.Ratio(inv.Quantity, inv.ReorderPoint);

@@ -12,7 +12,6 @@ namespace ERP.Repository.Model.Orders
         public int? DeliveryDriverId { get; set; }
         public DeliveryDriver? DeliveryDriver { get; set; }
         public string? CustomerName { get; set; }
-        public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
 

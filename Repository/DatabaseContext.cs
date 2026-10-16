@@ -24,7 +24,6 @@ namespace ERP.Repository
         public DbSet<InventoryLabel> InventoryLabels { get; set; }
         public DbSet<InventoryStatus> InventoryStatuses { get; set; }
         public DbSet<InventoryTransaction> InventoryTransactions { get; set; }
-        public DbSet<Warehouse> Warehouses { get; set; }
         #endregion
 
         #region Product
@@ -61,7 +60,6 @@ namespace ERP.Repository
             modelBuilder.Entity<Inventory>().HasKey(p => p.Id);
             modelBuilder.Entity<InventoryStatus>().HasKey(p => p.Id);
             modelBuilder.Entity<InventoryTransaction>().HasKey(p => p.Id);
-            modelBuilder.Entity<Warehouse>().HasKey(p => p.Id);
             modelBuilder.Entity<DamagedInventory>().HasKey(p => p.Id);
             modelBuilder.Entity<InventoryLabel>().HasKey(p => p.Id);
             #endregion
@@ -129,23 +127,12 @@ namespace ERP.Repository
 
             modelBuilder
                 .Entity<Inventory>()
-                .HasOne(i => i.Warehouse)
-                .WithMany(w => w.Inventory)
-                .HasForeignKey(i => i.WarehouseId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder
-                .Entity<Inventory>()
                 .HasOne(i => i.Product)
                 .WithMany(w => w.Inventory)
                 .HasForeignKey(i => i.ProductId);
 
-            // One stock record per product per warehouse; deleted rows don't block re-adding.
-            modelBuilder
-                .Entity<Inventory>()
-                .HasIndex(i => new { i.ProductId, i.WarehouseId })
-                .IsUnique()
-                .HasFilter("\"IsActive\" = true");
+            // One stock record per product; deleted rows don't block re-adding.
+            modelBuilder.Entity<Inventory>().HasIndex(i => i.ProductId).IsUnique().HasFilter("\"IsActive\" = true");
 
             modelBuilder
                 .Entity<InventoryTransaction>()
