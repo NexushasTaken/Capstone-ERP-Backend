@@ -38,7 +38,6 @@ namespace ERP.Repository.Interface.Inventories
         Task<IEnumerable<InventoryLabelViewModel>> GetInventoryLabels();
         Task<IEnumerable<InventoryDamageViewModel>> GetDamageInventory(int id);
         Task<IEnumerable<InventoryTransactionViewModle>> GetInventoryItemTransaction(int id);
-        Task<InventoryMovementVelocityPageViewModel> GetMovementVelocity(int cutOffDate, int page, int pageSize);
         Task Restock(InventoryRestockViewModel inventory);
         Task<IEnumerable<InventoryStatusViewModel>> InventoryStatusCount();
         Task<IEnumerable<ProductViewModel>> GetAllProductForInsert();

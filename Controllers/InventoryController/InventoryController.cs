@@ -79,18 +79,6 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", transac));
         }
 
-        [HttpGet("movement/velocity")]
-        public async Task<IActionResult> GetMovementVelocity(
-            [FromQuery] int cutOffDate = 7,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10
-        )
-        {
-            var inventory = await _inventory.GetMovementVelocity(cutOffDate, page, pageSize);
-
-            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", inventory));
-        }
-
         [HttpGet("status/count")]
         public async Task<IActionResult> GetStatusCount()
         {

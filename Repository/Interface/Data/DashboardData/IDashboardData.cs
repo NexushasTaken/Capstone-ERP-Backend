@@ -4,8 +4,6 @@ namespace ERP.Repository.Interface.Data.DashboardData
 {
     public interface IDashboardData
     {
-        Task<IEnumerable<MonthsDataViewModel>> OverView(DateTime from, DateTime to, CancellationToken cancellation);
-        Task<IEnumerable<MonthsDataViewModel>> PrevMonths(DateTime from, DateTime to, CancellationToken cancellation);
         Task<int> TotalStock();
         Task<IEnumerable<InventoryStatusTotalViewModel>> InventoryStatusOverView();
     }
