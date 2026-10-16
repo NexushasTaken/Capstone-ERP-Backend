@@ -89,7 +89,6 @@ namespace ERP.Repository.Data.Sales
                             ? ""
                             : string.Concat(s.Order.DeliveryDriver.FirstName, " ", s.Order.DeliveryDriver.LastName),
                     CustomerName = s.Order.CustomerName,
-                    PickUpAddress = s.Order.PickUpAddress,
                     DeliveryAddress = s.Order.DeliveryAddress,
                     Orders = s
                         .Order.OrderLines.GroupBy(l => l.ProductId)

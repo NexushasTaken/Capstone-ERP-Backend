@@ -25,7 +25,6 @@
         public int? DeliveryDriverId { get; set; }
         public string? DriverName { get; set; }
         public string? CustomerName { get; set; }
-        public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
         public IEnumerable<OrderViewModel> Orders { get; set; } = [];
         public decimal Subtotal { get; set; }
@@ -60,7 +59,6 @@
         public int OrderTypeId { get; set; }
         public int? DeliveryDriverId { get; set; }
         public string? CustomerName { get; set; }
-        public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
         public ICollection<OrderLineViewModel> OrderLines { get; set; } = [];
@@ -70,7 +68,6 @@
     {
         public int OrderId { get; set; }
         public int? DeliveryDriverId { get; set; }
-        public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
         public ICollection<OrderLineViewModel> OrderLines { get; set; } = [];

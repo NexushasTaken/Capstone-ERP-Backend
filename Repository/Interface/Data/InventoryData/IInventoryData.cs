@@ -12,7 +12,6 @@ namespace ERP.Repository.Interface.Data.InventoryData
             string? name,
             int filter,
             int statusId,
-            int wareHousePresent,
             InventoryListFilter listFilter,
             CancellationToken cancellation
         );
@@ -21,36 +20,15 @@ namespace ERP.Repository.Interface.Data.InventoryData
             string? name,
             int filter,
             int statusId,
-            int wareHousePresent,
             InventoryListFilter listFilter
         );
-        Task<int> InventoryCount(
-            string? name,
-            int filter,
-            int statusId,
-            int wareHousePresent,
-            InventoryListFilter listFilter
-        );
+        Task<int> InventoryCount(string? name, int filter, int statusId, InventoryListFilter listFilter);
         Task<Inventory> GetInventoryWithTracking(int id);
-        Task<ICollection<Inventory>> GetInventoryWithWareHouseId(int id);
         Task<IEnumerable<Inventory>> GetProductInventoryWithTracking(int productId);
-        Task<bool> CheckExistingInventory(int productId, int warehouseId);
+        Task<bool> CheckExistingInventory(int productId);
         Task<IEnumerable<Inventory>> GetInventoriesWithTracking(List<int> Id);
         Task<IEnumerable<InventoryStatusViewModel>> StatusCount();
         #endregion
-
-        #region Warehouse
-        Task<IEnumerable<InventoryWareHouseViewModel>> GetWarehousesWithoutTracking(
-            int page,
-            int pageSize,
-            string? name,
-            int filter,
-            CancellationToken cancellation = default
-        );
-        Task<int> WarehouseTotalCount(string? name, CancellationToken cancellation = default);
-        Task<Warehouse> GetIndividualWareHouseWithTracking(int id);
-        #endregion
-
 
         #region Inventory Label
         Task<IEnumerable<InventoryLabel>> GetLabelForInsert();

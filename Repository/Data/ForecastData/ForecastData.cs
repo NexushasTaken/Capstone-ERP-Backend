@@ -39,7 +39,7 @@ namespace ERP.Repository.Data.ForecastData
                 .ToListAsync();
         }
 
-        // Active products with their stock in every warehouse added together
+        // Active products with their stock on hand
         public async Task<List<ForecastProductViewModel>> ForecastProducts()
         {
             return await BaseQuery<Product>(false)

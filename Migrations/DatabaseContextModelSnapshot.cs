@@ -220,18 +220,13 @@ namespace ERP.Migrations
                     b.Property<int?>("Updated_By")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("WarehouseId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("StatusId");
-
-                    b.HasIndex("WarehouseId");
-
-                    b.HasIndex("ProductId", "WarehouseId")
+                    b.HasIndex("ProductId")
                         .IsUnique()
                         .HasFilter("\"IsActive\" = true");
+
+                    b.HasIndex("StatusId");
 
                     b.ToTable("Inventories");
                 });
@@ -342,48 +337,6 @@ namespace ERP.Migrations
                     b.ToTable("InventoryTransactions");
                 });
 
-            modelBuilder.Entity("ERP.Repository.Model.Inventories.Warehouse", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("Created_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("Deleted_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Deleted_By")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("Updated_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Updated_By")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Warehouses");
-                });
-
             modelBuilder.Entity("ERP.Repository.Model.Orders.DeliveryDriver", b =>
                 {
                     b.Property<int>("Id")
@@ -457,9 +410,6 @@ namespace ERP.Migrations
 
                     b.Property<int>("OrderTypeId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("PickUpAddress")
-                        .HasColumnType("text");
 
                     b.Property<DateTime?>("Updated_At")
                         .HasColumnType("timestamp with time zone");
@@ -918,16 +868,9 @@ namespace ERP.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ERP.Repository.Model.Inventories.Warehouse", "Warehouse")
-                        .WithMany("Inventory")
-                        .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("InventoryStatus");
 
                     b.Navigation("Product");
-
-                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.InventoryTransaction", b =>
@@ -1065,11 +1008,6 @@ namespace ERP.Migrations
             modelBuilder.Entity("ERP.Repository.Model.Inventories.InventoryStatus", b =>
                 {
                     b.Navigation("Inventories");
-                });
-
-            modelBuilder.Entity("ERP.Repository.Model.Inventories.Warehouse", b =>
-                {
-                    b.Navigation("Inventory");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Orders.DeliveryDriver", b =>

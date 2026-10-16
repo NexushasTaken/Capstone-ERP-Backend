@@ -9,7 +9,6 @@ namespace ERP.Repository.ViewModel.Sales
         public string? OrderStatus { get; set; }
         public string? DriverName { get; set; }
         public string? CustomerName { get; set; }
-        public string? PickUpAddress { get; set; }
         public string? DeliveryAddress { get; set; }
         public IEnumerable<OrderViewModel> Orders { get; set; } = [];
         public decimal Subtotal { get; set; }

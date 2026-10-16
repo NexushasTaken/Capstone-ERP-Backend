@@ -19,12 +19,10 @@ namespace ERP.Controllers.InventoryController
         /// </summary>
         /// <param name="page">asdasd</param>
         /// <param name="pageSize"></param>
-        /// <param name="name">case-insensitive search on product name, warehouse, status; a number or INV-n also matches the Id</param>
-        /// <param name="filter">Filtering Numbering works like this: 1: Product Name A - Z, 2: Product Name Z - A, 3: Quantity High - Low, 4: Quantity Low - High, 5: Reorder Point Ascending, 6: Warehouse Id Ascending</param>
+        /// <param name="name">case-insensitive search on product name, status; a number or INV-n also matches the Id</param>
+        /// <param name="filter">Filtering Numbering works like this: 1: Product Name A - Z, 2: Product Name Z - A, 3: Quantity High - Low, 4: Quantity Low - High, 5: Reorder Point Ascending</param>
         /// <param name="cancellation"></param>
         /// <param name="statusId"></param>
-        /// <param name="wareHousePresent">0 to include all items that has warehouse otherewise use 1</param>
-        /// <param name="warehouseId">only items in this warehouse; 0 for any</param>
         /// <param name="categoryId">only items whose product is in this category; 0 for any</param>
         /// <param name="minQuantity">minimum quantity, inclusive</param>
         /// <param name="maxQuantity">maximum quantity, inclusive; 0 lists out-of-stock items</param>
@@ -36,15 +34,13 @@ namespace ERP.Controllers.InventoryController
             [FromQuery] string name = "",
             [FromQuery] int filter = 0,
             [FromQuery] int statusId = 0,
-            [FromQuery] int wareHousePresent = 0,
-            [FromQuery] int warehouseId = 0,
             [FromQuery] int categoryId = 0,
             [FromQuery] int? minQuantity = null,
             [FromQuery] int? maxQuantity = null,
             CancellationToken cancellation = default
         )
         {
-            var listFilter = new InventoryListFilter(warehouseId, categoryId, minQuantity, maxQuantity);
+            var listFilter = new InventoryListFilter(categoryId, minQuantity, maxQuantity);
 
             var inventories = await _inventory.GetInventories(
                 page,
@@ -52,31 +48,11 @@ namespace ERP.Controllers.InventoryController
                 name,
                 filter,
                 statusId,
-                wareHousePresent,
                 listFilter,
                 cancellation
             );
 
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", inventories));
-        }
-
-        /// <summary>
-        /// Retrieves one page of warehouses.
-        /// </summary>
-        /// <param name="name">case-insensitive search on the warehouse name or address; a number also matches the Id</param>
-        /// <param name="filter">sort: 0 newest first, 1 Id, 2 name A - Z, 3 name Z - A</param>
-        [HttpGet("warehouse/all")]
-        public async Task<IActionResult> GetWareHouses(
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string? name = "",
-            [FromQuery] int filter = 0,
-            CancellationToken cancellation = default
-        )
-        {
-            var wareHouse = await _inventory.GetWarehouses(page, pageSize, name, filter, cancellation);
-
-            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", wareHouse));
         }
 
         [HttpGet("inventoryLabel/forInsert")]
@@ -147,15 +123,6 @@ namespace ERP.Controllers.InventoryController
         }
 
         [Authorize(Roles = "owner")]
-        [HttpPost("warehouse/insert")]
-        public async Task<IActionResult> InsertWareHouse([FromBody] InventoryWareHousePostViewModel wareHouse)
-        {
-            await _inventory.NewWareHouse(wareHouse);
-
-            return StatusCode(200, _response.Status(200, true, "Added Successfully", null));
-        }
-
-        [Authorize(Roles = "owner")]
         [HttpPatch("patch")]
         public async Task<IActionResult> UpdateInventory([FromBody] InventoryUpdateViewModel inventory)
         {
@@ -174,15 +141,6 @@ namespace ERP.Controllers.InventoryController
         }
 
         [Authorize(Roles = "owner")]
-        [HttpPatch("warehouse/patch")]
-        public async Task<IActionResult> UpdateWareHouse([FromBody] InventoryWareHouseUpdateViewModel wareHouse)
-        {
-            await _inventory.UpdateWareHouse(wareHouse);
-
-            return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
-        }
-
-        [Authorize(Roles = "owner")]
         [HttpPatch("restock")]
         public async Task<IActionResult> RestockInventory(InventoryRestockViewModel inventory)
         {
@@ -196,15 +154,6 @@ namespace ERP.Controllers.InventoryController
         public async Task<IActionResult> Delete([FromQuery] int id)
         {
             await _inventory.DeleteItem(id);
-
-            return StatusCode(200, _response.Status(200, true, "Deleted Successfully", null));
-        }
-
-        [Authorize(Roles = "owner")]
-        [HttpDelete("warehouse/delete")]
-        public async Task<IActionResult> DeleteWareHouse([FromQuery] int id)
-        {
-            await _inventory.DeleteWareHouse(id);
 
             return StatusCode(200, _response.Status(200, true, "Deleted Successfully", null));
         }
