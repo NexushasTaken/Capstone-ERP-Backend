@@ -37,8 +37,6 @@ namespace ERP.Repository.Configuration.Validation.Orders
                             $"The {DiscountTypes.Label(o.DiscountType)} discount is fixed at {DiscountTypes.PresetRates[o.DiscountType]}%"
                         );
                     RuleFor(o => o.DiscountIdNumber)
-                        .NotEmpty()
-                        .WithMessage("ID number is required for this discount")
                         .MaximumLength(50)
                         .WithMessage("ID number can't be longer than 50 characters");
                 }
