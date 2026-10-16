@@ -119,6 +119,15 @@ namespace ERP.Controllers.OrderController
             return StatusCode(200, _response.Status(200, true, "Driver Added Successfully", null));
         }
 
+        [Authorize(Roles = "owner")]
+        [HttpPost("driver/import")]
+        public async Task<IActionResult> ImportDrivers([FromBody] DriverImportViewModel import)
+        {
+            var count = await _orderService.ImportDrivers(import);
+
+            return StatusCode(200, _response.Status(200, true, $"Imported {count} driver(s)", count));
+        }
+
         [HttpPatch("status/patch")]
         public async Task<IActionResult> PatchOrderStatus(OrderStatusPostViewModel status)
         {

@@ -111,5 +111,18 @@ namespace ERP.Repository.Data.ProductData
             return await BaseQuery<Product>(false)
                 .AnyAsync(p => p.IsActive && p.Id != excludeId && p.Name.ToLower() == lower);
         }
+
+        // Lowercase names of active products that match one of names (case-insensitive).
+        public async Task<HashSet<string>> GetExistingProductNames(IEnumerable<string> names)
+        {
+            var lower = names.Select(n => n.ToLower()).Distinct().ToList();
+
+            var matches = await BaseQuery<Product>(false)
+                .Where(p => p.IsActive && lower.Contains(p.Name.ToLower()))
+                .Select(p => p.Name.ToLower())
+                .ToListAsync();
+
+            return [.. matches];
+        }
     }
 }

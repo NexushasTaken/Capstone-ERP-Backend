@@ -6,6 +6,7 @@ using ERP.Repository.Configuration.Validation;
 using ERP.Repository.Interface.AuditLogs;
 using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Data.UserAccountData;
+using ERP.Repository.Interface.Inventories;
 using ERP.Repository.Interface.Products;
 using ERP.Repository.Model.Products;
 using ERP.Repository.ViewModel.Products;
@@ -20,7 +21,10 @@ namespace ERP.Repository.Services.Products
         IAuditLogService _auditLog,
         IValidator<CategoryUpdateViewModel> _categoryUpdateValidator,
         IValidator<ProductPostViewModel> _productPostValidator,
-        IValidator<ProductUpdateViewModel> _productUpdateValidator
+        IValidator<ProductUpdateViewModel> _productUpdateValidator,
+        IValidator<CategoryImportViewModel> _categoryImportValidator,
+        IValidator<ProductImportViewModel> _productImportValidator,
+        IInventoryService _inventoryService
     ) : IProductService
     {
         #region Category
@@ -167,6 +171,67 @@ namespace ERP.Repository.Services.Products
             await _category.SaveChanges();
 
             return;
+        }
+
+        // All-or-nothing: every row is checked first, then all rows are saved in one transaction.
+        public async Task<int> ImportCategories(CategoryImportViewModel import)
+        {
+            await _categoryImportValidator.EnsureValidAsync(import);
+
+            var names = import.Rows.Select(r => r.Type!.Trim()).ToList();
+            ThrowIfAny(await CategoryImportErrors(names));
+
+            var now = DateTime.UtcNow;
+
+            var categories = names
+                .Select(n => new Category
+                {
+                    Type = n.ToLower(),
+                    Created_By = _auditLog.CurrentUserId,
+                    Created_At = now,
+                    IsActive = true,
+                })
+                .ToList();
+
+            await using var transaction = await _category.BeginTransaction();
+
+            await _category.SaveMany(categories);
+
+            foreach (var category in categories)
+            {
+                _auditLog.Log(
+                    AuditModuleEnum.Category,
+                    AuditActionEnum.Create,
+                    $"Imported category '{category.Type}'",
+                    category.Id,
+                    now
+                );
+            }
+            await _category.SaveChanges();
+
+            await transaction.CommitAsync();
+
+            return categories.Count;
+        }
+
+        // Runs only the database rules, without saving, so the import dialog can flag them as soon as a file is picked.
+        // Field rules (blank name etc.) are left to the client here; ImportCategories still runs them.
+        public async Task CheckCategoryImport(CategoryImportViewModel import)
+        {
+            EnsureRowCount(import.Rows.Count);
+
+            ThrowIfAny(await CategoryImportErrors(import.Rows.Select(r => r.Type?.Trim() ?? "").ToList()));
+        }
+
+        // Name already used, or repeated in the file. Keys are "rows.{i}.type".
+        private async Task<Dictionary<string, string[]>> CategoryImportErrors(List<string> names)
+        {
+            var existing = await _category.GetCategoryIdsByNames(names.Where(n => n != ""));
+
+            var errors = new Dictionary<string, string[]>();
+            AddNameErrors(errors, names, "type", existing.ContainsKey, "A category with this name already exists.");
+
+            return errors;
         }
 
         #endregion
@@ -333,6 +398,158 @@ namespace ERP.Repository.Services.Products
             return;
         }
 
+        // All-or-nothing: every row is checked first, then products and their opening stock are saved in one transaction.
+        public async Task<int> ImportProducts(ProductImportViewModel import)
+        {
+            await _productImportValidator.EnsureValidAsync(import);
+
+            var rows = import.Rows;
+            var names = rows.Select(r => r.Name!.Trim()).ToList();
+            var (errors, categoryIds) = await ProductImportErrors(rows);
+            ThrowIfAny(errors);
+
+            var now = DateTime.UtcNow;
+
+            var products = rows.Select(
+                    (r, i) =>
+                        new Product
+                        {
+                            CategoryId = string.IsNullOrWhiteSpace(r.Category)
+                                ? null
+                                : categoryIds[r.Category.Trim().ToLower()],
+                            Name = names[i].ToLower(),
+                            Price = r.Price,
+                            IsActive = true,
+                            Created_By = _auditLog.CurrentUserId,
+                            Created_At = now,
+                        }
+                )
+                .ToList();
+
+            await using var transaction = await _product.BeginTransaction();
+
+            await _product.SaveMany(products);
+
+            foreach (var pr in products)
+            {
+                _auditLog.Log(
+                    AuditModuleEnum.Product,
+                    AuditActionEnum.Create,
+                    $"Imported product '{pr.Name}' (₱{pr.Price:N2})",
+                    pr.Id,
+                    now
+                );
+            }
+            await _product.SaveChanges();
+
+            for (var i = 0; i < rows.Count; i++)
+            {
+                if (rows[i].Quantity is int quantity && rows[i].ReorderPoint is int reorderPoint)
+                {
+                    await _inventoryService.CreateOpeningStock(products[i], quantity, reorderPoint, now);
+                }
+            }
+
+            await transaction.CommitAsync();
+
+            return products.Count;
+        }
+
+        // Runs only the database rules, without saving, so the import dialog can flag them as soon as a file is picked.
+        // Field rules (price, stock columns) are left to the client here; ImportProducts still runs them.
+        public async Task CheckProductImport(ProductImportViewModel import)
+        {
+            EnsureRowCount(import.Rows.Count);
+
+            var (errors, _) = await ProductImportErrors(import.Rows);
+            ThrowIfAny(errors);
+        }
+
+        // Name already used or repeated in the file, and category names that don't exist.
+        // Also returns the matched category ids (keyed by lowercase name) for the insert.
+        private async Task<(
+            Dictionary<string, string[]> errors,
+            Dictionary<string, int> categoryIds
+        )> ProductImportErrors(List<ProductImportRow> rows)
+        {
+            var names = rows.Select(r => r.Name?.Trim() ?? "").ToList();
+            var existing = await _product.GetExistingProductNames(names.Where(n => n != ""));
+            var categoryIds = await _category.GetCategoryIdsByNames(
+                rows.Where(r => !string.IsNullOrWhiteSpace(r.Category)).Select(r => r.Category!.Trim())
+            );
+
+            var errors = new Dictionary<string, string[]>();
+            AddNameErrors(errors, names, "name", existing.Contains, "A product with this name already exists.");
+
+            for (var i = 0; i < rows.Count; i++)
+            {
+                var category = rows[i].Category?.Trim();
+
+                if (!string.IsNullOrEmpty(category) && !categoryIds.ContainsKey(category.ToLower()))
+                {
+                    errors[$"rows.{i}.category"] =
+                    [
+                        $"Category '{category}' doesn't exist. Add it on the Categories page first, or leave the cell blank.",
+                    ];
+                }
+            }
+
+            return (errors, categoryIds);
+        }
+
         #endregion
+
+        private static void ThrowIfAny(Dictionary<string, string[]> errors)
+        {
+            if (errors.Count > 0)
+            {
+                throw new ValidationFailed(errors);
+            }
+        }
+
+        private static void EnsureRowCount(int count)
+        {
+            if (count == 0)
+            {
+                throw new ValidationFailed("rows", ImportLimits.EmptyMessage);
+            }
+
+            if (count > ImportLimits.MaxRows)
+            {
+                throw new ValidationFailed("rows", ImportLimits.TooManyMessage);
+            }
+        }
+
+        // Adds a "rows.{i}.{field}" error for each name that already exists or repeats an earlier row (case-insensitive).
+        private static void AddNameErrors(
+            Dictionary<string, string[]> errors,
+            IReadOnlyList<string> names,
+            string field,
+            Func<string, bool> exists,
+            string existsMessage
+        )
+        {
+            var seen = new HashSet<string>();
+
+            for (var i = 0; i < names.Count; i++)
+            {
+                var lower = names[i].ToLower();
+
+                // Blank names are a field error the validator (or the client) reports.
+                if (lower == "")
+                {
+                    continue;
+                }
+
+                if (exists(lower))
+                {
+                    errors[$"rows.{i}.{field}"] = [existsMessage];
+                }
+                else if (!seen.Add(lower))
+                {
+                    errors[$"rows.{i}.{field}"] = ["This name is already used by another row in the file."];
+                }
+            }
+        }
     }
 }

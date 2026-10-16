@@ -1,4 +1,5 @@
-﻿using ERP.Repository.ViewModel.Inventories;
+﻿using ERP.Repository.Model.Products;
+using ERP.Repository.ViewModel.Inventories;
 using ERP.Repository.ViewModel.Products;
 
 namespace ERP.Repository.Interface.Inventories
@@ -29,6 +30,7 @@ namespace ERP.Repository.Interface.Inventories
         /// <param name="inventory">Required field for inventory</param>
         /// <returns></returns>
         Task InsertItem(InventoryPostViewModel inventory);
+        Task CreateOpeningStock(Product product, int quantity, int reorderPoint, DateTime now);
         Task DeleteItem(int id);
         Task UpdateInventory(InventoryUpdateViewModel inventory);
         Task MarkAsDamaged(InventoryDamagePostViewModel damaged);

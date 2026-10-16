@@ -60,4 +60,17 @@ namespace ERP.Repository.Configuration.Validation.Orders
             Include(new DriverPostValidator());
         }
     }
+
+    public class DriverImportValidator : AbstractValidator<DriverImportViewModel>
+    {
+        public DriverImportValidator()
+        {
+            RuleFor(d => d.Rows).NotEmpty().WithMessage(ImportLimits.EmptyMessage);
+            RuleFor(d => d.Rows.Count)
+                .LessThanOrEqualTo(ImportLimits.MaxRows)
+                .WithMessage(ImportLimits.TooManyMessage)
+                .OverridePropertyName("Rows");
+            RuleForEach(d => d.Rows).SetValidator(new DriverPostValidator());
+        }
+    }
 }

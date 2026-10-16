@@ -10,6 +10,7 @@ using ERP.Repository.Interface.Data.ProductData;
 using ERP.Repository.Interface.Inventories;
 using ERP.Repository.Interface.Products;
 using ERP.Repository.Model.Inventories;
+using ERP.Repository.Model.Products;
 using ERP.Repository.ViewModel.Inventories;
 using ERP.Repository.ViewModel.Products;
 using FluentValidation;
@@ -111,14 +112,21 @@ namespace ERP.Repository.Services.Inventories
                 throw new NotFound("Product not found");
             }
 
-            var now = DateTime.UtcNow;
+            await CreateOpeningStock(product, inventory.Quantity, inventory.ReorderPoint, DateTime.UtcNow);
 
+            return;
+        }
+
+        // Saves a product's stock record, its audit entry and the Restock transaction for the opening quantity.
+        // Shared by InsertItem and the product import.
+        public async Task CreateOpeningStock(Product product, int quantity, int reorderPoint, DateTime now)
+        {
             var inv = new Inventory
             {
-                Quantity = inventory.Quantity,
-                ProductId = inventory.ProductId,
-                ReorderPoint = inventory.ReorderPoint,
-                StatusId = ReorderRatio.Ratio(inventory.Quantity, inventory.ReorderPoint),
+                Quantity = quantity,
+                ProductId = product.Id,
+                ReorderPoint = reorderPoint,
+                StatusId = ReorderRatio.Ratio(quantity, reorderPoint),
                 IsActive = true,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
@@ -145,8 +153,6 @@ namespace ERP.Repository.Services.Inventories
                     StockLevel = inv.Quantity,
                 }
             );
-
-            return;
         }
 
         public async Task Restock(InventoryRestockViewModel inventory)

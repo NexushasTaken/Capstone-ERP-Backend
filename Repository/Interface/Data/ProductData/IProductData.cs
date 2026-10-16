@@ -17,5 +17,6 @@ namespace ERP.Repository.Interface.Data.ProductData
         Task<Product> GetProductByIdWithoutTracking(int id);
         Task<IEnumerable<Product>> GetAllProductForInventoryInsert();
         Task<bool> CheckExistingProduct(string name, int excludeId = 0);
+        Task<HashSet<string>> GetExistingProductNames(IEnumerable<string> names);
     }
 }

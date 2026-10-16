@@ -18,5 +18,9 @@ namespace ERP.Repository.Interface.Products
         Task DeleteProduct(int id);
         Task UpdateProduct(ProductUpdateViewModel product);
         Task UpdateCategory(CategoryUpdateViewModel category);
+        Task<int> ImportCategories(CategoryImportViewModel import);
+        Task<int> ImportProducts(ProductImportViewModel import);
+        Task CheckCategoryImport(CategoryImportViewModel import);
+        Task CheckProductImport(ProductImportViewModel import);
     }
 }
