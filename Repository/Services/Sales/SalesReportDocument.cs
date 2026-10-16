@@ -114,9 +114,11 @@ namespace ERP.Repository.Services.Sales
                 .Row(row =>
                 {
                     SummaryItem(row, "Sales", report.SalesCount.ToString("N0", Peso));
-                    SummaryItem(row, "Gross", Money(report.Gross));
+                    SummaryItem(row, "Subtotal", Money(report.Gross));
                     SummaryItem(row, "Discounts", Money(report.Discount));
-                    SummaryItem(row, "Net total", Money(report.Net));
+                    SummaryItem(row, "Total", Money(report.Net));
+                    SummaryItem(row, "Refunded", Money(report.Refunded));
+                    SummaryItem(row, "Total after refunds", Money(report.AfterRefunds));
                     SummaryItem(row, "Average sale", Money(report.Average));
                 });
         }
@@ -143,9 +145,11 @@ namespace ERP.Repository.Services.Sales
                     {
                         table.ColumnsDefinition(columns =>
                         {
-                            columns.ConstantColumn(55);
-                            columns.ConstantColumn(60);
+                            columns.ConstantColumn(50);
+                            columns.ConstantColumn(50);
                             columns.RelativeColumn(3);
+                            columns.RelativeColumn(2);
+                            columns.RelativeColumn(2);
                             columns.RelativeColumn(2);
                             columns.RelativeColumn(2);
                             columns.RelativeColumn(2);
@@ -161,6 +165,8 @@ namespace ERP.Repository.Services.Sales
                             header.Cell().Element(HeaderCell).AlignRight().Text("Subtotal");
                             header.Cell().Element(HeaderCell).AlignRight().Text("Discount");
                             header.Cell().Element(HeaderCell).AlignRight().Text("Total");
+                            header.Cell().Element(HeaderCell).AlignRight().Text("Refunded");
+                            header.Cell().Element(HeaderCell).AlignRight().Text("After refunds");
                         });
 
                         foreach (var sale in report.Sales)
@@ -176,12 +182,16 @@ namespace ERP.Repository.Services.Sales
                             table.Cell().Element(BodyCell).AlignRight().Text(Money(sale.Subtotal));
                             table.Cell().Element(BodyCell).AlignRight().Text(Money(sale.Subtotal - sale.Total));
                             table.Cell().Element(BodyCell).AlignRight().Text(Money(sale.Total));
+                            table.Cell().Element(BodyCell).AlignRight().Text(Money(sale.Refunded));
+                            table.Cell().Element(BodyCell).AlignRight().Text(Money(sale.Total - sale.Refunded));
                         }
 
                         table.Cell().ColumnSpan(4).Element(TotalCell).Text("Total");
                         table.Cell().Element(TotalCell).AlignRight().Text(Money(report.Gross));
                         table.Cell().Element(TotalCell).AlignRight().Text(Money(report.Discount));
                         table.Cell().Element(TotalCell).AlignRight().Text(Money(report.Net));
+                        table.Cell().Element(TotalCell).AlignRight().Text(Money(report.Refunded));
+                        table.Cell().Element(TotalCell).AlignRight().Text(Money(report.AfterRefunds));
                     });
             });
         }
@@ -204,6 +214,8 @@ namespace ERP.Repository.Services.Sales
                             columns.RelativeColumn(2);
                             columns.RelativeColumn(2);
                             columns.RelativeColumn(2);
+                            columns.RelativeColumn(2);
+                            columns.RelativeColumn(2);
                         });
 
                         table.Header(header =>
@@ -213,9 +225,11 @@ namespace ERP.Repository.Services.Sales
                                 .Element(HeaderCell)
                                 .Text(report.Period == SaleReportPeriod.Weekly ? "Day" : "Week");
                             header.Cell().Element(HeaderCell).AlignRight().Text("Sales");
-                            header.Cell().Element(HeaderCell).AlignRight().Text("Gross");
+                            header.Cell().Element(HeaderCell).AlignRight().Text("Subtotal");
                             header.Cell().Element(HeaderCell).AlignRight().Text("Discounts");
-                            header.Cell().Element(HeaderCell).AlignRight().Text("Net total");
+                            header.Cell().Element(HeaderCell).AlignRight().Text("Total");
+                            header.Cell().Element(HeaderCell).AlignRight().Text("Refunded");
+                            header.Cell().Element(HeaderCell).AlignRight().Text("After refunds");
                         });
 
                         foreach (var row in report.Rows)
@@ -225,6 +239,8 @@ namespace ERP.Repository.Services.Sales
                             table.Cell().Element(BodyCell).AlignRight().Text(Money(row.Gross));
                             table.Cell().Element(BodyCell).AlignRight().Text(Money(row.Discount));
                             table.Cell().Element(BodyCell).AlignRight().Text(Money(row.Net));
+                            table.Cell().Element(BodyCell).AlignRight().Text(Money(row.Refunded));
+                            table.Cell().Element(BodyCell).AlignRight().Text(Money(row.AfterRefunds));
                         }
 
                         table.Cell().Element(TotalCell).Text("Total");
@@ -232,6 +248,8 @@ namespace ERP.Repository.Services.Sales
                         table.Cell().Element(TotalCell).AlignRight().Text(Money(report.Gross));
                         table.Cell().Element(TotalCell).AlignRight().Text(Money(report.Discount));
                         table.Cell().Element(TotalCell).AlignRight().Text(Money(report.Net));
+                        table.Cell().Element(TotalCell).AlignRight().Text(Money(report.Refunded));
+                        table.Cell().Element(TotalCell).AlignRight().Text(Money(report.AfterRefunds));
                     });
             });
         }

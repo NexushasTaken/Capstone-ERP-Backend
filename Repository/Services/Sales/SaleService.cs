@@ -1,17 +1,27 @@
-﻿using ERP.Repository.Configuration.Exception_Extender;
+﻿using ERP.Repository.Configuration.Enum;
+using ERP.Repository.Configuration.Exception_Extender;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Configuration.Validation;
+using ERP.Repository.Interface.AuditLogs;
 using ERP.Repository.Interface.CurrentUser;
 using ERP.Repository.Interface.Data.SalesData;
 using ERP.Repository.Interface.Data.UserAccountData;
 using ERP.Repository.Interface.Sales;
+using ERP.Repository.Model.Inventories;
+using ERP.Repository.Model.Orders;
 using ERP.Repository.ViewModel.Sales;
+using FluentValidation;
 using QuestPDF.Fluent;
 
 namespace ERP.Repository.Services.Sales
 {
-    public class SaleService(ISalesData _sales, IUserAccountData _users, ICurrentUserService _currentUser)
-        : ISaleService
+    public class SaleService(
+        ISalesData _sales,
+        IUserAccountData _users,
+        ICurrentUserService _currentUser,
+        IAuditLogService _auditLog,
+        IValidator<SaleReturnPostViewModel> _returnValidator
+    ) : ISaleService
     {
         public async Task<SalesPageViewModel> GetSales(
             int page,
@@ -53,6 +63,151 @@ namespace ERP.Repository.Services.Sales
             };
         }
 
+        public async Task<SaleReturnPageViewModel> GetReturns(
+            int page,
+            int pageSize,
+            string? name,
+            DateOnly? from,
+            DateOnly? to,
+            CancellationToken cancellationToken = default
+        )
+        {
+            PageQueryValidator.Ensure(page, pageSize);
+
+            if (from > to)
+            {
+                throw new BadRequest("The start date must be on or before the end date");
+            }
+
+            var result = await _sales.GetReturnsWithoutTracking(page, pageSize, name, from, to, cancellationToken);
+            var totalCount = await _sales.ReturnsCount(name, from, to, cancellationToken);
+
+            return new SaleReturnPageViewModel
+            {
+                Returns = result,
+                PageCount = (int)Math.Ceiling((double)totalCount / pageSize),
+                Rows = totalCount,
+            };
+        }
+
+        // Takes back units of a completed sale. Good units go back to stock; damaged ones are logged as a return
+        // then as damage, so stock ends where it was. Either way the Return movement counts against demand.
+        public async Task ReturnItems(SaleReturnPostViewModel saleReturn)
+        {
+            await _returnValidator.EnsureValidAsync(saleReturn);
+
+            var sale = await _sales.GetSaleForReturnWithTracking(saleReturn.SaleId);
+
+            if (sale?.Order == null)
+            {
+                throw new NotFound("Sale not found");
+            }
+
+            var now = DateTime.UtcNow;
+            var userId = _auditLog.CurrentUserId;
+            var reason = saleReturn.Reason!.Trim().ToLower();
+            var subtotal = sale.Order.OrderLines.Sum(l => l.Amount);
+
+            foreach (var item in saleReturn.Items)
+            {
+                var lines = sale.Order.OrderLines.Where(l => l.ProductId == item.ProductId).ToList();
+
+                if (lines.Count == 0)
+                {
+                    throw new BadRequest("That product is not part of this sale");
+                }
+
+                var name = lines[0].Product?.Name ?? "unknown product";
+                var sold = lines.Sum(l => l.Quantity);
+                var remaining = sold - sale.Returns.Where(r => r.ProductId == item.ProductId).Sum(r => r.Quantity);
+
+                if (item.Quantity > remaining)
+                {
+                    throw new BadRequest($"Only {remaining} '{name}' can still be returned from this sale");
+                }
+
+                // The units' share of what the customer paid: sold price, scaled by the order discount.
+                var unitPrice = lines.Sum(l => l.Amount) / sold;
+                var refund =
+                    subtotal == 0
+                        ? 0
+                        : Math.Round(
+                            unitPrice * item.Quantity * sale.Total / subtotal,
+                            2,
+                            MidpointRounding.AwayFromZero
+                        );
+
+                var inventory = lines[0].Inventory!;
+                var damaged = item.ConditionId == (int)ReturnConditionEnum.Damaged;
+
+                sale.Returns.Add(
+                    new SaleReturn
+                    {
+                        ProductId = item.ProductId,
+                        InventoryId = inventory.Id,
+                        Quantity = item.Quantity,
+                        ConditionId = item.ConditionId,
+                        Reason = reason,
+                        Refund = refund,
+                        Created_By = userId,
+                        Created_At = now,
+                    }
+                );
+
+                inventory.Quantity += item.Quantity;
+                inventory.InventoryTransactions.Add(
+                    Movement(InventoryLabelEnum.Return, item.Quantity, inventory.Quantity, userId, now)
+                );
+
+                if (damaged)
+                {
+                    inventory.Quantity -= item.Quantity;
+                    inventory.InventoryTransactions.Add(
+                        Movement(InventoryLabelEnum.Damage, -item.Quantity, inventory.Quantity, userId, now)
+                    );
+                    inventory.DamagedInventories.Add(
+                        new DamagedInventory
+                        {
+                            Quantity = item.Quantity,
+                            Reason = reason,
+                            Created_By = userId,
+                            Created_At = now,
+                        }
+                    );
+                }
+
+                inventory.StatusId = ReorderRatio.Ratio(inventory.Quantity, inventory.ReorderPoint);
+                inventory.Updated_By = userId;
+                inventory.Updated_At = now;
+
+                _auditLog.Log(
+                    AuditModuleEnum.Order,
+                    damaged ? AuditActionEnum.ReturnItemDamage : AuditActionEnum.ReturnStock,
+                    $"Returned {item.Quantity} '{name}' from SAL-{sale.Id} ({(damaged ? "damaged" : "good")}): {reason}, refunded ₱{refund:N2}",
+                    sale.OrderId,
+                    now
+                );
+            }
+
+            await _sales.SaveChanges();
+        }
+
+        private static InventoryTransaction Movement(
+            InventoryLabelEnum label,
+            int quantity,
+            int stockLevel,
+            int? userId,
+            DateTime now
+        ) =>
+            new()
+            {
+                QuantityChanged = quantity,
+                StockLevel = stockLevel,
+                InventoryLabelId = (int)label,
+                Created_By = userId,
+                Created_At = now,
+            };
+
         public async Task<SaleDateRangeViewModel> GetSaleDateRange(CancellationToken cancellationToken = default)
         {
             var (first, last) = await _sales.SaleDateRange(cancellationToken);
@@ -93,6 +248,7 @@ namespace ERP.Repository.Services.Sales
 
             var gross = sales.Sum(s => s.Subtotal);
             var net = sales.Sum(s => s.Total);
+            var refunded = sales.Sum(s => s.Refunded);
 
             return new SaleReportViewModel
             {
@@ -106,6 +262,8 @@ namespace ERP.Repository.Services.Sales
                 // The stored total is what was charged, so the discount is whatever makes up the difference.
                 Discount = gross - net,
                 Net = net,
+                Refunded = refunded,
+                AfterRefunds = net - refunded,
                 Average = sales.Count == 0 ? 0 : net / sales.Count,
                 Sales = period == SaleReportPeriod.Daily ? sales : [],
                 Rows = period switch
@@ -167,6 +325,7 @@ namespace ERP.Repository.Services.Sales
             var inRange = sales.Where(s => PhDay(s.Created_At) is { } day && day >= from && day <= to).ToList();
             var gross = inRange.Sum(s => s.Subtotal);
             var net = inRange.Sum(s => s.Total);
+            var refunded = inRange.Sum(s => s.Refunded);
 
             return new SaleReportRow
             {
@@ -175,6 +334,8 @@ namespace ERP.Repository.Services.Sales
                 Gross = gross,
                 Discount = gross - net,
                 Net = net,
+                Refunded = refunded,
+                AfterRefunds = net - refunded,
             };
         }
 
