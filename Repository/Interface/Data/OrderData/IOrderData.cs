@@ -24,6 +24,7 @@ namespace ERP.Repository.Interface.Data.OrderData
         );
         Task<int> OrdersCount(string? name, int filter, int statusId, int orderTypeId);
         Task<IEnumerable<OrderType>> GetOrderTypesWithoutTracking();
+        Task<IEnumerable<Discount>> GetDiscountsWithoutTracking();
         Task<IEnumerable<OrderStatus>> GetOrderStatusesWithoutTracking();
         Task<Order> GetSingleOrderWithTracking(int id);
         #endregion

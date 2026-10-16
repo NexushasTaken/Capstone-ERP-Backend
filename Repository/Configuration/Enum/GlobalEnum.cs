@@ -16,6 +16,16 @@
         Delivery = 2,
     }
 
+    // Senior, PWD and solo parent have fixed rates from Philippine law: RA 9994, RA 10754, RA 11861.
+    public enum DiscountTypeEnum
+    {
+        None = 1,
+        Senior = 2,
+        Pwd = 3,
+        SoloParent = 4,
+        Custom = 5,
+    }
+
     // What came back on a sale return
     public enum ReturnConditionEnum
     {

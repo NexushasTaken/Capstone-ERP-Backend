@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.0.0] - 2026-10-16
+
+### Added
+
+- A `Discounts` table with the discount choices and their rates: none (0%), senior (20%), pwd (20%), solo_parent (10%) and custom (no fixed rate).
+- `GET /api/Order/discounts` lists them as `{ id, type, percent }`; `percent` is `null` for custom.
+
+### Changed
+
+- **BREAKING:** `POST /api/Order/insert` and `PUT /api/Order/put` take `discountId` instead of `discountType`. For every discount except custom, the saved `discountPercent` is copied from the `Discounts` table and the sent one is ignored. A custom discount must be more than 0, and only the owner can set one, as before. An unknown `discountId` returns 400.
+- Orders in `GET /api/Order/all` and sales in `GET /api/Sale/all` carry `discountId` as well as `discountType`.
+- Each order keeps its own `discountPercent`, so a rate change in the table never changes old orders. Existing orders were moved to the matching `Discounts` row.
+
 ## [12.0.0] - 2026-10-16
 
 ### Removed

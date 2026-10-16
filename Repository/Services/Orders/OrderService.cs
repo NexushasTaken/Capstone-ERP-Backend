@@ -33,26 +33,41 @@ namespace ERP.Repository.Services.Orders
     {
         #region Orders
 
-        // Secretaries may only pick the legal presets; a custom rate is the owner's call.
-        // When editing, a custom discount the owner already set may stay as it is.
-        private void EnsureCanSetDiscount(IOrderDiscount discount, Order? current)
+        // The rate to save for the picked discount: a preset's comes from the Discounts table, a custom one is
+        // typed. Secretaries may only pick presets; when editing, a custom discount the owner already set may stay.
+        private decimal DiscountPercentFor(IOrderDiscount order, Discount discount, Order? current)
         {
-            if (discount.DiscountType != DiscountTypes.Custom || _currentUser.Role == "owner")
+            if (discount.Percent is decimal rate)
             {
-                return;
+                return rate;
+            }
+
+            if (order.DiscountPercent <= 0)
+            {
+                throw new BadRequest("Custom discount must be more than 0");
             }
 
             var keepsOwnersDiscount =
-                current?.DiscountType == DiscountTypes.Custom && current.DiscountPercent == discount.DiscountPercent;
+                current?.DiscountId == discount.Id && current.DiscountPercent == order.DiscountPercent;
 
-            if (!keepsOwnersDiscount)
+            if (_currentUser.Role != "owner" && !keepsOwnersDiscount)
             {
                 throw new BadRequest("Only the owner can set a custom discount");
             }
+
+            return order.DiscountPercent;
         }
 
-        private static string DiscountSummary(string type, decimal percent) =>
-            type == DiscountTypes.None ? "none" : $"{DiscountTypes.Label(type)} {percent}%";
+        private async Task<Dictionary<int, Discount>> GetDiscountsById() =>
+            (await _orders.GetDiscountsWithoutTracking()).ToDictionary(d => d.Id);
+
+        private static Discount FindDiscount(Dictionary<int, Discount> discounts, int discountId) =>
+            discounts.GetValueOrDefault(discountId) ?? throw new BadRequest("Invalid discount");
+
+        private static string DiscountSummary(Discount? discount, decimal percent) =>
+            discount == null || discount.Id == (int)DiscountTypeEnum.None
+                ? "none"
+                : $"{discount.Type?.Replace('_', ' ')} {percent}%";
 
         public async Task<OrderPageViewModel> GetOrders(
             int page,
@@ -93,6 +108,18 @@ namespace ERP.Repository.Services.Orders
             return orderTypes;
         }
 
+        public async Task<IEnumerable<DiscountViewModel>> GetDiscounts()
+        {
+            var result = await _orders.GetDiscountsWithoutTracking();
+
+            return result.Select(d => new DiscountViewModel
+            {
+                Id = d.Id,
+                Type = d.Type,
+                Percent = d.Percent,
+            });
+        }
+
         public async Task<IEnumerable<OrderStatusViewModel>> GetOrderStatuses()
         {
             var result = await _orders.GetOrderStatusesWithoutTracking();
@@ -123,7 +150,9 @@ namespace ERP.Repository.Services.Orders
         public async Task<List<string>?> InsertOrder(OrderPostViewModel order)
         {
             await _orderPostValidator.EnsureValidAsync(order);
-            EnsureCanSetDiscount(order, null);
+
+            var discount = FindDiscount(await GetDiscountsById(), order.DiscountId);
+            var discountPercent = DiscountPercentFor(order, discount, null);
 
             var message = new List<string> { };
 
@@ -180,8 +209,8 @@ namespace ERP.Repository.Services.Orders
                 DeliveryDriverId = order.DeliveryDriverId == 0 ? null : order.DeliveryDriverId,
                 CustomerName = order.CustomerName.ToLower(),
                 DeliveryAddress = order.DeliveryAddress.ToLower(),
-                DiscountPercent = order.DiscountPercent,
-                DiscountType = order.DiscountType,
+                DiscountPercent = discountPercent,
+                DiscountId = discount.Id,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
             };
@@ -260,7 +289,9 @@ namespace ERP.Repository.Services.Orders
                 throw new BadRequest("Only processing orders can be edited");
             }
 
-            EnsureCanSetDiscount(order, header);
+            var discounts = await GetDiscountsById();
+            var discount = FindDiscount(discounts, order.DiscountId);
+            var discountPercent = DiscountPercentFor(order, discount, header);
 
             var isWalkin = header.OrderTypeId == (int)OrderTypeEnum.Walkin;
 
@@ -344,13 +375,13 @@ namespace ERP.Repository.Services.Orders
                 );
             }
 
-            var oldDiscount = DiscountSummary(header.DiscountType, header.DiscountPercent);
-            var newDiscount = DiscountSummary(order.DiscountType, order.DiscountPercent);
+            var oldDiscount = DiscountSummary(discounts.GetValueOrDefault(header.DiscountId), header.DiscountPercent);
+            var newDiscount = DiscountSummary(discount, discountPercent);
 
             header.DeliveryDriverId = isWalkin || order.DeliveryDriverId == 0 ? null : order.DeliveryDriverId;
             header.DeliveryAddress = isWalkin ? "" : (order.DeliveryAddress ?? "").ToLower();
-            header.DiscountPercent = order.DiscountPercent;
-            header.DiscountType = order.DiscountType;
+            header.DiscountPercent = discountPercent;
+            header.DiscountId = discount.Id;
             header.Updated_By = _auditLog.CurrentUserId;
             header.Updated_At = now;
 

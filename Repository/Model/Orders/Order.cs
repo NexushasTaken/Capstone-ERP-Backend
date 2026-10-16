@@ -1,4 +1,4 @@
-using ERP.Repository.Configuration.Helper;
+using ERP.Repository.Configuration.Enum;
 using ERP.Repository.Model;
 using ERP.Repository.Model.Products;
 
@@ -16,8 +16,8 @@ namespace ERP.Repository.Model.Orders
         public string? DeliveryAddress { get; set; }
         public decimal DiscountPercent { get; set; }
 
-        // One of DiscountTypes.
-        public string DiscountType { get; set; } = DiscountTypes.None;
+        public int DiscountId { get; set; } = (int)DiscountTypeEnum.None;
+        public Discount? Discount { get; set; }
 
         public ICollection<OrderLine> OrderLines { get; set; } = [];
         public Sale? Sale { get; set; }
