@@ -49,6 +49,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using QuestPDF.Infrastructure;
 
 namespace ERP
 {
@@ -57,6 +58,9 @@ namespace ERP
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Sales PDF reports; free for individuals and small businesses.
+            QuestPDF.Settings.License = LicenseType.Community;
 
             builder.Services.AddHttpContextAccessor();
 

@@ -29,5 +29,10 @@ namespace ERP.Repository.Interface.Data.SalesData
             CancellationToken cancellationToken = default
         );
         Task<(DateTime? First, DateTime? Last)> SaleDateRange(CancellationToken cancellationToken = default);
+        Task<List<SaleReportSale>> GetSalesForReport(
+            DateOnly from,
+            DateOnly to,
+            CancellationToken cancellationToken = default
+        );
     }
 }

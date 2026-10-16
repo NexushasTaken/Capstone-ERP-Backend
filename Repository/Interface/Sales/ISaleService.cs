@@ -15,5 +15,10 @@ namespace ERP.Repository.Interface.Sales
             CancellationToken cancellationToken = default
         );
         Task<SaleDateRangeViewModel> GetSaleDateRange(CancellationToken cancellationToken = default);
+        Task<SaleReportFile> GetSalesReportPdf(
+            string? period,
+            DateOnly? date,
+            CancellationToken cancellationToken = default
+        );
     }
 }
