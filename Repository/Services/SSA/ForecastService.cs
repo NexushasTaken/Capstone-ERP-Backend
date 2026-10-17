@@ -19,7 +19,7 @@ namespace ERP.Repository.Services.SSA
         private const int BacktestWeeks = 12; // weeks hidden from the model in the backtest
         private const int BaselineWeeks = 4; // the simple guess averages this many weeks
         private const int WeeksPerYear = 52; // the chart lines up the same weeks in earlier years
-        private const int SeasonWeeks = 13; // the chart shows 3 months either side of the forecast start
+        private const int SeasonWeeks = 13; // 3 months: the chart's weeks after the forecast start when comparing years, and the test's run-up
 
         // How many repeating shapes SSA keeps: the trend plus the yearly wave and its sharper
         // parts. Rank 5 tested best (docs/ssa-design/forecast-design.typ).
@@ -69,7 +69,7 @@ namespace ERP.Repository.Services.SSA
             };
         }
 
-        // The 13 weeks before the forecast, the forecast, and the same season in every earlier year
+        // Up to a year (52 weeks) before the forecast, the forecast, and the same weeks in every earlier year
         public async Task<DemandChartViewModel> GetDemandChart(int productId)
         {
             await EnsureFresh(false);
@@ -81,7 +81,7 @@ namespace ERP.Repository.Services.SSA
             var currentWeek = DemandWeek.StartOf(DemandWeek.PhToday());
             var entries = await _forecast.DemandEntries(productId);
             var historyStart = currentWeek.AddDays(-7 * result.HistoryWeeks);
-            var shownWeeks = Math.Min(SeasonWeeks, result.HistoryWeeks);
+            var shownWeeks = Math.Min(WeeksPerYear, result.HistoryWeeks);
             var firstWeek = currentWeek.AddDays(-7 * shownWeeks);
             var history = WeeklySeries(firstWeek, currentWeek, entries);
 
@@ -91,7 +91,7 @@ namespace ERP.Repository.Services.SSA
             for (var year = 1; ; year++)
             {
                 var start = currentWeek.AddDays(-7 * WeeksPerYear * year);
-                var windowStart = start.AddDays(-7 * SeasonWeeks);
+                var windowStart = start.AddDays(-7 * WeeksPerYear);
                 var windowEnd = start.AddDays(7 * SeasonWeeks);
                 if (windowEnd <= historyStart)
                 {
@@ -101,7 +101,7 @@ namespace ERP.Repository.Services.SSA
                 var weeks = WeeklySeries(windowStart, windowEnd, entries)
                     .Select((demand, i) => windowStart.AddDays(7 * i) < historyStart ? (double?)null : demand)
                     .ToList();
-                var sameWeeks = weeks.Skip(SeasonWeeks).Take(Horizon).ToList();
+                var sameWeeks = weeks.Skip(WeeksPerYear).Take(Horizon).ToList();
 
                 pastYears.Add(
                     new DemandPastYearViewModel

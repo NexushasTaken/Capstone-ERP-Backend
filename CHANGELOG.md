@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.0.0] - 2026-10-17
+
+### Changed
+
+- **BREAKING:** `GET /api/Dashboard/inventory/forecast/{productId}` returns up to 52 weeks of `history` before the forecast (was 13), and each of `pastYears` has 65 `weeks`: the 52 weeks before the same start date that year and the 13 from it (was 13 and 13). `sameWeeksTotal` is unchanged. Clients that read `weeks` from index 0 must skip the first 39 weeks to get the old 26.
+
 ## [14.0.0] - 2026-10-16
 
 ### Removed
