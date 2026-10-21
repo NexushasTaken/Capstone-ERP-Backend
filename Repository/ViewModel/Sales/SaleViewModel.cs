@@ -57,6 +57,7 @@ namespace ERP.Repository.ViewModel.Sales
         public int SaleId { get; set; }
         public string? ProductName { get; set; }
         public string? CustomerName { get; set; }
+        public string? Unit { get; set; }
         public int Quantity { get; set; }
         public string Condition { get; set; } = "";
         public decimal Refund { get; set; }
@@ -113,6 +114,7 @@ namespace ERP.Repository.ViewModel.Sales
     {
         public int ProductId { get; set; }
         public string? ProductName { get; set; }
+        public string? Unit { get; set; }
         public int Quantity { get; set; }
         public decimal Amount { get; set; }
     }
@@ -132,6 +134,7 @@ namespace ERP.Repository.ViewModel.Sales
     public class SaleReportProduct
     {
         public string? Name { get; set; }
+        public string? Unit { get; set; }
         public int Quantity { get; set; }
 
         // Sum of line amounts, before the order discount.

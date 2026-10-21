@@ -29,6 +29,7 @@ namespace ERP.Repository
         #region Product
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<Unit> Units { get; set; }
         #endregion
 
         #region Order
@@ -84,6 +85,10 @@ namespace ERP.Repository
             #region Products
             modelBuilder.Entity<Product>().HasKey(p => p.Id);
             modelBuilder.Entity<Category>().HasKey(p => p.Id);
+            modelBuilder.Entity<Unit>().HasKey(p => p.Id);
+
+            // The default keeps direct inserts (scripts/main.py) and existing products valid: they become pc.
+            modelBuilder.Entity<Product>().Property(p => p.UnitId).HasDefaultValue(Unit.PieceId);
             #endregion
 
             modelBuilder.Entity<ForecastResult>().HasKey(k => k.Id);
@@ -174,6 +179,13 @@ namespace ERP.Repository
                 .HasOne(i => i.Category)
                 .WithMany(w => w.Products)
                 .HasForeignKey(i => i.CategoryId);
+
+            modelBuilder
+                .Entity<Product>()
+                .HasOne(p => p.Unit)
+                .WithMany(u => u.Products)
+                .HasForeignKey(p => p.UnitId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder
                 .Entity<Order>()
@@ -331,6 +343,22 @@ namespace ERP.Repository
                     new InventoryLabel { Id = (int)InventoryLabelEnum.Return, Type = "return" },
                     new InventoryLabel { Id = (int)InventoryLabelEnum.Adjustment, Type = "adjustment" },
                     new InventoryLabel { Id = (int)InventoryLabelEnum.Received, Type = "received" }
+                );
+
+            // Default units; the owner can add more. Ids 1-7, so the migration moves the Id sequence past them.
+            modelBuilder
+                .Entity<Unit>()
+                .HasData(
+                    new[] { "pc", "box", "pack", "bar", "roll", "set", "pair" }.Select(
+                        (name, i) =>
+                            new Unit
+                            {
+                                Id = i + 1,
+                                Name = name,
+                                IsActive = true,
+                                Created_At = seededAt,
+                            }
+                    )
                 );
 
             // Default accounts (password "mypassword"). Salt and hash are fixed literals so the model stays

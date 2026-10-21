@@ -348,6 +348,7 @@ namespace ERP.Repository.Services.Sales
                 .Select(g => new SaleReportProduct
                 {
                     Name = g.First().ProductName,
+                    Unit = g.First().Unit,
                     Quantity = g.Sum(l => l.Quantity),
                     Revenue = g.Sum(l => l.Amount),
                 })

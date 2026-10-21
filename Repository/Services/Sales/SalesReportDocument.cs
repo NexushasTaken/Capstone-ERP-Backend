@@ -290,7 +290,11 @@ namespace ERP.Repository.Services.Sales
                         {
                             table.Cell().Element(BodyCell).Text($"{rank++}");
                             table.Cell().Element(BodyCell).Text(product.Name ?? "");
-                            table.Cell().Element(BodyCell).AlignRight().Text(product.Quantity.ToString("N0", Peso));
+                            table
+                                .Cell()
+                                .Element(BodyCell)
+                                .AlignRight()
+                                .Text($"{product.Quantity.ToString("N0", Peso)} {product.Unit}".TrimEnd());
                             table.Cell().Element(BodyCell).AlignRight().Text(Money(product.Revenue));
                         }
                     });

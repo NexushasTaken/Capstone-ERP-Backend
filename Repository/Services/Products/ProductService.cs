@@ -16,6 +16,7 @@ namespace ERP.Repository.Services.Products
 {
     public class ProductService(
         ICategoryData _category,
+        IUnitData _unit,
         IProductData _product,
         IUserAccountData _userAccount,
         IAuditLogService _auditLog,
@@ -264,6 +265,8 @@ namespace ERP.Repository.Services.Products
                 CategoryId = p.CategoryId,
                 Name = p.Name,
                 Price = p.Price,
+                UnitId = p.UnitId,
+                UnitName = p.Unit?.Name,
                 CategoryName = p.Category?.Type,
                 Created_At = DateConverter.ConvertToPH(p.Created_At),
                 CreatedByName = p.Created_By is int c ? names.GetValueOrDefault(c) : null,
@@ -290,6 +293,8 @@ namespace ERP.Repository.Services.Products
                 throw new ValidationFailed("name", "A product with this name already exists.");
             }
 
+            await EnsureUnitExists(product.UnitId);
+
             var now = DateTime.UtcNow;
 
             var pr = new Product
@@ -297,6 +302,7 @@ namespace ERP.Repository.Services.Products
                 CategoryId = product.CategoryId == 0 ? null : product.CategoryId,
                 Name = product.Name.ToLower(),
                 Price = product.Price,
+                UnitId = product.UnitId,
                 IsActive = true,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = now,
@@ -358,6 +364,8 @@ namespace ERP.Repository.Services.Products
                 throw new ValidationFailed("name", "A product with this name already exists.");
             }
 
+            await EnsureUnitExists(product.UnitId);
+
             var now = DateTime.UtcNow;
             var oldName = pr.Name;
             var changes = new List<string>();
@@ -380,9 +388,15 @@ namespace ERP.Repository.Services.Products
                 changes.Add("category changed");
             }
 
+            if (pr.UnitId != product.UnitId)
+            {
+                changes.Add("unit changed");
+            }
+
             pr.Name = newName;
             pr.Price = product.Price;
             pr.CategoryId = newCategoryId;
+            pr.UnitId = product.UnitId;
             pr.Updated_By = _auditLog.CurrentUserId;
             pr.Updated_At = now;
 
@@ -405,7 +419,7 @@ namespace ERP.Repository.Services.Products
 
             var rows = import.Rows;
             var names = rows.Select(r => r.Name!.Trim()).ToList();
-            var (errors, categoryIds) = await ProductImportErrors(rows);
+            var (errors, categoryIds, unitIds) = await ProductImportErrors(rows);
             ThrowIfAny(errors);
 
             var now = DateTime.UtcNow;
@@ -419,6 +433,9 @@ namespace ERP.Repository.Services.Products
                                 : categoryIds[r.Category.Trim().ToLower()],
                             Name = names[i].ToLower(),
                             Price = r.Price,
+                            UnitId = string.IsNullOrWhiteSpace(r.Unit)
+                                ? Unit.PieceId
+                                : unitIds[r.Unit.Trim().ToLower()],
                             IsActive = true,
                             Created_By = _auditLog.CurrentUserId,
                             Created_At = now,
@@ -461,21 +478,25 @@ namespace ERP.Repository.Services.Products
         {
             EnsureRowCount(import.Rows.Count);
 
-            var (errors, _) = await ProductImportErrors(import.Rows);
+            var (errors, _, _) = await ProductImportErrors(import.Rows);
             ThrowIfAny(errors);
         }
 
-        // Name already used or repeated in the file, and category names that don't exist.
-        // Also returns the matched category ids (keyed by lowercase name) for the insert.
+        // Name already used or repeated in the file, and category or unit names that don't exist.
+        // Also returns the matched category and unit ids (keyed by lowercase name) for the insert.
         private async Task<(
             Dictionary<string, string[]> errors,
-            Dictionary<string, int> categoryIds
+            Dictionary<string, int> categoryIds,
+            Dictionary<string, int> unitIds
         )> ProductImportErrors(List<ProductImportRow> rows)
         {
             var names = rows.Select(r => r.Name?.Trim() ?? "").ToList();
             var existing = await _product.GetExistingProductNames(names.Where(n => n != ""));
             var categoryIds = await _category.GetCategoryIdsByNames(
                 rows.Where(r => !string.IsNullOrWhiteSpace(r.Category)).Select(r => r.Category!.Trim())
+            );
+            var unitIds = await _unit.GetUnitIdsByNames(
+                rows.Where(r => !string.IsNullOrWhiteSpace(r.Unit)).Select(r => r.Unit!.Trim())
             );
 
             var errors = new Dictionary<string, string[]>();
@@ -492,12 +513,30 @@ namespace ERP.Repository.Services.Products
                         $"Category '{category}' doesn't exist. Add it on the Categories page first, or leave the cell blank.",
                     ];
                 }
+
+                var unit = rows[i].Unit?.Trim();
+
+                if (!string.IsNullOrEmpty(unit) && !unitIds.ContainsKey(unit.ToLower()))
+                {
+                    errors[$"rows.{i}.unit"] =
+                    [
+                        $"Unit '{unit}' doesn't exist. Add it on the Units page first, or leave the cell blank for pc.",
+                    ];
+                }
             }
 
-            return (errors, categoryIds);
+            return (errors, categoryIds, unitIds);
         }
 
         #endregion
+
+        private async Task EnsureUnitExists(int unitId)
+        {
+            if (!await _unit.UnitExists(unitId))
+            {
+                throw new ValidationFailed("unitId", "Unit not found");
+            }
+        }
 
         private static void ThrowIfAny(Dictionary<string, string[]> errors)
         {

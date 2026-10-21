@@ -98,6 +98,7 @@ namespace ERP.Repository.Data.Sales
                         {
                             ProductId = g.Key,
                             ProductName = g.First().Product.Name,
+                            Unit = g.First().Product.Unit!.Name,
                             Quantity = g.Sum(x => x.Quantity),
                             Price = g.First().Product.Price,
                             TotalAmount = g.Sum(x => x.Amount),
@@ -206,6 +207,7 @@ namespace ERP.Repository.Data.Sales
                         {
                             ProductId = l.ProductId,
                             ProductName = l.Product.Name,
+                            Unit = l.Product.Unit!.Name,
                             Quantity = l.Quantity,
                             Amount = l.Amount,
                         })
@@ -283,6 +285,7 @@ namespace ERP.Repository.Data.Sales
                     Id = r.Id,
                     SaleId = r.SaleId,
                     ProductName = r.Product.Name,
+                    Unit = r.Product.Unit!.Name,
                     CustomerName = r.Sale.Order.CustomerName,
                     Quantity = r.Quantity,
                     Condition = r.ConditionId == good ? "good" : "damaged",

@@ -87,6 +87,7 @@ namespace ERP
 
             builder.Services.AddScoped<IUserAccountService, UserAccountService>();
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IUnitService, UnitService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IInventoryService, InventoryService>();
             builder.Services.AddScoped<ISaleService, SaleService>();
@@ -102,6 +103,7 @@ namespace ERP
             builder.Services.AddScoped<IUserAccountData, UserAccountData>();
             builder.Services.AddScoped<IProductData, ProductData>();
             builder.Services.AddScoped<ICategoryData, CategoryData>();
+            builder.Services.AddScoped<IUnitData, UnitData>();
             builder.Services.AddScoped<IOrderData, OrderData>();
             builder.Services.AddScoped<IBaseData, BaseData>();
             builder.Services.AddScoped<IInventoryData, InventoryData>();

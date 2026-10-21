@@ -55,7 +55,11 @@ namespace ERP.Repository.Data.ProductData
             int filter
         )
         {
-            var products = FilteringQuery(BaseQuery<Product>(false).Include(p => p.Category), name, categoryPresent);
+            var products = FilteringQuery(
+                BaseQuery<Product>(false).Include(p => p.Category).Include(p => p.Unit),
+                name,
+                categoryPresent
+            );
 
             // Sort before paging, so the order holds across pages.
             var results = await SortingQuery(products, filter).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
@@ -96,6 +100,7 @@ namespace ERP.Repository.Data.ProductData
         {
             var product = await BaseQuery<Product>(false)
                 .Include(p => p.Category)
+                .Include(p => p.Unit)
                 .Include(p => p.Inventory.Where(i => i.IsActive))
                 .Where(p => p.IsActive)
                 .ToListAsync();

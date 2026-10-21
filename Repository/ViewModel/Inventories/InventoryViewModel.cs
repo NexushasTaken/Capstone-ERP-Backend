@@ -17,6 +17,9 @@
         public int Id { get; set; }
         public int ProductId { get; set; }
         public string? Name { get; set; }
+
+        // The product's unit of measurement, e.g. "pc"
+        public string? Unit { get; set; }
         public int Quantity { get; set; }
         public int ReorderPoint { get; set; }
         public string? Status { get; set; }
