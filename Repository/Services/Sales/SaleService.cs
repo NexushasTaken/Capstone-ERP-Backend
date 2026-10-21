@@ -223,7 +223,11 @@ namespace ERP.Repository.Services.Sales
             CancellationToken cancellationToken = default
         )
         {
-            var report = await GetSalesReport(ParsePeriod(period), date ?? DemandWeek.PhToday(), cancellationToken);
+            var report = await GetSalesReport(
+                ReportPeriods.Parse(period),
+                date ?? DemandWeek.PhToday(),
+                cancellationToken
+            );
             var content = new SalesReportDocument(report).GeneratePdf();
             var fileName = $"sales-{report.Period.ToString().ToLowerInvariant()}-{report.From:yyyy-MM-dd}.pdf";
 
@@ -236,15 +240,7 @@ namespace ERP.Repository.Services.Sales
             CancellationToken cancellationToken
         )
         {
-            var (from, to) = period switch
-            {
-                SaleReportPeriod.Weekly => (DemandWeek.StartOf(date), DemandWeek.StartOf(date).AddDays(6)),
-                SaleReportPeriod.Monthly => (
-                    new DateOnly(date.Year, date.Month, 1),
-                    new DateOnly(date.Year, date.Month, 1).AddMonths(1).AddDays(-1)
-                ),
-                _ => (date, date),
-            };
+            var (from, to) = ReportPeriods.Range(period, date);
 
             var sales = await _sales.GetSalesForReport(from, to, cancellationToken);
 
@@ -277,15 +273,6 @@ namespace ERP.Repository.Services.Sales
                 TopProducts = TopProducts(sales),
             };
         }
-
-        private static SaleReportPeriod ParsePeriod(string? period) =>
-            period?.Trim().ToLowerInvariant() switch
-            {
-                "daily" => SaleReportPeriod.Daily,
-                "weekly" => SaleReportPeriod.Weekly,
-                "monthly" => SaleReportPeriod.Monthly,
-                _ => throw new BadRequest("The period must be daily, weekly or monthly"),
-            };
 
         // One row per day, days without sales included.
         private static List<SaleReportRow> DayRows(List<SaleReportSale> sales, DateOnly from, DateOnly to)
