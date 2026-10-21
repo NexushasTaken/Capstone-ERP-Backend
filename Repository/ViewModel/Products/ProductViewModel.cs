@@ -1,4 +1,6 @@
-﻿namespace ERP.Repository.ViewModel.Products
+﻿using ERP.Repository.Model.Products;
+
+namespace ERP.Repository.ViewModel.Products
 {
     public class ProductViewModel
     {
@@ -6,6 +8,8 @@
         public int? CategoryId { get; set; }
         public string? Name { get; set; }
         public decimal Price { get; set; }
+        public int UnitId { get; set; }
+        public string? UnitName { get; set; }
         public string? CategoryName { get; set; }
         public DateTime? Created_At { get; set; }
         public string? CreatedByName { get; set; }
@@ -28,6 +32,9 @@
         public int? CategoryId { get; set; }
         public string? Name { get; set; }
         public decimal Price { get; set; }
+
+        // Defaults to pc, so older clients keep working
+        public int UnitId { get; set; } = Unit.PieceId;
     }
 
     public class ProductUpdateViewModel : ProductPostViewModel
@@ -42,6 +49,9 @@
         /// <summary>Category name, matched case-insensitively; blank means uncategorized.</summary>
         public string? Category { get; set; }
         public decimal Price { get; set; }
+
+        /// <summary>Unit name, matched case-insensitively; blank means pc.</summary>
+        public string? Unit { get; set; }
 
         /// <summary>Opening stock; when set, a stock record is created with ReorderPoint.</summary>
         public int? Quantity { get; set; }

@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.1.0] - 2026-10-21
+
+### Added
+
+- Units of measurement. A `Units` table starts with `pc`, `box`, `pack`, `bar`, `roll`, `set` and `pair`, and existing products are set to `pc`. Quantities stay whole numbers.
+- `GET /api/Unit/all` (paged, `name` search, `filter` sort: 0 newest, 1 Id, 2 name A - Z, 3 name Z - A) lists units with `productCount`. `POST /api/Unit/insert` `{ name }`, `PATCH /api/Unit/patch` `{ id, name }` and `DELETE /api/Unit/delete?id=` are owner only. Names are saved lowercase and must be unique. A unit that products still use can't be deleted (400).
+- Unit changes are logged under the new audit module 8 `Unit`.
+
+### Changed
+
+- `POST /api/Product/insert` and `PATCH /api/Product/patch` take `unitId` (defaults to pc). An unknown unit returns 400.
+- Products in `GET /api/Product/all` and `GET /api/Inventory/insert/product/all` carry `unitId` and `unitName`.
+- Quantities carry their unit: `unit` on inventory items in `GET /api/Inventory/all`, on order and sale lines, and on returns in the Returns list. The Sales PDF shows it next to top-product quantities.
+- Product import takes an optional `unit` column. Blank means pc, and a unit that doesn't exist is reported as a row error (`rows.N.unit`), on check and on import.
+
 ## [16.0.0] - 2026-10-21
 
 ### Added

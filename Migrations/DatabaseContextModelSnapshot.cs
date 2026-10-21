@@ -759,6 +759,11 @@ namespace ERP.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
+                    b.Property<int>("UnitId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<DateTime?>("Updated_At")
                         .HasColumnType("timestamp with time zone");
 
@@ -769,7 +774,99 @@ namespace ERP.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("UnitId");
+
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Products.Unit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("Created_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Created_By")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("Deleted_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Deleted_By")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("Updated_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Updated_By")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Units");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "pc"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "box"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "pack"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "bar"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "roll"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "set"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "pair"
+                        });
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>
@@ -1118,7 +1215,15 @@ namespace ERP.Migrations
                         .WithMany("Products")
                         .HasForeignKey("CategoryId");
 
+                    b.HasOne("ERP.Repository.Model.Products.Unit", "Unit")
+                        .WithMany("Products")
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Category");
+
+                    b.Navigation("Unit");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>
@@ -1216,6 +1321,11 @@ namespace ERP.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("OrderLines");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Products.Unit", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>

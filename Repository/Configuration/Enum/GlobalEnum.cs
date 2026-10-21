@@ -107,6 +107,7 @@
         Order = 4,
         Inventory = 5,
         Account = 7,
+        Unit = 8,
     }
 
     // How a product's demand forecast was made (ForecastResult.Method)

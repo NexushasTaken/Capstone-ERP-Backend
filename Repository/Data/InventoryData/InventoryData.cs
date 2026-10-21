@@ -103,6 +103,8 @@ namespace ERP.Repository.Data.InventoryData
                 .Include(i => i.InventoryStatus)
                 .Include(i => i.Product)
                     .ThenInclude(p => p.Category)
+                .Include(i => i.Product)
+                    .ThenInclude(p => p.Unit)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
@@ -125,6 +127,7 @@ namespace ERP.Repository.Data.InventoryData
         {
             var inventory = await BaseQuery<Inventory>(true)
                 .Include(i => i.Product)
+                    .ThenInclude(p => p!.Unit)
                 .FirstOrDefaultAsync(i => i.Id == id && i.IsActive);
 
             return inventory;

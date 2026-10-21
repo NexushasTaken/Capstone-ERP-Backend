@@ -113,6 +113,7 @@ namespace ERP.Repository.Data.OrderData
                         {
                             ProductId = g.Key,
                             ProductName = g.First().Product.Name,
+                            Unit = g.First().Product.Unit!.Name,
                             Quantity = g.Sum(x => x.Quantity),
                             Price = g.First().Product.Price,
                             TotalAmount = g.Sum(x => x.Amount),

@@ -1,4 +1,4 @@
-using ERP.Repository.ViewModel.Products;
+﻿using ERP.Repository.ViewModel.Products;
 using FluentValidation;
 
 namespace ERP.Repository.Configuration.Validation.Products
@@ -18,6 +18,25 @@ namespace ERP.Repository.Configuration.Validation.Products
         {
             RuleFor(p => p.Name).NotEmpty().WithMessage("Product Name is required");
             RuleFor(p => p.Price).GreaterThan(0).WithMessage("Product price must be greater than 0");
+            RuleFor(p => p.UnitId).GreaterThan(0).WithMessage("Unit is required");
+        }
+    }
+
+    public class UnitPostValidator : AbstractValidator<UnitPostViewModel>
+    {
+        public UnitPostValidator()
+        {
+            RuleFor(u => u.Name).NotEmpty().WithMessage("Unit Name is required");
+            RuleFor(u => u.Name).MaximumLength(20).WithMessage("Unit Name can be at most 20 characters");
+        }
+    }
+
+    public class UnitUpdateValidator : AbstractValidator<UnitUpdateViewModel>
+    {
+        public UnitUpdateValidator()
+        {
+            Include(new UnitPostValidator());
+            RuleFor(u => u.Id).GreaterThan(0).WithMessage("Unit is required");
         }
     }
 
