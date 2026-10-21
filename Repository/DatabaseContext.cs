@@ -5,6 +5,7 @@ using ERP.Repository.Model.Forecast;
 using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Orders;
 using ERP.Repository.Model.Products;
+using ERP.Repository.Model.Purchases;
 using ERP.Repository.Model.UserAccounts;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,6 +44,12 @@ namespace ERP.Repository
         public DbSet<SaleReturn> SaleReturns { get; set; }
         public DbSet<ForecastResult> ForecastResults { get; set; }
         public DbSet<ForecastWeek> ForecastWeeks { get; set; }
+        #endregion
+
+        #region Purchases
+        public DbSet<Purchase> Purchases { get; set; }
+        public DbSet<PurchaseLine> PurchaseLines { get; set; }
+        public DbSet<PurchaseStatus> PurchaseStatuses { get; set; }
         #endregion
 
         #region AuditLogs
@@ -89,6 +96,12 @@ namespace ERP.Repository
 
             // The default keeps direct inserts (scripts/main.py) and existing products valid: they become pc.
             modelBuilder.Entity<Product>().Property(p => p.UnitId).HasDefaultValue(Unit.PieceId);
+            #endregion
+
+            #region Purchases
+            modelBuilder.Entity<Purchase>().HasKey(p => p.Id);
+            modelBuilder.Entity<PurchaseLine>().HasKey(p => p.Id);
+            modelBuilder.Entity<PurchaseStatus>().HasKey(p => p.Id);
             #endregion
 
             modelBuilder.Entity<ForecastResult>().HasKey(k => k.Id);
@@ -251,6 +264,29 @@ namespace ERP.Repository
                 .HasForeignKey(w => w.ForecastResultId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            #region Purchases
+            modelBuilder
+                .Entity<Purchase>()
+                .HasOne(p => p.PurchaseStatus)
+                .WithMany(s => s.Purchases)
+                .HasForeignKey(p => p.PurchaseStatusId);
+
+            modelBuilder
+                .Entity<PurchaseLine>()
+                .HasOne(l => l.Purchase)
+                .WithMany(p => p.Lines)
+                .HasForeignKey(l => l.PurchaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<PurchaseLine>()
+                .HasOne(l => l.Product)
+                .WithMany(p => p.PurchaseLines)
+                .HasForeignKey(l => l.ProductId);
+
+            modelBuilder.Entity<Purchase>().HasIndex(p => p.OrderedOn);
+            #endregion
+
             #region AuditLogs
             modelBuilder
                 .Entity<AuditLog>()
@@ -326,6 +362,14 @@ namespace ERP.Repository
                     new OrderStatus { Id = (int)OrderStatusEnum.Processing, Status = "processing" },
                     new OrderStatus { Id = (int)OrderStatusEnum.Shipped, Status = "shipped" },
                     new OrderStatus { Id = (int)OrderStatusEnum.Cancelled, Status = "cancelled" }
+                );
+
+            modelBuilder
+                .Entity<PurchaseStatus>()
+                .HasData(
+                    new PurchaseStatus { Id = (int)PurchaseStatusEnum.Ordered, Status = "ordered" },
+                    new PurchaseStatus { Id = (int)PurchaseStatusEnum.Received, Status = "received" },
+                    new PurchaseStatus { Id = (int)PurchaseStatusEnum.Cancelled, Status = "cancelled" }
                 );
 
             modelBuilder
