@@ -147,36 +147,6 @@ namespace ERP.Migrations
                     b.ToTable("ForecastWeeks");
                 });
 
-            modelBuilder.Entity("ERP.Repository.Model.Inventories.DamagedInventory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("Created_At")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("Created_By")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("InventoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Reason")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InventoryId");
-
-                    b.ToTable("DamagedInventories");
-                });
-
             modelBuilder.Entity("ERP.Repository.Model.Inventories.Inventory", b =>
                 {
                     b.Property<int>("Id")
@@ -250,7 +220,7 @@ namespace ERP.Migrations
                         new
                         {
                             Id = 1,
-                            Type = "purchase"
+                            Type = "sale"
                         },
                         new
                         {
@@ -260,12 +230,12 @@ namespace ERP.Migrations
                         new
                         {
                             Id = 3,
-                            Type = "restock"
+                            Type = "adjustment"
                         },
                         new
                         {
-                            Id = 4,
-                            Type = "damage"
+                            Id = 5,
+                            Type = "received"
                         });
                 });
 
@@ -335,6 +305,47 @@ namespace ERP.Migrations
                     b.HasIndex("InventoryLabelId");
 
                     b.ToTable("InventoryTransactions");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Inventories.StockAdjustment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("Created_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Created_By")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("InventoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReasonId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SaleReturnId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Created_At");
+
+                    b.HasIndex("InventoryId");
+
+                    b.HasIndex("SaleReturnId")
+                        .IsUnique();
+
+                    b.ToTable("StockAdjustments");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Orders.DeliveryDriver", b =>
@@ -948,17 +959,6 @@ namespace ERP.Migrations
                     b.Navigation("ForecastResult");
                 });
 
-            modelBuilder.Entity("ERP.Repository.Model.Inventories.DamagedInventory", b =>
-                {
-                    b.HasOne("ERP.Repository.Model.Inventories.Inventory", "Inventory")
-                        .WithMany("DamagedInventories")
-                        .HasForeignKey("InventoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Inventory");
-                });
-
             modelBuilder.Entity("ERP.Repository.Model.Inventories.Inventory", b =>
                 {
                     b.HasOne("ERP.Repository.Model.Products.Product", "Product")
@@ -995,6 +995,23 @@ namespace ERP.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("InventoryLabel");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Inventories.StockAdjustment", b =>
+                {
+                    b.HasOne("ERP.Repository.Model.Inventories.Inventory", "Inventory")
+                        .WithMany("StockAdjustments")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Repository.Model.Orders.SaleReturn", "SaleReturn")
+                        .WithOne("Adjustment")
+                        .HasForeignKey("ERP.Repository.Model.Inventories.StockAdjustment", "SaleReturnId");
+
+                    b.Navigation("Inventory");
+
+                    b.Navigation("SaleReturn");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Orders.Order", b =>
@@ -1133,11 +1150,11 @@ namespace ERP.Migrations
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.Inventory", b =>
                 {
-                    b.Navigation("DamagedInventories");
-
                     b.Navigation("InventoryTransactions");
 
                     b.Navigation("OrderLines");
+
+                    b.Navigation("StockAdjustments");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Inventories.InventoryLabel", b =>
@@ -1180,6 +1197,11 @@ namespace ERP.Migrations
             modelBuilder.Entity("ERP.Repository.Model.Orders.Sale", b =>
                 {
                     b.Navigation("Returns");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Orders.SaleReturn", b =>
+                {
+                    b.Navigation("Adjustment");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Products.Category", b =>

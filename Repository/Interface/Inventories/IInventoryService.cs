@@ -33,12 +33,9 @@ namespace ERP.Repository.Interface.Inventories
         Task CreateOpeningStock(Product product, int quantity, int reorderPoint, DateTime now);
         Task DeleteItem(int id);
         Task UpdateInventory(InventoryUpdateViewModel inventory);
-        Task MarkAsDamaged(InventoryDamagePostViewModel damaged);
-        Task InventoryTransaction(InventoryTransactionPostViewModel transaction);
-        Task<IEnumerable<InventoryLabelViewModel>> GetInventoryLabels();
-        Task<IEnumerable<InventoryDamageViewModel>> GetDamageInventory(int id);
+        Task Adjust(StockAdjustmentPostViewModel adjustment);
+        Task<IEnumerable<StockAdjustmentViewModel>> GetAdjustments(int id);
         Task<IEnumerable<InventoryTransactionViewModle>> GetInventoryItemTransaction(int id);
-        Task Restock(InventoryRestockViewModel inventory);
         Task<IEnumerable<InventoryStatusViewModel>> InventoryStatusCount();
         Task<IEnumerable<ProductViewModel>> GetAllProductForInsert();
     }

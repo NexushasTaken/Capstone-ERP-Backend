@@ -55,20 +55,16 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", inventories));
         }
 
-        [HttpGet("inventoryLabel/forInsert")]
-        public async Task<IActionResult> GetInventoryLabel()
+        /// <summary>
+        /// Adjustments of one inventory item, newest first
+        /// </summary>
+        /// <param name="id">Inventory Id</param>
+        [HttpGet("adjustment/item")]
+        public async Task<IActionResult> GetAdjustments([FromQuery] int id)
         {
-            var label = await _inventory.GetInventoryLabels();
+            var adjustments = await _inventory.GetAdjustments(id);
 
-            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", label));
-        }
-
-        [HttpGet("damage/item")]
-        public async Task<IActionResult> GetDamagedItem([FromQuery] int id)
-        {
-            var damaged = await _inventory.GetDamageInventory(id);
-
-            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", damaged));
+            return StatusCode(200, _response.Status(200, true, "Retrieved Successfully", adjustments));
         }
 
         [HttpGet("movement/item")]
@@ -119,22 +115,17 @@ namespace ERP.Controllers.InventoryController
             return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
         }
 
+        /// <summary>
+        /// Adjust an item's stock
+        /// </summary>
+        /// <param name="adjustment">reasonId: 1 damaged (-quantity), 2 lost (-quantity), 3 found (+quantity), 4 count correction (quantity = the counted amount)</param>
         [Authorize(Roles = "owner")]
-        [HttpPatch("markasdamage")]
-        public async Task<IActionResult> MarkAsDamaged([FromBody] InventoryDamagePostViewModel damaged)
+        [HttpPost("adjust")]
+        public async Task<IActionResult> Adjust([FromBody] StockAdjustmentPostViewModel adjustment)
         {
-            await _inventory.MarkAsDamaged(damaged);
+            await _inventory.Adjust(adjustment);
 
-            return StatusCode(200, _response.Status(200, true, "Updated Successfully", null));
-        }
-
-        [Authorize(Roles = "owner")]
-        [HttpPatch("restock")]
-        public async Task<IActionResult> RestockInventory(InventoryRestockViewModel inventory)
-        {
-            await _inventory.Restock(inventory);
-
-            return StatusCode(200, _response.Status(200, true, "Restocked Successfully", null));
+            return StatusCode(200, _response.Status(200, true, "Adjusted Successfully", null));
         }
 
         [Authorize(Roles = "owner")]

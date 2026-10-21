@@ -1,4 +1,4 @@
-using ERP.Repository.Model.Inventories;
+﻿using ERP.Repository.Model.Inventories;
 using ERP.Repository.Model.Products;
 
 namespace ERP.Repository.Model.Orders
@@ -15,11 +15,14 @@ namespace ERP.Repository.Model.Orders
         public Inventory? Inventory { get; set; }
         public int Quantity { get; set; }
 
-        // ReturnConditionEnum: good units go back to stock, damaged ones are recorded as damaged.
+        // ReturnConditionEnum: good units go back to stock, damaged ones go back and out again as a damaged adjustment.
         public int ConditionId { get; set; }
         public string? Reason { get; set; }
 
         // Money given back: the units' share of the sale's total, so the order discount applies.
         public decimal Refund { get; set; }
+
+        // The damaged adjustment that took damaged units back out of stock
+        public StockAdjustment? Adjustment { get; set; }
     }
 }

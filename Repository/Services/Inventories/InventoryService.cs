@@ -24,9 +24,7 @@ namespace ERP.Repository.Services.Inventories
         IAuditLogService _auditLog,
         IValidator<InventoryPostViewModel> _inventoryPostValidator,
         IValidator<InventoryUpdateViewModel> _inventoryUpdateValidator,
-        IValidator<InventoryRestockViewModel> _restockValidator,
-        IValidator<InventoryDamagePostViewModel> _damageValidator,
-        IValidator<InventoryTransactionPostViewModel> _transactionValidator
+        IValidator<StockAdjustmentPostViewModel> _adjustmentValidator
     ) : IInventoryService
     {
         #region Inventory
@@ -117,10 +115,11 @@ namespace ERP.Repository.Services.Inventories
             return;
         }
 
-        // Saves a product's stock record, its audit entry and the Restock transaction for the opening quantity.
+        // Saves a product's stock record with an opening-stock adjustment and its ledger row, and the audit entry.
         // Shared by InsertItem and the product import.
         public async Task CreateOpeningStock(Product product, int quantity, int reorderPoint, DateTime now)
         {
+            var userId = _auditLog.CurrentUserId;
             var inv = new Inventory
             {
                 Quantity = quantity,
@@ -128,9 +127,30 @@ namespace ERP.Repository.Services.Inventories
                 ReorderPoint = reorderPoint,
                 StatusId = ReorderRatio.Ratio(quantity, reorderPoint),
                 IsActive = true,
-                Created_By = _auditLog.CurrentUserId,
+                Created_By = userId,
                 Created_At = now,
             };
+
+            // the movement history starts from the real quantity
+            inv.StockAdjustments.Add(
+                new StockAdjustment
+                {
+                    ReasonId = (int)AdjustmentReasonEnum.OpeningStock,
+                    Quantity = quantity,
+                    Created_By = userId,
+                    Created_At = now,
+                }
+            );
+            inv.InventoryTransactions.Add(
+                new InventoryTransaction
+                {
+                    QuantityChanged = quantity,
+                    StockLevel = quantity,
+                    InventoryLabelId = (int)InventoryLabelEnum.Adjustment,
+                    Created_By = userId,
+                    Created_At = now,
+                }
+            );
 
             await _inventory.Save(inv);
 
@@ -142,60 +162,85 @@ namespace ERP.Repository.Services.Inventories
                 now
             );
             await _inventory.SaveChanges();
-
-            // log the opening stock so the movement history starts from the real quantity
-            await InventoryTransaction(
-                new InventoryTransactionPostViewModel
-                {
-                    Id = inv.Id,
-                    Quantity = inv.Quantity,
-                    Label = (int)InventoryLabelEnum.Restock,
-                    StockLevel = inv.Quantity,
-                }
-            );
         }
 
-        public async Task Restock(InventoryRestockViewModel inventory)
+        // Stock changes with no sale, return or purchase behind them. The reason sets the direction;
+        // a count correction takes the counted quantity and saves the difference.
+        public async Task Adjust(StockAdjustmentPostViewModel adjustment)
         {
-            await _restockValidator.EnsureValidAsync(inventory);
+            await _adjustmentValidator.EnsureValidAsync(adjustment);
 
-            var existing = await _inventory.GetInventoryWithTracking(inventory.Id);
+            var inventory = await _inventory.GetInventoryWithTracking(adjustment.Id);
 
-            if (existing == null)
+            if (inventory == null)
             {
                 throw new NotFound("Inventory item not found");
             }
 
+            var reason = (AdjustmentReasonEnum)adjustment.ReasonId;
+            var before = inventory.Quantity;
+            var change = reason switch
+            {
+                AdjustmentReasonEnum.Damaged or AdjustmentReasonEnum.Lost => -adjustment.Quantity,
+                AdjustmentReasonEnum.Found => adjustment.Quantity,
+                _ => adjustment.Quantity - before,
+            };
+
+            if (before + change < 0)
+            {
+                throw new BadRequest($"Only {before} in stock");
+            }
+
+            if (change == 0)
+            {
+                throw new BadRequest(
+                    $"The counted quantity matches the stock ({before}), so there is nothing to adjust"
+                );
+            }
+
             var now = DateTime.UtcNow;
+            var userId = _auditLog.CurrentUserId;
+            var note = string.IsNullOrWhiteSpace(adjustment.Note) ? null : adjustment.Note.Trim().ToLower();
 
-            existing.Quantity += inventory.Quantity;
-            existing.Updated_By = _auditLog.CurrentUserId;
-            existing.Updated_At = now;
+            inventory.Quantity = before + change;
+            inventory.StatusId = ReorderRatio.Ratio(inventory.Quantity, inventory.ReorderPoint);
+            inventory.Updated_By = userId;
+            inventory.Updated_At = now;
 
-            existing.StatusId = ReorderRatio.Ratio(existing.Quantity, existing.ReorderPoint);
+            inventory.StockAdjustments.Add(
+                new StockAdjustment
+                {
+                    ReasonId = adjustment.ReasonId,
+                    Quantity = change,
+                    Note = note,
+                    Created_By = userId,
+                    Created_At = now,
+                }
+            );
+            inventory.InventoryTransactions.Add(
+                new InventoryTransaction
+                {
+                    QuantityChanged = change,
+                    StockLevel = inventory.Quantity,
+                    InventoryLabelId = (int)InventoryLabelEnum.Adjustment,
+                    Created_By = userId,
+                    Created_At = now,
+                }
+            );
 
-            // customer returns are recorded from the sale (Sales module), so a restock is always supplier stock
+            var counted =
+                reason == AdjustmentReasonEnum.CountCorrection ? $", counted {inventory.Quantity} (was {before})" : "";
+
             _auditLog.Log(
                 AuditModuleEnum.Inventory,
-                AuditActionEnum.IncreaseStock,
-                $"Received {inventory.Quantity} '{ItemLabel(existing)}'",
-                existing.Id,
+                AuditActionEnum.Adjust,
+                $"Adjusted '{ItemLabel(inventory)}' by {change:+#;-#} ({AdjustmentReasons.Label(adjustment.ReasonId)}{counted})"
+                    + (note == null ? "" : $": {note}"),
+                inventory.Id,
                 now
             );
 
             await _inventory.SaveChanges();
-
-            await InventoryTransaction(
-                new InventoryTransactionPostViewModel
-                {
-                    Id = existing.Id,
-                    Quantity = +inventory.Quantity,
-                    Label = (int)InventoryLabelEnum.Restock,
-                    StockLevel = existing.Quantity,
-                }
-            );
-
-            return;
         }
 
         public async Task DeleteItem(int id)
@@ -261,87 +306,10 @@ namespace ERP.Repository.Services.Inventories
             return;
         }
 
-        public async Task MarkAsDamaged(InventoryDamagePostViewModel damaged)
-        {
-            await _damageValidator.EnsureValidAsync(damaged);
-
-            var inventory = await _inventory.GetInventoryWithTracking(damaged.Id);
-
-            if (inventory == null)
-            {
-                throw new NotFound("Inventory item not found");
-            }
-
-            var now = DateTime.UtcNow;
-
-            if (inventory.Quantity < damaged.Quantity)
-            {
-                throw new BadRequest("Quantity is greater than what you have in stocks");
-            }
-
-            // stock on hand only; a damaged customer return is recorded from the sale (Sales module)
-            var sub = inventory.Quantity - damaged.Quantity;
-
-            inventory.Quantity = sub;
-            inventory.Updated_By = _auditLog.CurrentUserId;
-            inventory.Updated_At = now;
-            inventory.StatusId = ReorderRatio.Ratio(sub, inventory.ReorderPoint);
-
-            var damn = new DamagedInventory
-            {
-                InventoryId = inventory.Id,
-                Reason = damaged.Reason.ToLower(),
-                Quantity = damaged.Quantity,
-                Created_By = _auditLog.CurrentUserId,
-                Created_At = now,
-            };
-
-            _auditLog.Log(
-                AuditModuleEnum.Inventory,
-                AuditActionEnum.CurrentItemDamage,
-                $"Marked {damaged.Quantity} '{ItemLabel(inventory)}' as damaged: {damn.Reason}",
-                inventory.Id,
-                now
-            );
-
-            await _inventory.Save(damn);
-
-            var transaction = new InventoryTransactionPostViewModel
-            {
-                Id = inventory.Id,
-                Quantity = -damaged.Quantity,
-                Label = (int)InventoryLabelEnum.Damage,
-                StockLevel = inventory.Quantity,
-            };
-
-            await InventoryTransaction(transaction);
-
-            return;
-        }
-
         // a stock record is named by its product
         private static string ItemLabel(Inventory inventory)
         {
             return inventory.Product?.Name ?? "unknown product";
-        }
-
-        public async Task InventoryTransaction(InventoryTransactionPostViewModel transaction)
-        {
-            await _transactionValidator.EnsureValidAsync(transaction);
-
-            var transac = new InventoryTransaction
-            {
-                InventoryId = transaction.Id,
-                QuantityChanged = transaction.Quantity,
-                StockLevel = transaction.StockLevel,
-                InventoryLabelId = transaction.Label,
-                Created_By = _auditLog.CurrentUserId,
-                Created_At = DateTime.UtcNow,
-            };
-
-            await _inventory.Save(transac);
-
-            return;
         }
 
         public async Task<IEnumerable<InventoryStatusViewModel>> InventoryStatusCount()
@@ -353,35 +321,25 @@ namespace ERP.Repository.Services.Inventories
 
         #endregion
 
-        #region InventoryLabel
-        public async Task<IEnumerable<InventoryLabelViewModel>> GetInventoryLabels()
-        {
-            var label = await _inventory.GetLabelForInsert();
-
-            var final = label.Select(i => new InventoryLabelViewModel { Id = i.Id, Type = i.Type });
-
-            return final;
-        }
-        #endregion
-
-        #region Damage Inventory
-        public async Task<IEnumerable<InventoryDamageViewModel>> GetDamageInventory(int id)
+        #region Adjustments
+        public async Task<IEnumerable<StockAdjustmentViewModel>> GetAdjustments(int id)
         {
             if (id <= 0)
             {
                 throw new BadRequest("Inventory item is required");
             }
 
-            var damaged = await _inventory.GetDamageInventoryWithoutTracking(id);
+            var adjustments = await _inventory.GetAdjustmentsWithoutTracking(id);
 
-            var final = damaged.Select(i => new InventoryDamageViewModel
+            return adjustments.Select(a => new StockAdjustmentViewModel
             {
-                Reason = i.Reason,
-                Quantity = i.Quantity,
-                Created_At = i.Created_At,
+                ReasonId = a.ReasonId,
+                Reason = AdjustmentReasons.Label(a.ReasonId),
+                Quantity = a.Quantity,
+                Note = a.Note,
+                SaleId = a.SaleReturn?.SaleId,
+                Created_At = a.Created_At,
             });
-
-            return final;
         }
         #endregion
 

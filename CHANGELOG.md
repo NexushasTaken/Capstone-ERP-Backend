@@ -5,6 +5,26 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.0.0] - 2026-10-21
+
+### Added
+
+- Stock adjustments: `POST /api/Inventory/adjust` (owner only) takes `{ id, reasonId, quantity, note }`. Reasons: 1 damaged and 2 lost take `quantity` out, 3 found adds it, and 4 count correction takes the counted amount and saves the difference. The note is optional (up to 500 characters). Taking out more than is in stock, or a count that matches the stock, returns 400.
+- `GET /api/Inventory/adjustment/item?id=` lists an item's adjustments, newest first, as `{ reasonId, reason, quantity, note, saleId, created_At }`. `quantity` is signed, and `saleId` is set for damaged customer returns.
+- Adding a stock record (Add inventory or product import) saves an "opening stock" adjustment for its starting quantity.
+- A `received` stock-movement label for stock that will come from supplier purchases.
+
+### Changed
+
+- **BREAKING:** stock-movement labels are now `sale` (was `purchase`, written when an order is completed), `return`, `adjustment` (was `restock`) and `received`. The `damage` label is gone, and its rows are now `adjustment`. The forecast still counts only sales and returns.
+- **BREAKING:** audit action 7 is `Adjust` (was `CurrentItemDamage`).
+- A damaged customer return still adds the units back as a return, then takes them out as a damaged adjustment linked to the return. The return reason becomes the note.
+- Existing damage reports were moved into stock adjustments with the damaged reason.
+
+### Removed
+
+- **BREAKING:** `PATCH /api/Inventory/restock`, `PATCH /api/Inventory/markasdamage`, `GET /api/Inventory/damage/item` and `GET /api/Inventory/inventoryLabel/forInsert`. Use `POST /api/Inventory/adjust` and `GET /api/Inventory/adjustment/item`.
+
 ## [15.0.0] - 2026-10-17
 
 ### Changed

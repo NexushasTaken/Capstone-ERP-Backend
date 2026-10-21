@@ -1,4 +1,4 @@
-using ERP.Repository.Configuration.Helper;
+﻿using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.AuditLogs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +16,7 @@ namespace ERP.Controllers.AuditLogController
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
         /// <param name="userId">filter by the user who performed the action, 0 for all users</param>
-        /// <param name="action">1 Create, 2 Update, 3 Delete, 4 StatusChange, 5 IncreaseStock, 6 ReturnStock, 7 CurrentItemDamage, 8 ReturnItemDamage, 0 for all actions</param>
+        /// <param name="action">1 Create, 2 Update, 3 Delete, 4 StatusChange, 5 IncreaseStock, 6 ReturnStock, 7 Adjust, 8 ReturnItemDamage, 0 for all actions</param>
         /// <param name="module">1 Category, 2 Product, 3 Driver, 4 Order, 5 Inventory, 7 Account, 0 for all modules</param>
         /// <param name="role">filter by the role of the user who performed the action ("owner" or "secretary"), empty for all roles</param>
         /// <param name="cancellation"></param>

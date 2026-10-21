@@ -1,4 +1,4 @@
-using ERP.Repository.Configuration.Enum;
+﻿using ERP.Repository.Configuration.Enum;
 using ERP.Repository.Configuration.Helper;
 using ERP.Repository.Interface.Data.Forecast;
 using ERP.Repository.Model.Forecast;
@@ -11,18 +11,19 @@ namespace ERP.Repository.Data.ForecastData
 {
     public class ForecastData(DatabaseContext _context) : BaseData(_context), IForecastData
     {
-        // Demand = units sold - units returned. Sales are Purchase entries (-quantity, written when an
+        // Demand = units sold - units returned. Sales are Sale entries (-quantity, written when an
         // order is completed); every Return entry counts as returned, whatever its sign. Returns are
         // written by a Sales return (+quantity); older rows from the removed Inventory "Return Stock"
-        // (+quantity) and "Return Item" damage type (-quantity) still count. Restocks and damage are not demand.
+        // (+quantity) and "Return Item" damage type (-quantity) still count. Adjustments (damage included)
+        // and stock received from suppliers are not demand.
         public async Task<List<DemandEntryViewModel>> DemandEntries(int? productId = null)
         {
-            var purchase = (int)InventoryLabelEnum.Purchase;
+            var sale = (int)InventoryLabelEnum.Sale;
             var returned = (int)InventoryLabelEnum.Return;
 
             var query = BaseQuery<InventoryTransaction>(false)
                 .Where(t => t.Created_At != null)
-                .Where(t => t.InventoryLabelId == purchase || t.InventoryLabelId == returned);
+                .Where(t => t.InventoryLabelId == sale || t.InventoryLabelId == returned);
 
             if (productId > 0)
             {
@@ -34,7 +35,7 @@ namespace ERP.Repository.Data.ForecastData
                 {
                     ProductId = t.Inventory!.ProductId,
                     CreatedAt = t.Created_At!.Value,
-                    Units = t.InventoryLabelId == purchase ? -t.QuantityChanged : -Math.Abs(t.QuantityChanged),
+                    Units = t.InventoryLabelId == sale ? -t.QuantityChanged : -Math.Abs(t.QuantityChanged),
                 })
                 .ToListAsync();
         }

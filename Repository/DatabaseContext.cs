@@ -20,7 +20,7 @@ namespace ERP.Repository
 
         #region Inventory
         public DbSet<Inventory> Inventories { get; set; }
-        public DbSet<DamagedInventory> DamagedInventories { get; set; }
+        public DbSet<StockAdjustment> StockAdjustments { get; set; }
         public DbSet<InventoryLabel> InventoryLabels { get; set; }
         public DbSet<InventoryStatus> InventoryStatuses { get; set; }
         public DbSet<InventoryTransaction> InventoryTransactions { get; set; }
@@ -62,7 +62,7 @@ namespace ERP.Repository
             modelBuilder.Entity<Inventory>().HasKey(p => p.Id);
             modelBuilder.Entity<InventoryStatus>().HasKey(p => p.Id);
             modelBuilder.Entity<InventoryTransaction>().HasKey(p => p.Id);
-            modelBuilder.Entity<DamagedInventory>().HasKey(p => p.Id);
+            modelBuilder.Entity<StockAdjustment>().HasKey(p => p.Id);
             modelBuilder.Entity<InventoryLabel>().HasKey(p => p.Id);
             #endregion
 
@@ -149,10 +149,19 @@ namespace ERP.Repository
                 .HasForeignKey(t => t.InventoryId);
 
             modelBuilder
-                .Entity<DamagedInventory>()
-                .HasOne(d => d.Inventory)
-                .WithMany(i => i.DamagedInventories)
-                .HasForeignKey(d => d.InventoryId);
+                .Entity<StockAdjustment>()
+                .HasOne(a => a.Inventory)
+                .WithMany(i => i.StockAdjustments)
+                .HasForeignKey(a => a.InventoryId);
+
+            // A damaged return writes at most one adjustment.
+            modelBuilder
+                .Entity<StockAdjustment>()
+                .HasOne(a => a.SaleReturn)
+                .WithOne(r => r.Adjustment)
+                .HasForeignKey<StockAdjustment>(a => a.SaleReturnId);
+
+            modelBuilder.Entity<StockAdjustment>().HasIndex(a => a.Created_At);
 
             modelBuilder
                 .Entity<InventoryTransaction>()
@@ -318,10 +327,10 @@ namespace ERP.Repository
             modelBuilder
                 .Entity<InventoryLabel>()
                 .HasData(
-                    new InventoryLabel { Id = (int)InventoryLabelEnum.Purchase, Type = "purchase" },
+                    new InventoryLabel { Id = (int)InventoryLabelEnum.Sale, Type = "sale" },
                     new InventoryLabel { Id = (int)InventoryLabelEnum.Return, Type = "return" },
-                    new InventoryLabel { Id = (int)InventoryLabelEnum.Restock, Type = "restock" },
-                    new InventoryLabel { Id = (int)InventoryLabelEnum.Damage, Type = "damage" }
+                    new InventoryLabel { Id = (int)InventoryLabelEnum.Adjustment, Type = "adjustment" },
+                    new InventoryLabel { Id = (int)InventoryLabelEnum.Received, Type = "received" }
                 );
 
             // Default accounts (password "mypassword"). Salt and hash are fixed literals so the model stays

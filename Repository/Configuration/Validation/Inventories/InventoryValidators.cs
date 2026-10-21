@@ -1,3 +1,4 @@
+﻿using ERP.Repository.Configuration.Enum;
 using ERP.Repository.ViewModel.Inventories;
 using FluentValidation;
 
@@ -22,32 +23,23 @@ namespace ERP.Repository.Configuration.Validation.Inventories
         }
     }
 
-    public class InventoryRestockValidator : AbstractValidator<InventoryRestockViewModel>
+    public class StockAdjustmentValidator : AbstractValidator<StockAdjustmentPostViewModel>
     {
-        public InventoryRestockValidator()
+        public StockAdjustmentValidator()
         {
-            RuleFor(r => r.Id).GreaterThan(0).WithMessage("Inventory item is required");
-            RuleFor(r => r.Quantity).GreaterThan(0).WithMessage("Quantity should be higher than 0");
-        }
-    }
-
-    public class InventoryDamageValidator : AbstractValidator<InventoryDamagePostViewModel>
-    {
-        public InventoryDamageValidator()
-        {
-            RuleFor(d => d.Id).GreaterThan(0).WithMessage("Inventory item is required");
-            RuleFor(d => d.Quantity).GreaterThan(0).WithMessage("Please add quantity to mark as damage");
-            RuleFor(d => d.Reason).NotEmpty().WithMessage("Please add a reason why you want to mark it as damage");
-        }
-    }
-
-    public class InventoryTransactionValidator : AbstractValidator<InventoryTransactionPostViewModel>
-    {
-        public InventoryTransactionValidator()
-        {
-            RuleFor(t => t.Id).GreaterThan(0).WithMessage("Inventory item is required");
-            RuleFor(t => t.Quantity).NotEqual(0).WithMessage("Please add quantity to begin a transaction");
-            RuleFor(t => t.Label).GreaterThan(0).WithMessage("Transaction label is required");
+            RuleFor(a => a.Id).GreaterThan(0).WithMessage("Inventory item is required");
+            RuleFor(a => a.ReasonId)
+                .Must(r => r >= (int)AdjustmentReasonEnum.Damaged && r <= (int)AdjustmentReasonEnum.CountCorrection)
+                .WithMessage("Choose a reason: damaged, lost, found or count correction");
+            RuleFor(a => a.Quantity)
+                .GreaterThan(0)
+                .When(a => a.ReasonId != (int)AdjustmentReasonEnum.CountCorrection)
+                .WithMessage("Quantity should be higher than 0");
+            RuleFor(a => a.Quantity)
+                .GreaterThanOrEqualTo(0)
+                .When(a => a.ReasonId == (int)AdjustmentReasonEnum.CountCorrection)
+                .WithMessage("Counted quantity can't be negative");
+            RuleFor(a => a.Note).MaximumLength(500).WithMessage("Note can be at most 500 characters");
         }
     }
 }

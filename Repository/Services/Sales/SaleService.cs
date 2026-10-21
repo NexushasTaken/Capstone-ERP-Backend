@@ -140,36 +140,38 @@ namespace ERP.Repository.Services.Sales
                 var inventory = lines[0].Inventory!;
                 var damaged = item.ConditionId == (int)ReturnConditionEnum.Damaged;
 
-                sale.Returns.Add(
-                    new SaleReturn
-                    {
-                        ProductId = item.ProductId,
-                        InventoryId = inventory.Id,
-                        Quantity = item.Quantity,
-                        ConditionId = item.ConditionId,
-                        Reason = reason,
-                        Refund = refund,
-                        Created_By = userId,
-                        Created_At = now,
-                    }
-                );
+                var returnRow = new SaleReturn
+                {
+                    ProductId = item.ProductId,
+                    InventoryId = inventory.Id,
+                    Quantity = item.Quantity,
+                    ConditionId = item.ConditionId,
+                    Reason = reason,
+                    Refund = refund,
+                    Created_By = userId,
+                    Created_At = now,
+                };
+                sale.Returns.Add(returnRow);
 
                 inventory.Quantity += item.Quantity;
                 inventory.InventoryTransactions.Add(
                     Movement(InventoryLabelEnum.Return, item.Quantity, inventory.Quantity, userId, now)
                 );
 
+                // The return still counts against demand; damaged units then leave stock as a damaged adjustment.
                 if (damaged)
                 {
                     inventory.Quantity -= item.Quantity;
                     inventory.InventoryTransactions.Add(
-                        Movement(InventoryLabelEnum.Damage, -item.Quantity, inventory.Quantity, userId, now)
+                        Movement(InventoryLabelEnum.Adjustment, -item.Quantity, inventory.Quantity, userId, now)
                     );
-                    inventory.DamagedInventories.Add(
-                        new DamagedInventory
+                    inventory.StockAdjustments.Add(
+                        new StockAdjustment
                         {
-                            Quantity = item.Quantity,
-                            Reason = reason,
+                            ReasonId = (int)AdjustmentReasonEnum.Damaged,
+                            Quantity = -item.Quantity,
+                            Note = reason,
+                            SaleReturn = returnRow,
                             Created_By = userId,
                             Created_At = now,
                         }

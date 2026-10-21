@@ -30,12 +30,8 @@ namespace ERP.Repository.Interface.Data.InventoryData
         Task<IEnumerable<InventoryStatusViewModel>> StatusCount();
         #endregion
 
-        #region Inventory Label
-        Task<IEnumerable<InventoryLabel>> GetLabelForInsert();
-        #endregion
-
-        #region Inventory Damage
-        Task<IEnumerable<DamagedInventory>> GetDamageInventoryWithoutTracking(int id);
+        #region Adjustments
+        Task<IEnumerable<StockAdjustment>> GetAdjustmentsWithoutTracking(int id);
         #endregion
 
         #region Transaction
