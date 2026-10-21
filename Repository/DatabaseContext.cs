@@ -415,7 +415,7 @@ namespace ERP.Repository
                     {
                         Id = 1,
                         UserRoleId = (int)UserRoleEnum.Owner,
-                        Email = "owner@gmail.com",
+                        Email = "owner@inventory.local",
                         Salt = "OmUBGSIov6YDrqLo4SaFuw==",
                         Password = "0ULmzYhoKo1MJ9WyeS3WAktEqN/QYeXPEb7z7akCUxM=",
                         IsActive = true,
@@ -425,7 +425,7 @@ namespace ERP.Repository
                     {
                         Id = 2,
                         UserRoleId = (int)UserRoleEnum.Secretary,
-                        Email = "secretary@gmail.com",
+                        Email = "secretary@inventory.local",
                         Salt = "ELFJLUKQLNZ1usWM/oILqA==",
                         Password = "lgKIp/sJWDvi74qQ/TYwXAsb7Bv/Z1fpdrDxsanRmqA=",
                         IsActive = true,
@@ -440,16 +440,16 @@ namespace ERP.Repository
                     {
                         Id = 1,
                         UserAccountId = 1,
-                        FirstName = "Bill",
-                        LastName = "Gates",
+                        FirstName = "System",
+                        LastName = "Owner",
                         Created_At = seededAt,
                     },
                     new UserInformation
                     {
                         Id = 2,
                         UserAccountId = 2,
-                        FirstName = "Mark",
-                        LastName = "Zucherbeard",
+                        FirstName = "System",
+                        LastName = "Secretary",
                         Created_At = seededAt,
                     }
                 );

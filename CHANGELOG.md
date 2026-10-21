@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.4.0] - 2026-10-21
+
+### Changed
+
+- The two default accounts are now generic: `owner@inventory.local` (System Owner) and `secretary@inventory.local` (System Secretary), both still with the password `mypassword`. A migration renames them in existing databases.
+
 ## [16.3.0] - 2026-10-21
 
 ### Added
