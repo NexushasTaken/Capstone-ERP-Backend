@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.3.0] - 2026-10-21
+
+### Added
+
+- `GET /api/Report/stock` (owner only): the Stock on Hand PDF. It lists every stock record with category, on-hand amount, reorder point and status, critical first, and counts each status.
+- `GET /api/Report/purchases?period=&date=` (owner only): the Purchases PDF for purchases received in the day, week or month. It shows totals, short lines, average lead time, a row per purchase and a by-product table.
+- `GET /api/Report/adjustments?period=&date=` (owner only): the Adjustments PDF for stock adjustments made in the period. It groups them by reason with who made each, and marks damaged customer returns with their sale.
+- `period` is `daily`, `weekly` (Monday to Sunday) or `monthly`, and `date` is a Philippine day that defaults to today, the same as the Sales report.
+
 ## [16.2.0] - 2026-10-21
 
 ### Added
