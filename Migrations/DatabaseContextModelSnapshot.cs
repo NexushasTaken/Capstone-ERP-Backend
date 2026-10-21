@@ -1035,7 +1035,7 @@ namespace ERP.Migrations
                         {
                             Id = 1,
                             Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "owner@gmail.com",
+                            Email = "owner@inventory.local",
                             IsActive = true,
                             Password = "0ULmzYhoKo1MJ9WyeS3WAktEqN/QYeXPEb7z7akCUxM=",
                             Salt = "OmUBGSIov6YDrqLo4SaFuw==",
@@ -1045,7 +1045,7 @@ namespace ERP.Migrations
                         {
                             Id = 2,
                             Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "secretary@gmail.com",
+                            Email = "secretary@inventory.local",
                             IsActive = true,
                             Password = "lgKIp/sJWDvi74qQ/TYwXAsb7Bv/Z1fpdrDxsanRmqA=",
                             Salt = "ELFJLUKQLNZ1usWM/oILqA==",
@@ -1094,16 +1094,16 @@ namespace ERP.Migrations
                         {
                             Id = 1,
                             Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FirstName = "Bill",
-                            LastName = "Gates",
+                            FirstName = "System",
+                            LastName = "Owner",
                             UserAccountId = 1
                         },
                         new
                         {
                             Id = 2,
                             Created_At = new DateTime(2025, 8, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            FirstName = "Mark",
-                            LastName = "Zucherbeard",
+                            FirstName = "System",
+                            LastName = "Secretary",
                             UserAccountId = 2
                         });
                 });
