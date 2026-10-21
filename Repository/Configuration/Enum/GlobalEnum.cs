@@ -33,6 +33,13 @@
         Damaged = 2,
     }
 
+    public enum PurchaseStatusEnum
+    {
+        Ordered = 1,
+        Received = 2,
+        Cancelled = 3,
+    }
+
     public enum InventoryStatusEnum
     {
         Available = 1,
@@ -108,6 +115,7 @@
         Inventory = 5,
         Account = 7,
         Unit = 8,
+        Purchase = 9,
     }
 
     // How a product's demand forecast was made (ForecastResult.Method)

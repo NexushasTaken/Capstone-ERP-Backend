@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.2.0] - 2026-10-21
+
+### Added
+
+- Purchases: stock the store buys from a supplier, owner only. A purchase has an optional supplier name (free text), an order date, an optional note and one line per product (quantity and unit cost). Its status goes ordered → received or ordered → cancelled.
+- `GET /api/Purchase/all` (paged, `name` search on supplier, product or `PO-12`, `statusId` 1 ordered / 2 received / 3 cancelled, `filter` 0 newest / 1 oldest order date) lists purchases with their lines, totals, and `leadTimeDays` once received. `GET /api/Purchase/status/count` gives the count per status.
+- `POST /api/Purchase/insert` and `PUT /api/Purchase/put` (only while ordered; lines are replaced). `PATCH /api/Purchase/cancel?id=` (only while ordered).
+- `PATCH /api/Purchase/receive` `{ id, lines: [{ productId, quantity }] }` takes every line with how many arrived, from 0 up to the ordered quantity. Stock goes up with `received` movements, and a product without a stock record gets one (reorder point 0). A received purchase can't be changed.
+- Purchase changes are logged under the new audit module 9 `Purchase`. Receiving is `IncreaseStock`.
+
 ## [16.1.0] - 2026-10-21
 
 ### Added

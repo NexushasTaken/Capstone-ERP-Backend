@@ -869,6 +869,118 @@ namespace ERP.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ERP.Repository.Model.Purchases.Purchase", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("Created_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Created_By")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly>("OrderedOn")
+                        .HasColumnType("date");
+
+                    b.Property<int>("PurchaseStatusId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ReceivedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SupplierName")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("Updated_At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Updated_By")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderedOn");
+
+                    b.HasIndex("PurchaseStatusId");
+
+                    b.ToTable("Purchases");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Purchases.PurchaseLine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PurchaseId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ReceivedQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("PurchaseId");
+
+                    b.ToTable("PurchaseLines");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Purchases.PurchaseStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Status")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PurchaseStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Status = "ordered"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Status = "received"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Status = "cancelled"
+                        });
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>
                 {
                     b.Property<int>("Id")
@@ -1226,6 +1338,36 @@ namespace ERP.Migrations
                     b.Navigation("Unit");
                 });
 
+            modelBuilder.Entity("ERP.Repository.Model.Purchases.Purchase", b =>
+                {
+                    b.HasOne("ERP.Repository.Model.Purchases.PurchaseStatus", "PurchaseStatus")
+                        .WithMany("Purchases")
+                        .HasForeignKey("PurchaseStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PurchaseStatus");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Purchases.PurchaseLine", b =>
+                {
+                    b.HasOne("ERP.Repository.Model.Products.Product", "Product")
+                        .WithMany("PurchaseLines")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Repository.Model.Purchases.Purchase", "Purchase")
+                        .WithMany("Lines")
+                        .HasForeignKey("PurchaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Purchase");
+                });
+
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>
                 {
                     b.HasOne("ERP.Repository.Model.UserAccounts.UserRole", "UserRole")
@@ -1321,11 +1463,23 @@ namespace ERP.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("OrderLines");
+
+                    b.Navigation("PurchaseLines");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.Products.Unit", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Purchases.Purchase", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("ERP.Repository.Model.Purchases.PurchaseStatus", b =>
+                {
+                    b.Navigation("Purchases");
                 });
 
             modelBuilder.Entity("ERP.Repository.Model.UserAccounts.UserAccount", b =>
