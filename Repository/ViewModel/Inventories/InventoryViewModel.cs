@@ -44,28 +44,37 @@
         public int ReorderPoint { get; set; }
     }
 
-    public class InventoryRestockViewModel
-    {
-        public int Id { get; set; }
-        public int Quantity { get; set; }
-    }
-
     public class InventoryUpdateViewModel
     {
         public int Id { get; set; }
         public int ReorderPoint { get; set; }
     }
 
-    public class InventoryDamageViewModel
+    public class StockAdjustmentPostViewModel
     {
+        // Inventory Id
+        public int Id { get; set; }
+
+        // AdjustmentReasonEnum 1-4; opening stock is written by the system
+        public int ReasonId { get; set; }
+
+        // Units damaged, lost or found; for a count correction, the counted quantity
         public int Quantity { get; set; }
-        public string? Reason { get; set; }
-        public DateTime? Created_At { get; set; }
+        public string? Note { get; set; }
     }
 
-    public class InventoryDamagePostViewModel : InventoryDamageViewModel
+    public class StockAdjustmentViewModel
     {
-        public int Id { get; set; }
+        public int ReasonId { get; set; }
+        public string? Reason { get; set; }
+
+        // Signed: + added, - taken out
+        public int Quantity { get; set; }
+        public string? Note { get; set; }
+
+        // The sale the units came back from, for a damaged customer return
+        public int? SaleId { get; set; }
+        public DateTime? Created_At { get; set; }
     }
 
     public class InventoryTransactionViewModle
@@ -73,21 +82,5 @@
         public int Quantity { get; set; }
         public string? Label { get; set; }
         public DateTime? Created_At { get; set; }
-    }
-
-    public class InventoryTransactionPostViewModel
-    {
-        public int Id { get; set; }
-        public int Quantity { get; set; }
-        public int Label { get; set; }
-
-        // stock on hand after this movement; the forecast reads it
-        public int StockLevel { get; set; }
-    }
-
-    public class InventoryLabelViewModel
-    {
-        public int Id { get; set; }
-        public string? Type { get; set; }
     }
 }

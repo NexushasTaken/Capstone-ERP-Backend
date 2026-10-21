@@ -40,12 +40,39 @@
         Critical = 3,
     }
 
+    // Stock ledger labels. Ids are kept because the forecast reads demand by id (Sale and Return).
     public enum InventoryLabelEnum
     {
-        Purchase = 1,
+        // A completed customer order
+        Sale = 1,
         Return = 2,
-        Restock = 3,
-        Damage = 4,
+
+        // Any StockAdjustment, including the opening stock
+        Adjustment = 3,
+
+        // 4 was "damage"; damage is now an adjustment with the Damaged reason
+
+        // Stock received from a supplier purchase; never counts as demand
+        Received = 5,
+    }
+
+    // Why stock was adjusted (StockAdjustment.ReasonId). The reason sets the direction.
+    public enum AdjustmentReasonEnum
+    {
+        // - quantity
+        Damaged = 1,
+
+        // - quantity
+        Lost = 2,
+
+        // + quantity
+        Found = 3,
+
+        // The counted quantity replaces the stock; the difference is saved
+        CountCorrection = 4,
+
+        // + quantity, written when a stock record is created; never chosen by the user
+        OpeningStock = 5,
     }
 
     public enum UserRoleEnum
@@ -68,7 +95,7 @@
         StatusChange = 4,
         IncreaseStock = 5,
         ReturnStock = 6,
-        CurrentItemDamage = 7,
+        Adjust = 7,
         ReturnItemDamage = 8,
     }
 

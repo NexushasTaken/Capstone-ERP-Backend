@@ -153,32 +153,21 @@ namespace ERP.Repository.Data.InventoryData
 
         #endregion
 
-        #region Damaged Inventory
-
-        #endregion
-
-        #region Inventory Label
-        public async Task<IEnumerable<InventoryLabel>> GetLabelForInsert()
+        #region Adjustments
+        public async Task<IEnumerable<StockAdjustment>> GetAdjustmentsWithoutTracking(int id)
         {
-            var label = await BaseQuery<InventoryLabel>(false)
-                .Where(i => i.Type == "restock" || i.Type == "return")
+            var adjustments = await BaseQuery<StockAdjustment>(false)
+                .Include(a => a.SaleReturn)
+                .Where(a => a.InventoryId == id)
+                .OrderByDescending(a => a.Created_At)
+                .ThenByDescending(a => a.Id)
                 .ToListAsync();
 
-            return label;
+            return adjustments;
         }
         #endregion
 
-        #region Damage Inventory
-        public async Task<IEnumerable<DamagedInventory>> GetDamageInventoryWithoutTracking(int id)
-        {
-            var inventory = await BaseQuery<DamagedInventory>(false)
-                .Where(d => d.InventoryId == id)
-                .OrderByDescending(d => d.Created_At)
-                .ToListAsync();
-
-            return inventory;
-        }
-
+        #region Status
         public async Task<IEnumerable<InventoryStatusViewModel>> StatusCount()
         {
             var inventory = await BaseQuery<Inventory>(false)

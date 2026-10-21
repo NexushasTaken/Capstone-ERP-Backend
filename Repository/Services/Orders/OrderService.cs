@@ -638,7 +638,7 @@ namespace ERP.Repository.Services.Orders
                 InventoryId = i.inventoryId,
                 QuantityChanged = -i.quantity,
                 StockLevel = stock.GetValueOrDefault(i.inventoryId),
-                InventoryLabelId = (int)InventoryLabelEnum.Purchase,
+                InventoryLabelId = (int)InventoryLabelEnum.Sale,
                 Created_By = _auditLog.CurrentUserId,
                 Created_At = DateTime.UtcNow,
             });

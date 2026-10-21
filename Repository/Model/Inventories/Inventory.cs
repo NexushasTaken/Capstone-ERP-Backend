@@ -13,7 +13,7 @@ namespace ERP.Repository.Model.Inventories
         public int ProductId { get; set; }
         public Product? Product { get; set; }
         public ICollection<InventoryTransaction> InventoryTransactions { get; set; } = [];
-        public ICollection<DamagedInventory> DamagedInventories { get; set; } = [];
+        public ICollection<StockAdjustment> StockAdjustments { get; set; } = [];
         public ICollection<OrderLine> OrderLines { get; set; } = [];
     }
 }
